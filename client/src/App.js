@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import React from 'react';
 import Topnav from './top_nav.js';
+import Hero from './hero.js';
+import About from './about.js';
 
 function App() {
   return (

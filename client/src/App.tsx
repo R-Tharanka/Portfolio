@@ -1,5 +1,6 @@
 import React from 'react';
 import { ThemeProvider } from './context/ThemeContext';
+import { Toaster } from 'react-hot-toast';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import SocialSidebar from './components/layout/SocialSidebar';
@@ -14,6 +15,7 @@ function App() {
   return (
     <ThemeProvider>
       <div className="relative">
+        <Toaster position="top-center" />
         <Header />
         <SocialSidebar />
         <main>

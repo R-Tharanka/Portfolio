@@ -63,7 +63,7 @@ const Header: React.FC = () => {
                 smooth={true}
                 offset={link.offset}
                 duration={500}
-                className="text-foreground/80 hover:text-primary transition-colors cursor-pointer text-sm font-medium"
+                className="text-foreground/80 hover:text-primary transition-colors cursor-pointer text-base font-medium"
                 activeClass="text-primary font-semibold"
               >
                 {link.title}

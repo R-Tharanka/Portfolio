@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
+import heroProfileImg from '../../assets/img/hero-profile.jpg';
 
 const HeroSection: React.FC = () => {
   return (

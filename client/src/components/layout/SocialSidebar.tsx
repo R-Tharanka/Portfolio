@@ -10,27 +10,27 @@ const SocialSidebar: React.FC = () => {
   const socialLinks: SocialMedia[] = [
     {
       platform: 'GitHub',
-      url: 'https://github.com/R-Tharanka',
+      url: import.meta.env.VITE_GITHUB_URL || '',
       icon: 'github'
     },
     {
       platform: 'LinkedIn',
-      url: 'https://linkedin.com/in/ruchira-tharanka-b020992a6',
+      url: import.meta.env.VITE_LINKEDIN_URL || '',
       icon: 'linkedin'
     },
     {
       platform: 'Facebook',
-      url: 'https://www.facebook.com/ruchira.tharanka',
+      url: import.meta.env.VITE_FACEBOOK_URL || '',
       icon: 'facebook'
     },
     {
       platform: 'Instagram',
-      url: 'https://www.instagram.com/ruchira_tharanka?igsh=YzljYTk1ODg3Zg==',
+      url: import.meta.env.VITE_INSTAGRAM_URL || '',
       icon: 'instagram'
     },
     {
       platform: 'WhatsApp',
-      url: 'https://wa.me/+94713498585',
+      url: import.meta.env.VITE_WHATSAPP_URL || '',
       icon: 'whatsapp'
     }
   ];

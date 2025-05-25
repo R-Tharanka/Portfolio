@@ -1,37 +1,42 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Facebook, Instagram, MessageSquare } from 'lucide-react';
+import { Github, Linkedin, Facebook, Instagram } from 'lucide-react';
 import { SocialMedia } from '../../types';
+import { useTheme } from '../../context/ThemeContext';
+import whatsappL from '../../assets/img/icons/whatsapp-light.png'
+import whatsappD from '../../assets/img/icons/whatsapp-dark.png'
 
 const SocialSidebar: React.FC = () => {
   const socialLinks: SocialMedia[] = [
     {
       platform: 'GitHub',
-      url: 'https://github.com/yourusername',
+      url: 'https://github.com/R-Tharanka',
       icon: 'github'
     },
     {
       platform: 'LinkedIn',
-      url: 'https://linkedin.com/in/yourusername',
+      url: 'https://linkedin.com/in/ruchira-tharanka-b020992a6',
       icon: 'linkedin'
     },
     {
       platform: 'Facebook',
-      url: 'https://facebook.com/yourusername',
+      url: 'https://www.facebook.com/ruchira.tharanka',
       icon: 'facebook'
     },
     {
       platform: 'Instagram',
-      url: 'https://instagram.com/yourusername',
+      url: 'https://www.instagram.com/ruchira_tharanka?igsh=YzljYTk1ODg3Zg==',
       icon: 'instagram'
     },
     {
       platform: 'WhatsApp',
-      url: 'https://wa.me/1234567890',
+      url: 'https://wa.me/+94713498585',
       icon: 'whatsapp'
     }
   ];
 
+  const { theme } = useTheme();
+  
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'github':
@@ -43,12 +48,17 @@ const SocialSidebar: React.FC = () => {
       case 'instagram':
         return <Instagram size={20} />;
       case 'whatsapp':
-        return <MessageSquare size={20} />;
+        return <img src={theme === 'dark' ? whatsappD : whatsappL} alt="WhatsApp" width={20} height={20} />;
       default:
         return null;
     }
   };
 
+  // Filter out WhatsApp and Facebook
+  const visibleLinks = socialLinks.filter(
+    link => link.platform !== 'WhatsApp' && link.platform !== 'Facebook'
+  );
+  
   return (
     <motion.div 
       className="fixed left-4 top-1/2 transform -translate-y-1/2 z-40 hidden md:flex flex-col items-center space-y-4"
@@ -56,7 +66,7 @@ const SocialSidebar: React.FC = () => {
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.5, duration: 0.5 }}
     >
-      {socialLinks.map((social, index) => (
+      {visibleLinks.map((social, index) => (
         <motion.a
           key={social.platform}
           href={social.url}
@@ -71,7 +81,7 @@ const SocialSidebar: React.FC = () => {
         >
           {getIcon(social.icon)}
           <span className="absolute left-full ml-2 px-2 py-1 bg-card text-foreground text-xs rounded opacity-0 group-hover:opacity-100 whitespace-nowrap transition-opacity">
-            {social.platform}
+            {social.platform === 'WhatsApp' ? 'whatsappL' : social.platform}
           </span>
         </motion.a>
       ))}

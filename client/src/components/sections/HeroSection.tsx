@@ -7,7 +7,7 @@ import heroProfileImg from '../../assets/img/hero-profile.jpeg';
 
 const HeroSection: React.FC = () => {
   return (
-    <section id="hero" className="min-h-screen flex items-center py-20 relative overflow-hidden">
+    <section id="hero" className="min-h-screen flex items-center pt-20 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>

@@ -1,35 +1,101 @@
-/* Light theme styles (default) */
-body.light {
-    background-color: #fff;
-    color: #000;
-    font-family: Arial, sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-primary: 37 99 235;
+    --color-primary-light: 59 130 246;
+    --color-primary-dark: 29 78 216;
+    
+    --color-secondary: 79 70 229;
+    --color-secondary-light: 99 102 241;
+    --color-secondary-dark: 67 56 202;
+    
+    --color-accent: 249 115 22;
+    --color-accent-light: 251 146 60;
+    --color-accent-dark: 234 88 12;
+    
+    --color-success: 34 197 94;
+    --color-warning: 234 179 8;
+    --color-error: 239 68 68;
+    
+    --background: 255 255 255;
+    --foreground: 15 23 42;
+    
+    --card: 255 255 255;
+    --card-foreground: 15 23 42;
+    
+    --border: 226 232 240;
+    --input: 226 232 240;
+  }
+
+  .dark {
+    --color-primary: 59 130 246;
+    --color-primary-light: 96 165 250;
+    --color-primary-dark: 37 99 235;
+    
+    --color-secondary: 99 102 241;
+    --color-secondary-light: 129 140 248;
+    --color-secondary-dark: 79 70 229;
+    
+    --color-accent: 251 146 60;
+    --color-accent-light: 253 186 116;
+    --color-accent-dark: 249 115 22;
+    
+    --color-success: 34 197 94;
+    --color-warning: 234 179 8;
+    --color-error: 239 68 68;
+    
+    --background: 15 23 42;
+    --foreground: 241 245 249;
+    
+    --card: 30 41 59;
+    --card-foreground: 241 245 249;
+    
+    --border: 51 65 85;
+    --input: 51 65 85;
+  }
+}
+
+@layer base {
+  body {
+    @apply bg-background text-foreground;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .section-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24;
   }
   
-  body.dark {
-    background-color: #333;
-    color: #fff;
-    font-family: 'Segoe UI', sans-serif;
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center;
   }
   
-  .App {
-    transition: background-color 0.3s, color 0.3s;
+  .section-subtitle {
+    @apply text-xl text-foreground/80 max-w-3xl mx-auto text-center mb-12;
   }
-  
-  h1 {
-    margin-bottom: 20px;
-  }
-  
-  .theme-toggle-btn {
-    padding: 10px 15px;
-    font-size: 1.5rem;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: inherit;
-    transition: transform 0.3s;
-  }
-  
-  .theme-toggle-btn:hover {
-    transform: scale(1.2);
-  }
-  
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply antialiased min-h-screen;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  line-height: 1.5;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.hide-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}

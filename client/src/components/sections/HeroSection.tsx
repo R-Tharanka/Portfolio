@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
-import heroProfileImg from '../../assets/img/hero-profile.jpg';
+import heroProfileImg from '../../assets/img/hero-profile.jpeg';
 
 const HeroSection: React.FC = () => {
   return (
@@ -25,7 +25,7 @@ const HeroSection: React.FC = () => {
             <div className="relative">
               <div className="w-64 h-64 md:w-80 md:h-80 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full overflow-hidden border-4 border-card shadow-xl">
                 <img
-                  src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
+                  src={heroProfileImg}
                   alt="Developer"
                   className="w-full h-full object-cover"
                 />
@@ -66,9 +66,9 @@ const HeroSection: React.FC = () => {
               </Link>
               
               <a
-                href="/resume.pdf"
+                href="/src/assets/cv/Ruchira_Tharanka_CV.pdf"
                 className="inline-flex items-center px-6 py-3 bg-card hover:bg-card/80 text-foreground font-medium rounded-full border border-border transition-colors shadow-md"
-                download
+                download="Ruchira_Tharanka_CV.pdf"
                 onClick={() => {
                   // Track download analytics
                   console.log('Resume downloaded');

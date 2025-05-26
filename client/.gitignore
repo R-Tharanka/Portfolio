@@ -49,3 +49,7 @@ stats.html
 # Generated files
 *.generated.ts
 *.generated.tsx
+
+# Local development files
+*-local.js
+*-local.ts

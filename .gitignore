@@ -42,6 +42,11 @@ lerna-debug.log*
 
 # Testing
 coverage
+**/test-api.ps1
+**/*-local.ps1
+**/*-local.js
 
-# Docker
+# Docker files (since you're not using Docker)
 .docker
+docker-compose.yml
+**/Dockerfile

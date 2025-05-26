@@ -39,3 +39,8 @@ pids
 # Testing
 coverage
 .nyc_output
+
+# Local testing scripts
+test-api.ps1
+*-local.ps1
+*-local.js

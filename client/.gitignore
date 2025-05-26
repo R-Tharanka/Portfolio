@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
@@ -37,3 +38,14 @@ build/
 dist/
 coverage/
 stats.html
+
+# Vercel
+.vercel
+
+# Cache
+.cache
+.temp
+
+# Generated files
+*.generated.ts
+*.generated.tsx

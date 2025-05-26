@@ -1,4 +1,3 @@
-@"
 # Environment variables
 .env
 **/.env
@@ -18,6 +17,10 @@ node_modules
 logs
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
 # Editor directories and files
 .vscode/*
@@ -36,4 +39,9 @@ npm-debug.log*
 # Local development files
 .vercel
 .railway
-"@ | Out-File -FilePath .gitignore -Encoding utf8
+
+# Testing
+coverage
+
+# Docker
+.docker

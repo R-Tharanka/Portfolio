@@ -150,109 +150,112 @@ const ProjectsSection: React.FC = () => {
             ))}
           </div>
           
-          {/* Projects Grid */}
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={activeTag}
-              className="grid grid-cols-1 md:grid-cols-2 gap-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              {filteredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  className="bg-card rounded-xl overflow-hidden shadow-lg border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={project.imageUrl} 
-                      alt={project.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                    />
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 w-full p-4 flex flex-wrap gap-2">
-                      {project.tags.map(tag => (
-                        <span 
-                          key={tag} 
-                          className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    
-                    <p className="text-foreground/70 mb-4">{project.description}</p>
-                    
-                    <div className="flex items-center gap-1 text-xs text-foreground/60 mb-4">
-                      <Calendar size={14} />
-                      <span>
-                        {formatDate(project.timeline.start)} — {project.timeline.end ? formatDate(project.timeline.end) : 'Present'}
-                      </span>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.map(tech => (
-                        <span 
-                          key={tech} 
-                          className="px-2 py-1 bg-background text-foreground/80 text-xs rounded-md"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    <div className="flex gap-4 mt-4">
-                      {project.demoLink && (
-                        <a 
-                          href={project.demoLink} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
-                        >
-                          <ExternalLink size={16} />
-                          Live Demo
-                        </a>
-                      )}
-                      
-                      {project.repoLink && (
-                        <a 
-                          href={project.repoLink} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
-                        >
-                          <Github size={16} />
-                          Source Code
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Loading and Error States */}
+          {/* Loading State */}
           {loading && (
-            <div className="flex justify-center py-8">
-              <Loader2 className="animate-spin h-6 w-6 text-primary" />
+            <div className="flex justify-center py-16">
+              <Loader2 className="animate-spin h-10 w-10 text-primary" />
             </div>
           )}
-
-          {error && (
-            <div className="text-center py-8">
-              <p className="text-red-500 text-sm">{error}</p>
+          
+          {/* Error State */}
+          {error && !loading && filteredProjects.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-foreground/70">{error}</p>
             </div>
+          )}
+          
+          {/* Projects Grid */}
+          {!loading && (
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={activeTag}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {filteredProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    className="bg-card rounded-xl overflow-hidden shadow-lg border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={project.imageUrl} 
+                        alt={project.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 w-full p-4 flex flex-wrap gap-2">
+                        {project.tags.map(tag => (
+                          <span 
+                            key={tag} 
+                            className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                      
+                      <p className="text-foreground/70 mb-4">{project.description}</p>
+                      
+                      <div className="flex items-center gap-1 text-xs text-foreground/60 mb-4">
+                        <Calendar size={14} />
+                        <span>
+                          {formatDate(project.timeline.start)} — {project.timeline.end ? formatDate(project.timeline.end) : 'Present'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {project.technologies.map(tech => (
+                          <span 
+                            key={tech} 
+                            className="px-2 py-1 bg-background text-foreground/80 text-xs rounded-md"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div className="flex gap-4 mt-4">
+                        {project.demoLink && (
+                          <a 
+                            href={project.demoLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+                          >
+                            <ExternalLink size={16} />
+                            Live Demo
+                          </a>
+                        )}
+                        
+                        {project.repoLink && (
+                          <a 
+                            href={project.repoLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+                          >
+                            <Github size={16} />
+                            Source Code
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
           )}
         </motion.div>
       </div>

@@ -98,7 +98,9 @@ export const login = async (credentials: { username: string; password: string })
 };
 
 // ******************* ADMIN SKILLS API *******************
-export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {  try {    const response = await api.post('/skills', skillData, {
+export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
+  try {
+    const response = await api.post('/skills', skillData, {
       headers: { 'x-auth-token': token }
     });
     return { data: response.data };
@@ -112,7 +114,8 @@ export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): 
 };
 
 export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
-  try {    const response = await api.put(`/skills/${skillId}`, skillData, {
+  try {
+    const response = await api.put(`/skills/${skillId}`, skillData, {
       headers: { 'x-auth-token': token }
     });
     return { data: response.data };
@@ -126,7 +129,8 @@ export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>,
 };
 
 export const deleteSkill = async (skillId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
-  try {    const response = await api.delete(`/skills/${skillId}`, {
+  try {
+    const response = await api.delete(`/skills/${skillId}`, {
       headers: { 'x-auth-token': token }
     });
     return { data: response.data };
@@ -148,9 +152,9 @@ export const createProject = async (projectData: Omit<Project, 'id'>, token: str
     return { data: response.data };
   } catch (error: any) {
     console.error('Error creating project:', error);
-    return { 
-      data: {} as Project, 
-      error: error.response?.data?.msg || 'Failed to create project' 
+    return {
+      data: {} as Project,
+      error: error.response?.data?.msg || 'Failed to create project'
     };
   }
 };
@@ -163,9 +167,9 @@ export const updateProject = async (projectId: string, projectData: Omit<Project
     return { data: response.data };
   } catch (error: any) {
     console.error('Error updating project:', error);
-    return { 
-      data: {} as Project, 
-      error: error.response?.data?.msg || 'Failed to update project' 
+    return {
+      data: {} as Project,
+      error: error.response?.data?.msg || 'Failed to update project'
     };
   }
 };
@@ -178,9 +182,9 @@ export const deleteProject = async (projectId: string, token: string): Promise<A
     return { data: response.data };
   } catch (error: any) {
     console.error('Error deleting project:', error);
-    return { 
-      data: { msg: '' }, 
-      error: error.response?.data?.msg || 'Failed to delete project' 
+    return {
+      data: { msg: '' },
+      error: error.response?.data?.msg || 'Failed to delete project'
     };
   }
 };
@@ -194,9 +198,9 @@ export const createEducation = async (educationData: Omit<Education, 'id'>, toke
     return { data: response.data };
   } catch (error: any) {
     console.error('Error creating education:', error);
-    return { 
-      data: {} as Education, 
-      error: error.response?.data?.msg || 'Failed to create education' 
+    return {
+      data: {} as Education,
+      error: error.response?.data?.msg || 'Failed to create education'
     };
   }
 };
@@ -209,9 +213,9 @@ export const updateEducation = async (educationId: string, educationData: Omit<E
     return { data: response.data };
   } catch (error: any) {
     console.error('Error updating education:', error);
-    return { 
-      data: {} as Education, 
-      error: error.response?.data?.msg || 'Failed to update education' 
+    return {
+      data: {} as Education,
+      error: error.response?.data?.msg || 'Failed to update education'
     };
   }
 };
@@ -224,9 +228,9 @@ export const deleteEducation = async (educationId: string, token: string): Promi
     return { data: response.data };
   } catch (error: any) {
     console.error('Error deleting education:', error);
-    return { 
-      data: { msg: '' }, 
-      error: error.response?.data?.msg || 'Failed to delete education' 
+    return {
+      data: { msg: '' },
+      error: error.response?.data?.msg || 'Failed to delete education'
     };
   }
 };

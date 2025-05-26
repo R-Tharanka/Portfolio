@@ -65,10 +65,15 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
         };
       });
     } else if (name === 'skills') {
-      // Handle arrays (comma-separated values)
+      // Handle arrays (comma-separated values), filter out empty items
+      const skillArray = value
+        .split(',')
+        .map(item => item.trim())
+        .filter(item => item.length > 0);
+
       setFormData(prev => ({ 
         ...prev, 
-        [name]: value.split(',').map(item => item.trim()) 
+        [name]: skillArray
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));

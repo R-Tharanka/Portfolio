@@ -49,7 +49,14 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     
     // Handle numeric values
     if (name === 'proficiency') {
-      setFormData(prev => ({ ...prev, [name]: parseInt(value) }));
+      // Ensure value is numeric and within valid range
+      const numValue = parseInt(value);
+      if (!isNaN(numValue) && numValue >= 1 && numValue <= 10) {
+        setFormData(prev => ({ ...prev, [name]: numValue }));
+      } else if (value === '') {
+        // Allow empty input for better UX, default to minimum value
+        setFormData(prev => ({ ...prev, [name]: 1 }));
+      }
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }

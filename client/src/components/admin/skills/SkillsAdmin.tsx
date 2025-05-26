@@ -75,7 +75,6 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     setEditingSkill(skill);
     setIsFormOpen(true);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -86,8 +85,9 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     
     setLoading(true);
     try {
-      if (editingSkill) {
+      if (editingSkill && editingSkill.id) {
         // Update existing skill
+        console.log("Updating skill with ID:", editingSkill.id);
         const response = await updateSkill(editingSkill.id, formData, token);
         if (response.error) {
           setError(response.error);
@@ -145,16 +145,9 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       setLoading(false);
     }
   };
-
   const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    // Validate file size (100KB limit)
-    if (file.size > 100 * 1024) {
-      setError('Icon file size must be under 100KB');
-      return;
-    }
 
     // Validate file type
     if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
@@ -162,7 +155,27 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       return;
     }
 
-    // Convert to base64
+    // Try to use a simple icon name instead of large base64 data
+    // This helps prevent large data uploads
+    const simplifiedIconName = file.name
+      .toLowerCase()
+      .replace(/\.(png|jpg|jpeg|svg)$/, '')
+      .replace(/[^a-z0-9-]/g, '-');
+    
+    // Only use simplified icon name if it's valid
+    if (/^[a-zA-Z0-9-]+$/.test(simplifiedIconName)) {
+      setFormData(prev => ({ ...prev, icon: simplifiedIconName }));
+      return;
+    }
+
+    // If we can't use a simplified name, fall back to base64 but keep it small
+    // Validate file size (100KB limit)
+    if (file.size > 100 * 1024) {
+      setError('Icon file size must be under 100KB');
+      return;
+    }
+    
+    // Convert to base64 (only for small files)
     const reader = new FileReader();
     reader.onloadend = () => {
       const base64String = reader.result as string;

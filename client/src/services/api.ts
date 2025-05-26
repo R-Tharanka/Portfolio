@@ -113,7 +113,25 @@ export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): 
 };
 
 export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
-  try {    const response = await api.put(`/skills/${skillId}`, skillData, {
+  try {
+    // Check if skillId is valid
+    if (!skillId) {
+      console.error('Invalid skill ID:', skillId);
+      return {
+        data: {} as Skill,
+        error: 'Invalid skill ID. Please try again or refresh the page.'
+      };
+    }
+    
+    // Log what we're sending for debugging
+    console.log(`Updating skill ${skillId} with data:`, {
+      ...skillData,
+      icon: skillData.icon.length > 50 
+        ? `${skillData.icon.substring(0, 50)}... (truncated)`
+        : skillData.icon
+    });
+    
+    const response = await api.put(`/skills/${skillId}`, skillData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };

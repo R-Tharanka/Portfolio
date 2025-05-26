@@ -1,0 +1,39 @@
+@"
+# Environment variables
+.env
+**/.env
+**/.env.*
+!**/.env.example
+
+# Build outputs
+**/dist
+**/build
+**/.output
+
+# Dependencies
+node_modules
+**/node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Optimized images (should be generated during build)
+**/img-optimized
+
+# Local development files
+.vercel
+.railway
+"@ | Out-File -FilePath .gitignore -Encoding utf8

@@ -42,21 +42,13 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     };
 
     fetchSkills();
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []);  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     
-    // Handle numeric values
     if (name === 'proficiency') {
-      // Ensure value is numeric and within valid range
-      const numValue = parseInt(value);
-      if (!isNaN(numValue) && numValue >= 1 && numValue <= 10) {
-        setFormData(prev => ({ ...prev, [name]: numValue }));
-      } else if (value === '') {
-        // Allow empty input for better UX, default to minimum value
-        setFormData(prev => ({ ...prev, [name]: 1 }));
-      }
+      // Convert to number and clamp between 1-10
+      const numValue = Math.max(1, Math.min(10, Number(value) || 1));
+      setFormData(prev => ({ ...prev, [name]: numValue }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }

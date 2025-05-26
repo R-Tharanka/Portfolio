@@ -113,7 +113,7 @@ export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): 
 
 export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
   try {    const response = await api.put(`/skills/${skillId}`, skillData, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'x-auth-token': token }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -127,7 +127,7 @@ export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>,
 
 export const deleteSkill = async (skillId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
   try {    const response = await api.delete(`/skills/${skillId}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'x-auth-token': token }
     });
     return { data: response.data };
   } catch (error: any) {

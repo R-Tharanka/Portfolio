@@ -288,9 +288,19 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
             <div className="flex gap-2 pt-2">
               <button
                 type="submit"
-                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
+                disabled={loading}
+                className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
               >
-                {editingSkill ? 'Update Skill' : 'Add Skill'}
+                {loading ? (
+                  <div className="flex items-center">
+                    <Loader2 size={16} className="animate-spin mr-2" />
+                    {editingSkill ? 'Updating...' : 'Creating...'}
+                  </div>
+                ) : (
+                  editingSkill ? 'Update Skill' : 'Add Skill'
+                )}
               </button>
               <button
                 type="button"

@@ -33,6 +33,7 @@ dist-ssr
 # Generated files
 sitemap.xml
 img-optimized/
+output/
 
 # Temporary files
 .tmp

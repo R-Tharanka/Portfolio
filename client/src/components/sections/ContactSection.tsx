@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import { ContactFormData } from '../../types';
+import { submitContactForm } from '../../services/api';
 
 const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -30,11 +31,12 @@ const ContactSection: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // In a real app, you would send this data to your backend API
-      console.log('Form submitted:', formData);
+      // Send data to backend API
+      const response = await submitContactForm(formData);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (response.error) {
+        throw new Error(response.error);
+      }
       
       setSubmitStatus('success');
       setFormData({

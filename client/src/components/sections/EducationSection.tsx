@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { Calendar, GraduationCap } from 'lucide-react';
+import { Calendar, GraduationCap, Loader2 } from 'lucide-react';
 import { Education } from '../../types';
+import { getEducation } from '../../services/api';
 
-const mockEducation: Education[] = [
+// Fallback mock data in case API fails
+const fallbackEducation: Education[] = [
   {
     id: '1',
     institution: 'University of Technology',
@@ -41,10 +43,37 @@ const mockEducation: Education[] = [
 ];
 
 const EducationSection: React.FC = () => {
+  const [education, setEducation] = useState<Education[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+
+  useEffect(() => {
+    const fetchEducation = async () => {
+      setLoading(true);
+      try {
+        const response = await getEducation();
+        if (response.error) {
+          setError(response.error);
+          setEducation(fallbackEducation); // Use fallback data in case of error
+        } else {
+          setEducation(response.data);
+          setError(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch education:', err);
+        setError('Failed to load education. Using fallback data.');
+        setEducation(fallbackEducation); // Use fallback data in case of error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEducation();
+  }, []);
 
   return (
     <section id="education" className=" bg-background/50 relative">
@@ -65,7 +94,13 @@ const EducationSection: React.FC = () => {
             {/* Vertical Line */}
             <div className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 h-full w-1 bg-primary/20 rounded-full"></div>
             
-            {mockEducation.map((item, index) => (
+            {education.length === 0 && !loading && (
+              <div className="text-center text-foreground/70 py-8">
+                {error || 'No education data available.'}
+              </div>
+            )}
+            
+            {education.map((item, index) => (
               <motion.div
                 key={item.id}
                 className={`relative flex flex-col md:flex-row items-center md:items-start mb-12 ${
@@ -114,6 +149,12 @@ const EducationSection: React.FC = () => {
                 </div>
               </motion.div>
             ))}
+            
+            {loading && (
+              <div className="flex justify-center items-center py-8">
+                <Loader2 className="animate-spin h-5 w-5 text-primary" />
+              </div>
+            )}
           </div>
         </motion.div>
       </div>

@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ExternalLink, Github, Calendar } from 'lucide-react';
+import { ExternalLink, Github, Calendar, Loader2 } from 'lucide-react';
 import { Project } from '../../types';
+import { getProjects } from '../../services/api';
 
-const mockProjects: Project[] = [
+// Fallback mock data in case API fails
+const fallbackProjects: Project[] = [
   {
     id: '1',
     title: 'E-commerce Platform',
@@ -63,20 +65,48 @@ const mockProjects: Project[] = [
   }
 ];
 
-const allTags = Array.from(
-  new Set(mockProjects.flatMap(project => project.tags))
-);
-
 const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
+  // Get all unique tags from projects
+  const allTags = Array.from(
+    new Set(projects.flatMap(project => project.tags))
+  );
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoading(true);
+      try {
+        const response = await getProjects();
+        if (response.error) {
+          setError(response.error);
+          setProjects(fallbackProjects); // Use fallback data in case of error
+        } else {
+          setProjects(response.data);
+          setError(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch projects:', err);
+        setError('Failed to load projects. Using fallback data.');
+        setProjects(fallbackProjects); // Use fallback data in case of error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   const filteredProjects = activeTag === 'All' 
-    ? mockProjects 
-    : mockProjects.filter(project => project.tags.includes(activeTag));
+    ? projects 
+    : projects.filter(project => project.tags.includes(activeTag));
 
   return (
     <section id="projects" className=" bg-background relative">
@@ -211,6 +241,19 @@ const ProjectsSection: React.FC = () => {
               ))}
             </motion.div>
           </AnimatePresence>
+
+          {/* Loading and Error States */}
+          {loading && (
+            <div className="flex justify-center py-8">
+              <Loader2 className="animate-spin h-6 w-6 text-primary" />
+            </div>
+          )}
+
+          {error && (
+            <div className="text-center py-8">
+              <p className="text-red-500 text-sm">{error}</p>
+            </div>
+          )}
         </motion.div>
       </div>
     </section>

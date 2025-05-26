@@ -100,7 +100,7 @@ export const login = async (credentials: { username: string; password: string })
 // ******************* ADMIN SKILLS API *******************
 export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {  try {
     const response = await api.post('/skills', skillData, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -114,7 +114,7 @@ export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): 
 
 export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
   try {    const response = await api.put(`/skills/${skillId}`, skillData, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -128,7 +128,7 @@ export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>,
 
 export const deleteSkill = async (skillId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
   try {    const response = await api.delete(`/skills/${skillId}`, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -143,7 +143,7 @@ export const deleteSkill = async (skillId: string, token: string): Promise<ApiRe
 // ******************* ADMIN PROJECTS API *******************
 export const createProject = async (projectData: Omit<Project, 'id'>, token: string): Promise<ApiResponse<Project>> => {
   try {    const response = await api.post('/projects', projectData, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -157,7 +157,7 @@ export const createProject = async (projectData: Omit<Project, 'id'>, token: str
 
 export const updateProject = async (projectId: string, projectData: Omit<Project, 'id'>, token: string): Promise<ApiResponse<Project>> => {
   try {    const response = await api.put(`/projects/${projectId}`, projectData, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -171,7 +171,7 @@ export const updateProject = async (projectId: string, projectData: Omit<Project
 
 export const deleteProject = async (projectId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
   try {    const response = await api.delete(`/projects/${projectId}`, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -186,7 +186,7 @@ export const deleteProject = async (projectId: string, token: string): Promise<A
 // ******************* ADMIN EDUCATION API *******************
 export const createEducation = async (educationData: Omit<Education, 'id'>, token: string): Promise<ApiResponse<Education>> => {
   try {    const response = await api.post('/education', educationData, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -200,7 +200,7 @@ export const createEducation = async (educationData: Omit<Education, 'id'>, toke
 
 export const updateEducation = async (educationId: string, educationData: Omit<Education, 'id'>, token: string): Promise<ApiResponse<Education>> => {
   try {    const response = await api.put(`/education/${educationId}`, educationData, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -214,7 +214,7 @@ export const updateEducation = async (educationId: string, educationData: Omit<E
 
 export const deleteEducation = async (educationId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
   try {    const response = await api.delete(`/education/${educationId}`, {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -229,7 +229,7 @@ export const deleteEducation = async (educationId: string, token: string): Promi
 // ******************* ADMIN CONTACT API *******************
 export const getContactMessages = async (token: string): Promise<ApiResponse<any[]>> => {
   try {    const response = await api.get('/contact', {
-      headers: { 'x-auth-token': token }
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {

@@ -12,6 +12,10 @@ exports.protect = async (req, res, next) => {
   ) {
     // Set token from Bearer token
     token = req.headers.authorization.split(' ')[1];
+  } 
+  // Also check for x-auth-token header
+  else if (req.headers['x-auth-token']) {
+    token = req.headers['x-auth-token'];
   }
 
   // Check if token exists

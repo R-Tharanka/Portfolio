@@ -79,7 +79,7 @@ const ProjectsSection: React.FC = () => {
     : mockProjects.filter(project => project.tags.includes(activeTag));
 
   return (
-    <section id="projects" className="py-20 bg-background relative">
+    <section id="projects" className=" bg-background relative">
       <div className="section-container">
         <motion.div
           ref={ref}

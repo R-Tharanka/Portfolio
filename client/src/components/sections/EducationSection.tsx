@@ -47,7 +47,7 @@ const EducationSection: React.FC = () => {
   });
 
   return (
-    <section id="education" className="py-20 bg-background/50 relative">
+    <section id="education" className=" bg-background/50 relative">
       <div className="section-container">
         <motion.div
           ref={ref}

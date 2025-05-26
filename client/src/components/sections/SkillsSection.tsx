@@ -34,7 +34,7 @@ const SkillsSection: React.FC = () => {
     : mockSkills.filter(skill => skill.category === activeCategory);
 
   return (
-    <section id="skills" className="py-20 bg-background/50 relative">
+    <section id="skills" className=" bg-background/50 relative">
       <div className="section-container">
         <motion.div
           ref={ref}

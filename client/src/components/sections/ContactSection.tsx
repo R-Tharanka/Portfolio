@@ -57,7 +57,7 @@ const ContactSection: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="py-20 bg-background relative">
+    <section id="contact" className="pb-20 bg-background relative">
       <div className="section-container">
         <motion.div
           ref={ref}

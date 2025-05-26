@@ -147,6 +147,31 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     }
   };
 
+  const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (100KB limit)
+    if (file.size > 100 * 1024) {
+      setError('Icon file size must be under 100KB');
+      return;
+    }
+
+    // Validate file type
+    if (!['image/png', 'image/jpeg', 'image/svg+xml'].includes(file.type)) {
+      setError('Icon must be PNG, JPEG, or SVG');
+      return;
+    }
+
+    // Convert to base64
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      setFormData(prev => ({ ...prev, icon: base64String }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const skillCategories: SkillCategory[] = [
     'Frontend', 
     'Backend', 
@@ -184,7 +209,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-1">Name</label>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">Skill Name</label>
               <input
                 type="text"
                 id="name"
@@ -213,32 +238,51 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
             </div>
 
             <div>
-              <label htmlFor="proficiency" className="block text-sm font-medium mb-1">
-                Proficiency (1-10): {formData.proficiency}
-              </label>
+              <label htmlFor="proficiency" className="block text-sm font-medium mb-1">Proficiency (1-10)</label>
               <input
-                type="range"
+                type="number"
                 id="proficiency"
                 name="proficiency"
-                min="1"
-                max="10"
                 value={formData.proficiency}
                 onChange={handleChange}
-                className="w-full"
+                required
+                min="1"
+                max="10"
+                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
 
             <div>
               <label htmlFor="icon" className="block text-sm font-medium mb-1">Icon</label>
-              <input
-                type="text"
-                id="icon"
-                name="icon"
-                value={formData.icon}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  id="icon"
+                  name="icon"
+                  value={formData.icon}
+                  onChange={handleChange}
+                  placeholder="icon-name or URL"
+                  className="flex-1 px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+                <div className="relative">
+                  <input
+                    type="file"
+                    id="iconUpload"
+                    accept="image/png,image/jpeg,image/svg+xml"
+                    onChange={handleIconUpload}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
+                  >
+                    Upload
+                  </button>
+                </div>
+              </div>
+              <p className="mt-1 text-xs text-foreground/60">
+                Enter an icon name (e.g., 'react'), URL, or upload a file (max 100KB)
+              </p>
             </div>
 
             <div className="flex gap-2 pt-2">

@@ -98,9 +98,8 @@ export const login = async (credentials: { username: string; password: string })
 };
 
 // ******************* ADMIN SKILLS API *******************
-export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
-  try {    const response = await api.post('/skills', skillData, {
-      headers: { 'Authorization': `Bearer ${token}` }
+export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {  try {    const response = await api.post('/skills', skillData, {
+      headers: { 'x-auth-token': token }
     });
     return { data: response.data };
   } catch (error: any) {

@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - portfolio-network
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=${MONGODB_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRE=${JWT_EXPIRE:-24h}
+      - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
+    networks:
+      - portfolio-network
+
+networks:
+  portfolio-network:
+    driver: bridge

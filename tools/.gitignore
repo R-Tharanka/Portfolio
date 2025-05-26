@@ -23,17 +23,4 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-
-# Environment files
 .env
-.env.*
-!.env.example
-
-# Optimized images
-src/assets/img-optimized/
-
-# Build files
-build/
-dist/
-coverage/
-stats.html

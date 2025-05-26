@@ -4,6 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import { ContactFormData } from '../../types';
 import { submitContactForm } from '../../services/api';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -15,11 +16,14 @@ const ContactSection: React.FC = () => {
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+
+  // Handle reCAPTCHA token directly via onChange
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -28,33 +32,51 @@ const ContactSection: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!captchaToken) {
+      alert('Please verify that you are not a robot');
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
       // Send data to backend API
-      const response = await submitContactForm(formData);
+      const response = await submitContactForm({
+        ...formData,
+        recaptchaToken: captchaToken
+      });
       
       if (response.error) {
         throw new Error(response.error);
       }
       
       setSubmitStatus('success');
+      
+      // Reset form
       setFormData({
         name: '',
         email: '',
         title: '',
         message: '',
       });
+      setCaptchaToken(null);
+      
+      // Reset captcha
+      const recaptchaElement = document.querySelector('iframe[src*="recaptcha"]')?.parentElement;
+      if (recaptchaElement) {
+        // Find and reset the reCAPTCHA
+        const captchaId = recaptchaElement.getAttribute('id') || '';
+        if (captchaId && window.grecaptcha) {
+          window.grecaptcha.reset();
+        }
+      }
+      
     } catch (error) {
       console.error('Error submitting form:', error);
       setSubmitStatus('error');
     } finally {
       setIsSubmitting(false);
-      
-      // Reset status after 3 seconds
-      setTimeout(() => {
-        setSubmitStatus('idle');
-      }, 3000);
     }
   };
 
@@ -202,16 +224,20 @@ const ContactSection: React.FC = () => {
                   />
                 </div>
                 
-                {/* This would be a real reCAPTCHA in a production app */}
-                <div className="bg-background border border-border rounded-lg p-3 text-center text-foreground/60 text-sm">
-                  CAPTCHA placeholder - would be real in production
+                {/* reCAPTCHA Component */}
+                <div className="my-4">
+                  <ReCAPTCHA
+                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
+                    onChange={setCaptchaToken}
+                    theme="dark"
+                  />
                 </div>
                 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !captchaToken}
                   className={`w-full flex items-center justify-center px-6 py-3 rounded-lg font-medium transition-colors ${
-                    isSubmitting
+                    isSubmitting || !captchaToken
                       ? 'bg-primary/70 cursor-not-allowed'
                       : 'bg-primary hover:bg-primary-dark'
                   } text-white`}

@@ -5,6 +5,7 @@ import ProjectsAdmin from './projects/ProjectsAdmin';
 import EducationAdmin from './education/EducationAdmin';
 import ContactAdmin from './contact/ContactAdmin';
 import LoginForm from './auth/LoginForm';
+import SEO from '../common/SEO';
 
 const AdminPanel: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -34,9 +35,9 @@ const AdminPanel: React.FC = () => {
   if (!isAuthenticated) {
     return <LoginForm onLogin={handleLogin} />;
   }
-
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <SEO title="Admin Dashboard" description="Portfolio Admin Panel for content management" />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <button 

@@ -4,6 +4,7 @@ const { check, validationResult } = require('express-validator');
 const Contact = require('../models/Contact');
 const { protect } = require('../middleware/auth');
 const rateLimit = require('express-rate-limit');
+const axios = require('axios');
 
 // Rate limiting for contact form submissions to prevent spam
 // Limited to 5 submissions per hour
@@ -20,24 +21,31 @@ router.post('/', [
   contactLimiter,
   [
     check('name', 'Name is required').not().isEmpty().trim(),
-    check('email', 'Please include a valid email').isEmail().normalizeEmail(),
-    check('title', 'Subject/title is required').not().isEmpty().trim(),
+    check('email', 'Please include a valid email').isEmail().normalizeEmail(),    check('title', 'Subject/title is required').not().isEmpty().trim(),
     check('message', 'Message is required').not().isEmpty().trim(),
-    check('captchaToken', 'CAPTCHA verification failed').not().isEmpty()
+    check('recaptchaToken', 'CAPTCHA verification failed').not().isEmpty()
   ]
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
   try {
-    const { name, email, title, message, captchaToken } = req.body;
+    const { name, email, title, message, recaptchaToken } = req.body;
     
-    // TODO: Verify captcha token with Google reCAPTCHA
-    // For now, we're just checking if it exists
-    if (!captchaToken) {
-      return res.status(400).json({ msg: 'CAPTCHA verification failed' });
+    // Verify reCAPTCHA token with Google reCAPTCHA API
+    const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'; // Test key
+    
+    try {
+      const verifyURL = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${recaptchaToken}`;
+      const recaptchaResponse = await axios.post(verifyURL);
+      
+      if (!recaptchaResponse.data.success) {
+        return res.status(400).json({ msg: 'CAPTCHA verification failed' });
+      }
+    } catch (recaptchaError) {
+      console.error('reCAPTCHA verification error:', recaptchaError);
+      return res.status(500).json({ msg: 'reCAPTCHA verification failed' });
     }
 
     // Create new contact message

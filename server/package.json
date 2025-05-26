@@ -6,11 +6,16 @@
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "keywords": ["portfolio", "mern", "api"],
+  "keywords": [
+    "portfolio",
+    "mern",
+    "api"
+  ],
   "author": "Ruchira Tharanka",
   "license": "ISC",
   "description": "Backend API for portfolio website",
   "dependencies": {
+    "axios": "^1.9.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

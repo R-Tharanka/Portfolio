@@ -84,7 +84,7 @@ export const submitContactForm = async (formData: ContactFormData): Promise<ApiR
 };
 
 // ******************* ADMIN AUTH API *******************
-export const login = async (credentials: { email: string; password: string }): Promise<ApiResponse<{ token: string }>> => {
+export const login = async (credentials: { username: string; password: string }): Promise<ApiResponse<{ token: string }>> => {
   try {
     const response = await api.post('/auth/login', credentials);
     return { data: response.data };
@@ -99,9 +99,8 @@ export const login = async (credentials: { email: string; password: string }): P
 
 // ******************* ADMIN SKILLS API *******************
 export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
-  try {
-    const response = await api.post('/skills', skillData, {
-      headers: { 'x-auth-token': token }
+  try {    const response = await api.post('/skills', skillData, {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -114,9 +113,8 @@ export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): 
 };
 
 export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
-  try {
-    const response = await api.put(`/skills/${skillId}`, skillData, {
-      headers: { 'x-auth-token': token }
+  try {    const response = await api.put(`/skills/${skillId}`, skillData, {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
@@ -129,9 +127,8 @@ export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>,
 };
 
 export const deleteSkill = async (skillId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
-  try {
-    const response = await api.delete(`/skills/${skillId}`, {
-      headers: { 'x-auth-token': token }
+  try {    const response = await api.delete(`/skills/${skillId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {

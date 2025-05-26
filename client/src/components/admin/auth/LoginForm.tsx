@@ -5,9 +5,8 @@ interface LoginFormProps {
   onLogin: (token: string) => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
-  const [formData, setFormData] = useState({
-    email: '',
+const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {  const [formData, setFormData] = useState({
+    username: '',
     password: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,19 +52,18 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-foreground/80 mb-1">
-              Email
+          <div>            <label htmlFor="username" className="block text-sm font-medium text-foreground/80 mb-1">
+              Username
             </label>
             <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
+              type="text"
+              id="username"
+              name="username"
+              value={formData.username}
               onChange={handleChange}
               required
               className="w-full px-4 py-3 bg-background border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-              placeholder="admin@example.com"
+              placeholder="admin"
             />
           </div>
           

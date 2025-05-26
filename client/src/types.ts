@@ -55,7 +55,7 @@ export interface ContactFormData {
   email: string;
   title: string;
   message: string;
-  captchaToken?: string;
+  recaptchaToken?: string;
 }
 
 // Social Media Type

@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ExternalLink, Github, Calendar } from 'lucide-react';
+import { ExternalLink, Github, Calendar, Loader2 } from 'lucide-react';
 import { Project } from '../../types';
+import { getProjects } from '../../services/api';
 
-const mockProjects: Project[] = [
+// Fallback mock data in case API fails
+const fallbackProjects: Project[] = [
   {
     id: '1',
     title: 'E-commerce Platform',
@@ -63,23 +65,51 @@ const mockProjects: Project[] = [
   }
 ];
 
-const allTags = Array.from(
-  new Set(mockProjects.flatMap(project => project.tags))
-);
-
 const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
+  // Get all unique tags from projects
+  const allTags = Array.from(
+    new Set(projects.flatMap(project => project.tags))
+  );
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setLoading(true);
+      try {
+        const response = await getProjects();
+        if (response.error) {
+          setError(response.error);
+          setProjects(fallbackProjects); // Use fallback data in case of error
+        } else {
+          setProjects(response.data);
+          setError(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch projects:', err);
+        setError('Failed to load projects. Using fallback data.');
+        setProjects(fallbackProjects); // Use fallback data in case of error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
   const filteredProjects = activeTag === 'All' 
-    ? mockProjects 
-    : mockProjects.filter(project => project.tags.includes(activeTag));
+    ? projects 
+    : projects.filter(project => project.tags.includes(activeTag));
 
   return (
-    <section id="projects" className="py-20 bg-background relative">
+    <section id="projects" className=" bg-background relative">
       <div className="section-container">
         <motion.div
           ref={ref}
@@ -120,97 +150,113 @@ const ProjectsSection: React.FC = () => {
             ))}
           </div>
           
+          {/* Loading State */}
+          {loading && (
+            <div className="flex justify-center py-16">
+              <Loader2 className="animate-spin h-10 w-10 text-primary" />
+            </div>
+          )}
+          
+          {/* Error State */}
+          {error && !loading && filteredProjects.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-foreground/70">{error}</p>
+            </div>
+          )}
+          
           {/* Projects Grid */}
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={activeTag}
-              className="grid grid-cols-1 md:grid-cols-2 gap-8"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              {filteredProjects.map((project, index) => (
-                <motion.div
-                  key={project.id}
-                  className="bg-card rounded-xl overflow-hidden shadow-lg border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl"
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  whileHover={{ y: -5 }}
-                >
-                  <div className="relative h-48 overflow-hidden">
-                    <img 
-                      src={project.imageUrl} 
-                      alt={project.title} 
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-                    />
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 to-transparent"></div>
-                    <div className="absolute bottom-0 left-0 w-full p-4 flex flex-wrap gap-2">
-                      {project.tags.map(tag => (
-                        <span 
-                          key={tag} 
-                          className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                    
-                    <p className="text-foreground/70 mb-4">{project.description}</p>
-                    
-                    <div className="flex items-center gap-1 text-xs text-foreground/60 mb-4">
-                      <Calendar size={14} />
-                      <span>
-                        {formatDate(project.timeline.start)} — {project.timeline.end ? formatDate(project.timeline.end) : 'Present'}
-                      </span>
+          {!loading && (
+            <AnimatePresence mode="wait">
+              <motion.div 
+                key={activeTag}
+                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                {filteredProjects.map((project, index) => (
+                  <motion.div
+                    key={project.id}
+                    className="bg-card rounded-xl overflow-hidden shadow-lg border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-xl"
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    whileHover={{ y: -5 }}
+                  >
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={project.imageUrl} 
+                        alt={project.title} 
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                      />
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 to-transparent"></div>
+                      <div className="absolute bottom-0 left-0 w-full p-4 flex flex-wrap gap-2">
+                        {project.tags.map(tag => (
+                          <span 
+                            key={tag} 
+                            className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
                     </div>
                     
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {project.technologies.map(tech => (
-                        <span 
-                          key={tech} 
-                          className="px-2 py-1 bg-background text-foreground/80 text-xs rounded-md"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                    
-                    <div className="flex gap-4 mt-4">
-                      {project.demoLink && (
-                        <a 
-                          href={project.demoLink} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
-                        >
-                          <ExternalLink size={16} />
-                          Live Demo
-                        </a>
-                      )}
+                    <div className="p-6">
+                      <h3 className="text-xl font-bold mb-2">{project.title}</h3>
                       
-                      {project.repoLink && (
-                        <a 
-                          href={project.repoLink} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
-                        >
-                          <Github size={16} />
-                          Source Code
-                        </a>
-                      )}
+                      <p className="text-foreground/70 mb-4">{project.description}</p>
+                      
+                      <div className="flex items-center gap-1 text-xs text-foreground/60 mb-4">
+                        <Calendar size={14} />
+                        <span>
+                          {formatDate(project.timeline.start)} — {project.timeline.end ? formatDate(project.timeline.end) : 'Present'}
+                        </span>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {project.technologies.map(tech => (
+                          <span 
+                            key={tech} 
+                            className="px-2 py-1 bg-background text-foreground/80 text-xs rounded-md"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+                      
+                      <div className="flex gap-4 mt-4">
+                        {project.demoLink && (
+                          <a 
+                            href={project.demoLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
+                          >
+                            <ExternalLink size={16} />
+                            Live Demo
+                          </a>
+                        )}
+                        
+                        {project.repoLink && (
+                          <a 
+                            href={project.repoLink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
+                          >
+                            <Github size={16} />
+                            Source Code
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </AnimatePresence>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </motion.div>
       </div>
     </section>

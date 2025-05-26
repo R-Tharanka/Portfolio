@@ -1,21 +1,23 @@
 import React from 'react';
+import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
+import heroProfileImg from '../../assets/img/hero-profile.jpeg';
 
 const HeroSection: React.FC = () => {
   return (
-    <section id="hero" className="min-h-screen flex items-center py-20 relative overflow-hidden">
+    <section id="hero" className="min-h-screen flex items-center pt-20 relative overflow-hidden">
       {/* Background elements */}
       <div className="absolute inset-0 z-0">
         <div className="absolute top-20 right-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 left-20 w-72 h-72 bg-secondary/10 rounded-full blur-3xl"></div>
       </div>
-      
+
       <div className="section-container relative z-10">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-20">
           {/* Profile Image */}
-          <motion.div 
+          <motion.div
             className="lg:w-5/12 order-2 lg:order-1"
             initial={{ opacity: 0, x: -50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -24,8 +26,8 @@ const HeroSection: React.FC = () => {
             <div className="relative">
               <div className="w-64 h-64 md:w-80 md:h-80 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full overflow-hidden border-4 border-card shadow-xl">
                 <img
-                  src="https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260"
-                  alt="Developer"
+                  src={heroProfileImg}
+                  alt="Ruchira Tharanka profile image"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -34,9 +36,9 @@ const HeroSection: React.FC = () => {
               </div>
             </div>
           </motion.div>
-          
+
           {/* Text Content */}
-          <motion.div 
+          <motion.div
             className="lg:w-7/12 text-center lg:text-left order-1 lg:order-2"
             initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
@@ -44,13 +46,13 @@ const HeroSection: React.FC = () => {
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
               <span className="block">Hi, I'm</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">John Developer</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Ruchira Tharanka</span>
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto lg:mx-0">
-              Building beautiful, functional, and user-friendly web applications with modern technologies.
+              Crafting robust, scalable web applications using the modern JavaScript ecosystem.
             </p>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
               <Link
                 to="projects"
@@ -63,12 +65,13 @@ const HeroSection: React.FC = () => {
                 View My Work
                 <ArrowRight size={18} className="ml-2" />
               </Link>
-              
+
               <a
-                href="/resume.pdf"
+                href="/src/assets/cv/Ruchira_Tharanka_CV.pdf"
                 className="inline-flex items-center px-6 py-3 bg-card hover:bg-card/80 text-foreground font-medium rounded-full border border-border transition-colors shadow-md"
-                download
+                download="Ruchira_Tharanka_CV.pdf"
                 onClick={() => {
+                  toast.success('CV Downloading...');
                   // Track download analytics
                   console.log('Resume downloaded');
                 }}

@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Skill, SkillCategory } from '../../types';
+import { getSkills } from '../../services/api';
+import { Loader2 } from 'lucide-react';
 
-const mockSkills: Skill[] = [
+// Fallback mock data in case API fails
+const fallbackSkills: Skill[] = [
   { id: '1', name: 'React', category: 'Frontend', proficiency: 9, icon: 'react' },
   { id: '2', name: 'TypeScript', category: 'Frontend', proficiency: 8, icon: 'typescript' },
   { id: '3', name: 'JavaScript', category: 'Frontend', proficiency: 9, icon: 'javascript' },
@@ -24,17 +27,44 @@ const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps'
 
 const SkillsSection: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<SkillCategory | 'All'>('All');
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
 
+  useEffect(() => {
+    const fetchSkills = async () => {
+      setLoading(true);
+      try {
+        const response = await getSkills();
+        if (response.error) {
+          setError(response.error);
+          setSkills(fallbackSkills); // Use fallback data in case of error
+        } else {
+          setSkills(response.data);
+          setError(null);
+        }
+      } catch (err) {
+        console.error('Failed to fetch skills:', err);
+        setError('Failed to load skills. Using fallback data.');
+        setSkills(fallbackSkills); // Use fallback data in case of error
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSkills();
+  }, []);
+
   const filteredSkills = activeCategory === 'All' 
-    ? mockSkills 
-    : mockSkills.filter(skill => skill.category === activeCategory);
+    ? skills 
+    : skills.filter(skill => skill.category === activeCategory);
 
   return (
-    <section id="skills" className="py-20 bg-background/50 relative">
+    <section id="skills" className=" bg-background/50 relative">
       <div className="section-container">
         <motion.div
           ref={ref}
@@ -77,51 +107,55 @@ const SkillsSection: React.FC = () => {
           
           {/* Skills Cloud */}
           <div className="relative min-h-[400px] bg-card/30 rounded-xl p-8 flex items-center justify-center">
-            <AnimatePresence mode="wait">
-              <motion.div 
-                key={activeCategory}
-                className="w-full h-full flex flex-wrap justify-center items-center gap-4 md:gap-8"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                {filteredSkills.map((skill) => (
-                  <motion.div
-                    key={skill.id}
-                    className="relative group"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ 
-                      type: 'spring',
-                      stiffness: 260,
-                      damping: 20,
-                      delay: Math.random() * 0.3
-                    }}
-                    whileHover={{ scale: 1.1 }}
-                  >
-                    <div 
-                      className={`flex flex-col items-center justify-center p-4 bg-card rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30`}
-                      style={{ 
-                        width: `${Math.max(skill.proficiency * 12, 80)}px`,
-                        height: `${Math.max(skill.proficiency * 12, 80)}px`,
+            {loading ? (
+              <Loader2 className="animate-spin h-10 w-10 text-primary" />
+            ) : (
+              <AnimatePresence mode="wait">
+                <motion.div 
+                  key={activeCategory}
+                  className="w-full h-full flex flex-wrap justify-center items-center gap-4 md:gap-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {filteredSkills.map((skill) => (
+                    <motion.div
+                      key={skill.id}
+                      className="relative group"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ 
+                        type: 'spring',
+                        stiffness: 260,
+                        damping: 20,
+                        delay: Math.random() * 0.3
                       }}
+                      whileHover={{ scale: 1.1 }}
                     >
-                      <div className="text-4xl mb-2">
-                        {/* This would normally be an actual icon, using emoji as placeholder */}
-                        {getSkillEmoji(skill.icon)}
+                      <div 
+                        className={`flex flex-col items-center justify-center p-4 bg-card rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30`}
+                        style={{ 
+                          width: `${Math.max(skill.proficiency * 12, 80)}px`,
+                          height: `${Math.max(skill.proficiency * 12, 80)}px`,
+                        }}
+                      >
+                        <div className="text-4xl mb-2">
+                          {/* This would normally be an actual icon, using emoji as placeholder */}
+                          {getSkillEmoji(skill.icon)}
+                        </div>
+                        <span className="text-xs font-medium text-center">{skill.name}</span>
+                        
+                        {/* Tooltip */}
+                        <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-card text-foreground text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-border/50">
+                          {skill.name} - {skill.proficiency}/10
+                        </div>
                       </div>
-                      <span className="text-xs font-medium text-center">{skill.name}</span>
-                      
-                      {/* Tooltip */}
-                      <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-card text-foreground text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-border/50">
-                        {skill.name} - {skill.proficiency}/10
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
+            )}
           </div>
         </motion.div>
       </div>

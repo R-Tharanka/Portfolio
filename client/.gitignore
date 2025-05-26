@@ -7,6 +7,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
@@ -23,4 +24,28 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment files
 .env
+.env.*
+!.env.example
+
+# Optimized images
+src/assets/img-optimized/
+
+# Build files
+build/
+dist/
+coverage/
+stats.html
+
+# Vercel
+.vercel
+
+# Cache
+.cache
+.temp
+
+# Generated files
+*.generated.ts
+*.generated.tsx

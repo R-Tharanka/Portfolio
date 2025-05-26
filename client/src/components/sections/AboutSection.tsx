@@ -9,7 +9,7 @@ const AboutSection: React.FC = () => {
   });
 
   return (
-    <section id="about" className="py-20 bg-background relative">
+    <section id="about" className="bg-background relative">
       <div className="section-container">
         <motion.div
           ref={ref}
@@ -23,19 +23,19 @@ const AboutSection: React.FC = () => {
           <div className="bg-card rounded-xl shadow-lg p-8 md:p-10">
             <div className="space-y-6 text-lg">
               <p>
-                I'm a passionate Full Stack Developer with over 5 years of experience building web applications using modern technologies. My journey in software development began during college, where I discovered my love for creating solutions that make people's lives easier.
+                Hello! I’m <strong>Ruchira Tharanka</strong>, a Software Engineering undergraduate at SLIIT with a deep passion for full-stack development. I thrive on creating intuitive, user-friendly applications that not only meet functional requirements but also deliver a delightful user experience.
               </p>
               
               <p>
-                I specialize in JavaScript and TypeScript ecosystems, with expertise in React, Node.js, and modern database solutions. I'm passionate about creating performant, accessible, and user-friendly applications that solve real-world problems.
+                Over the past few years, I built a strong foundation in HTML, CSS, and JavaScript before working with PHP and Java backends. More recently, I’ve specialized in the MERN stack, completing multiple full-stack projects that leverage MongoDB, React, Node.js, and Express. Along the way, I’ve also worked with relational databases like MySQL and deployed containerized applications on platforms such as Vercel and Render.          
               </p>
               
               <p>
-                When I'm not coding, you can find me exploring new hiking trails, reading tech blogs, or experimenting with new technologies. I believe in continuous learning and always strive to improve my skills.
+                Beyond coding, I’m an avid learner. I enjoy exploring new project ideas and listening to music while I work. I believe the continuous growth of both personally and professionally, is key to delivering standout software.
               </p>
               
               <p>
-                I'm currently seeking opportunities to work with forward-thinking teams on challenging projects. My goal is to create beautiful, functional web applications that provide excellent user experiences.
+                I’m always open to new challenges. If you’re looking for a developer who brings creativity, attention to detail, and a user-centric mindset, let’s connect!
               </p>
             </div>
           </div>

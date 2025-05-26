@@ -35,7 +35,7 @@ const Header: React.FC = () => {
   return (
     <motion.header
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-background/95 backdrop-blur-sm border-b border-border/40' : 'bg-transparent'
+        isScrolled ? 'bg-background/95 backdrop-blur-sm ' : 'bg-transparent'
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
@@ -63,7 +63,7 @@ const Header: React.FC = () => {
                 smooth={true}
                 offset={link.offset}
                 duration={500}
-                className="text-foreground/80 hover:text-primary transition-colors cursor-pointer text-sm font-medium"
+                className="text-foreground/80 hover:text-primary transition-colors cursor-pointer text-base font-medium"
                 activeClass="text-primary font-semibold"
               >
                 {link.title}

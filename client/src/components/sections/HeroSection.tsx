@@ -5,6 +5,7 @@ import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
 // Import with cache busting query parameter
 import heroProfileImgSrc from '../../assets/img/hero-profile.png';
+import cvPdf from '../../assets/cv/Ruchira_Tharanka_CV.pdf';
 
 const HeroSection: React.FC = () => {
   return (
@@ -64,10 +65,8 @@ const HeroSection: React.FC = () => {
               >
                 View My Work
                 <ArrowRight size={18} className="ml-2" />
-              </Link>
-
-              <a
-                href="/src/assets/cv/Ruchira_Tharanka_CV.pdf"
+              </Link>              <a
+                href={cvPdf}
                 className="inline-flex items-center px-6 py-3 bg-card hover:bg-card/80 text-foreground font-medium rounded-full border border-border transition-colors shadow-md"
                 download="Ruchira_Tharanka_CV.pdf"
                 onClick={() => {

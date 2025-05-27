@@ -28,9 +28,30 @@ app.use(globalLimiter); // Rate limiting
 // Regular Middleware
 // Configure CORS to accept requests from your frontend domain
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? ['https://ruchira-portfolio.vercel.app', 'https://www.ruchira-portfolio.vercel.app']
-    : process.env.CORS_ORIGIN || 'http://localhost:5173'
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc)
+    if (!origin) return callback(null, true);
+    
+    // Parse allowed origins from environment variable
+    const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';
+    const allowedOrigins = allowedOriginsStr.split(',').filter(Boolean);
+    
+    // Fallback to development origin if no origins are specified
+    const originsToCheck = allowedOrigins.length > 0 
+      ? allowedOrigins
+      : [process.env.CORS_ORIGIN || 'http://localhost:5173'];
+    
+    if (originsToCheck.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      // For development/debugging - log rejected origins
+      console.log(`CORS rejected origin: ${origin}`);
+      callback(new Error('CORS not allowed'), false);
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json({ limit: '10kb' }));  // Limit JSON body size
 

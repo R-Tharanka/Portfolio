@@ -223,11 +223,10 @@ const ContactSection: React.FC = () => {
                     placeholder="Your message here..."
                   />
                 </div>
-                
-                {/* reCAPTCHA Component */}
+                  {/* reCAPTCHA Component */}
                 <div className="my-4">
                   <ReCAPTCHA
-                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"}
+                    sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                     onChange={setCaptchaToken}
                     theme="dark"
                   />

@@ -17,6 +17,7 @@ export type SkillCategory =
   | 'Backend' 
   | 'Database' 
   | 'DevOps' 
+  | 'Languages'
   | 'Design' 
   | 'Other';
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { Toaster } from 'react-hot-toast';
@@ -15,6 +14,7 @@ import EducationSection from './components/sections/EducationSection';
 import ContactSection from './components/sections/ContactSection';
 import AdminPanel from './components/admin/AdminPanel';
 import SEO from './components/common/SEO';
+import DevelopmentBanner from './components/ui/DevelopmentBanner';
 
 const MainPage = () => {
   return (
@@ -40,6 +40,7 @@ function App() {
     <HelmetProvider>
       <ThemeProvider>
         <Toaster position="top-center" />
+        <DevelopmentBanner />
         <Analytics />
         <BrowserRouter>
           <Routes>

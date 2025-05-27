@@ -1,8 +1,32 @@
 import axios from 'axios';
 
-// Create an axios instance with base URL
+// Create an axios instance with base URL and improved configuration
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL
+  baseURL: import.meta.env.VITE_API_URL,
+  timeout: 10000, // 10 seconds timeout
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
+// Add a request interceptor for logging
+api.interceptors.request.use(config => {
+  console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
+  return config;
+}, error => {
+  console.error('API Request Error:', error);
+  return Promise.reject(error);
+});
+
+// Add a response interceptor for logging and error handling
+api.interceptors.response.use(response => {
+  return response;
+}, error => {
+  const { response } = error;
+  if (response?.status === 500) {
+    console.error('Server Error:', response?.data?.message || 'Unknown server error');
+  }
+  return Promise.reject(error);
 });
 
 // Types from our application
@@ -17,13 +41,28 @@ interface ApiResponse<T> {
 // ******************* SKILLS API *******************
 export const getSkills = async (): Promise<ApiResponse<Skill[]>> => {
   try {
+    // Try to connect to the health endpoint first to check connectivity
+    await api.get('/health').catch(() => console.log('Health check failed, continuing anyway'));
+    
     const response = await api.get('/skills');
     return { data: response.data };
   } catch (error: any) {
     console.error('Error fetching skills:', error);
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.msg || 
+                        error.message || 
+                        'Failed to fetch skills';
+    
+    console.error('Detailed error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      message: errorMessage,
+      url: error.config?.url
+    });
+    
     return { 
       data: [], 
-      error: error.response?.data?.msg || 'Failed to fetch skills' 
+      error: errorMessage
     };
   }
 };
@@ -31,13 +70,28 @@ export const getSkills = async (): Promise<ApiResponse<Skill[]>> => {
 // ******************* PROJECTS API *******************
 export const getProjects = async (): Promise<ApiResponse<Project[]>> => {
   try {
+    // Try to connect to the health endpoint first to check connectivity
+    await api.get('/health').catch(() => console.log('Health check failed, continuing anyway'));
+    
     const response = await api.get('/projects');
     return { data: response.data };
   } catch (error: any) {
     console.error('Error fetching projects:', error);
+    const errorMessage = error.response?.data?.message || 
+                        error.response?.data?.msg || 
+                        error.message || 
+                        'Failed to fetch projects';
+    
+    console.error('Detailed error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      message: errorMessage,
+      url: error.config?.url
+    });
+    
     return { 
       data: [], 
-      error: error.response?.data?.msg || 'Failed to fetch projects' 
+      error: errorMessage 
     };
   }
 };

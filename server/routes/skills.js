@@ -12,8 +12,12 @@ router.get('/', async (req, res) => {
     const skills = await Skill.find().sort({ category: 1, proficiency: -1 });
     res.json(skills);
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server Error');
+    console.error('Error in GET /api/skills:', error.message);
+    console.error(error.stack);
+    res.status(500).json({
+      error: 'Server Error',
+      message: error.message
+    });
   }
 });
 

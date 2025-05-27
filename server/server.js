@@ -55,14 +55,45 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '10kb' }));  // Limit JSON body size
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.log('MongoDB connection error: ', err));
+// Connect to MongoDB with improved options and retry logic
+const connectDB = async () => {
+  try {
+    const mongoOptions = {
+      serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    };
+    
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI, mongoOptions);
+    console.log('Connected to MongoDB successfully');
+  } catch (err) {
+    console.error('MongoDB connection error:', err);
+    console.log('Retrying connection in 5 seconds...');
+    setTimeout(connectDB, 5000); // Retry after 5 seconds
+  }
+};
+
+connectDB();
 
 // Base route
 app.get('/', (req, res) => {
   res.send('Portfolio API is running');
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  // Check if MongoDB is connected
+  const dbStatus = mongoose.connection.readyState === 1 ? 
+    'Connected' : 'Disconnected';
+  
+  res.json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+    database: {
+      status: dbStatus
+    }
+  });
 });
 
 // Mount routes

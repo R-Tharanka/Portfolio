@@ -189,6 +189,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     'Backend', 
     'Database', 
     'DevOps', 
+    'Languages',
     'Design', 
     'Other'
   ];

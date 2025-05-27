@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react';
 // Empty array for skills
 const fallbackSkills: Skill[] = [];
 
-const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps', 'Design', 'Other'];
+const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps', 'Languages', 'Design', 'Other'];
 
 const SkillsSection: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<SkillCategory | 'All'>('All');

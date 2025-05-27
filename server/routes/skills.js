@@ -29,7 +29,7 @@ router.post('/', [
   [
     check('name', 'Skill name is required').not().isEmpty(),
     check('category', 'Category is required').isIn([
-      'Frontend', 'Backend', 'Database', 'DevOps', 'Design', 'Other'
+      'Frontend', 'Backend', 'Database', 'DevOps', 'Languages', 'Design', 'Other'
     ]),
     check('proficiency', 'Proficiency must be a number between 1 and 10').isInt({ min: 1, max: 10 }),
     check('icon', 'Icon reference is required').not().isEmpty()
@@ -73,7 +73,7 @@ router.put('/:id', [
   [
     check('name', 'Skill name is required').optional().not().isEmpty(),
     check('category', 'Invalid category').optional().isIn([
-      'Frontend', 'Backend', 'Database', 'DevOps', 'Design', 'Other'
+      'Frontend', 'Backend', 'Database', 'DevOps', 'Languages', 'Design', 'Other'
     ]),
     check('proficiency', 'Proficiency must be a number between 1 and 10')
       .optional()

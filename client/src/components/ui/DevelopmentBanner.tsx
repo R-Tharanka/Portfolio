@@ -33,16 +33,15 @@ const DevelopmentBanner: React.FC<DevelopmentBannerProps> = ({
     const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
     localStorage.setItem('dev-banner-closed', expiryTime.toString());
   };
-  
-  return (
+    return (
     <AnimatePresence>
       {isVisible && (
         <motion.div
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
-          className="fixed top-0 left-0 right-0 z-55 flex justify-center"
-        >          <div className="bg-accent text-white px-4 py-2 rounded-b-lg shadow-lg flex items-center max-w-3xl mx-auto">
+          className="fixed top-0 left-0 right-0 z-[60] flex justify-center"
+        ><div className="bg-accent text-white px-4 py-2 rounded-b-lg shadow-lg flex items-center max-w-3xl mx-auto">
             <span className="mr-4 text-sm font-medium">{message}</span>
             <button 
               onClick={closeBanner}

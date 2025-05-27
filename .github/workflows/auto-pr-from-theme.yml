@@ -9,6 +9,11 @@ on:
   # Allow manual triggering from GitHub Actions tab
   workflow_dispatch:
 
+# Add permissions to the GITHUB_TOKEN
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   create-pull-request:
     runs-on: ubuntu-latest
@@ -39,10 +44,11 @@ jobs:
             ${{ github.event.head_commit.message }}
             ```
             
-            *Automated PR created by GitHub Actions*
-          branch: theme-branch
+            *Automated PR created by GitHub Actions*          branch: theme-branch
           base: main
           labels: |
             theme
             automated-pr
           delete-branch: false
+          committer: GitHub <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>

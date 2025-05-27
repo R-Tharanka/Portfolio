@@ -162,7 +162,8 @@ const ContactSection: React.FC = () => {
                   </a>
 
                   <a
-                    href={import.meta.env.VITE_FACEBOOK_URL}
+                    // href={import.meta.env.VITE_FACEBOOK_URL}
+                    href="#"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 bg-card hover:bg-primary text-foreground hover:text-white rounded-full transition-colors shadow-sm"

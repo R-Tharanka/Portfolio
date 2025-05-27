@@ -42,12 +42,11 @@ const DevelopmentBanner: React.FC<DevelopmentBannerProps> = ({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
           className="fixed top-0 left-0 right-0 z-50 flex justify-center"
-        >
-          <div className="bg-accent text-white px-4 py-2 rounded-b-lg shadow-lg flex items-center max-w-3xl mx-auto">
-            <span className="mr-4 text-sm font-medium">{message}</span>
+        >          <div className="bg-accent text-white px-4 py-2 rounded-b-lg shadow-lg flex items-center justify-between max-w-3xl mx-auto w-full">
+            <span className="text-sm font-medium">{message}</span>
             <button 
               onClick={closeBanner}
-              className="text-white hover:text-white/80 transition-colors"
+              className="text-white hover:text-white/80 transition-colors p-1 ml-2 flex items-center justify-center"
               aria-label="Close"
             >
               <X size={18} />

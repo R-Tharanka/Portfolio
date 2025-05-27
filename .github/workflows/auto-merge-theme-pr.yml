@@ -1,0 +1,38 @@
+name: Auto Merge Theme PR
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - main
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.head.ref == 'theme-branch' && !github.event.pull_request.draft
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        
+      # Optional: Add additional checks here, such as running tests or linting
+      # Example:
+      # - name: Install dependencies
+      #   run: npm ci
+      # - name: Run tests
+      #   run: npm test
+      
+      - name: Auto-approve PR
+        if: github.actor != 'dependabot[bot]'
+        uses: hmarr/auto-approve-action@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Auto-merge PR
+        if: success()
+        uses: pascalgn/automerge-action@v0.15.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: "squash"
+          MERGE_LABELS: "theme,automated-pr"
+          MERGE_DELETE_BRANCH: "false"
+          MERGE_COMMIT_MESSAGE: "Auto-merge theme updates from theme-branch"

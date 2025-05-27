@@ -5,42 +5,8 @@ import { Calendar, GraduationCap, Loader2 } from 'lucide-react';
 import { Education } from '../../types';
 import { getEducation } from '../../services/api';
 
-// Fallback mock data in case API fails
-const fallbackEducation: Education[] = [
-  {
-    id: '1',
-    institution: 'University of Technology',
-    title: 'Bachelor of Science in Computer Science',
-    description: 'Specialized in software engineering with a focus on web development and database systems.',
-    skills: ['Algorithms', 'Data Structures', 'Software Design', 'Database Management'],
-    timeline: {
-      start: '2016-09',
-      end: '2020-06'
-    }
-  },
-  {
-    id: '2',
-    institution: 'Tech Academy',
-    title: 'Full Stack Web Development Bootcamp',
-    description: 'Intensive 12-week program focused on modern web development technologies and best practices.',
-    skills: ['JavaScript', 'React', 'Node.js', 'MongoDB', 'Express'],
-    timeline: {
-      start: '2020-08',
-      end: '2020-11'
-    }
-  },
-  {
-    id: '3',
-    institution: 'Cloud Computing Institute',
-    title: 'AWS Certified Developer Associate',
-    description: 'Professional certification in Amazon Web Services (AWS) cloud development.',
-    skills: ['AWS', 'Cloud Architecture', 'Serverless', 'Infrastructure as Code'],
-    timeline: {
-      start: '2021-03',
-      end: '2021-05'
-    }
-  }
-];
+// Empty array for education data
+const fallbackEducation: Education[] = [];
 
 const EducationSection: React.FC = () => {
   const [education, setEducation] = useState<Education[]>([]);

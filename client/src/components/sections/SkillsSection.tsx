@@ -5,23 +5,8 @@ import { Skill, SkillCategory } from '../../types';
 import { getSkills } from '../../services/api';
 import { Loader2 } from 'lucide-react';
 
-// Fallback mock data in case API fails
-const fallbackSkills: Skill[] = [
-  { id: '1', name: 'React', category: 'Frontend', proficiency: 9, icon: 'react' },
-  { id: '2', name: 'TypeScript', category: 'Frontend', proficiency: 8, icon: 'typescript' },
-  { id: '3', name: 'JavaScript', category: 'Frontend', proficiency: 9, icon: 'javascript' },
-  { id: '4', name: 'HTML5', category: 'Frontend', proficiency: 9, icon: 'html' },
-  { id: '5', name: 'CSS3', category: 'Frontend', proficiency: 8, icon: 'css' },
-  { id: '6', name: 'Node.js', category: 'Backend', proficiency: 8, icon: 'node' },
-  { id: '7', name: 'Express', category: 'Backend', proficiency: 7, icon: 'express' },
-  { id: '8', name: 'MongoDB', category: 'Database', proficiency: 7, icon: 'mongodb' },
-  { id: '9', name: 'PostgreSQL', category: 'Database', proficiency: 6, icon: 'postgresql' },
-  { id: '10', name: 'Docker', category: 'DevOps', proficiency: 6, icon: 'docker' },
-  { id: '11', name: 'AWS', category: 'DevOps', proficiency: 5, icon: 'aws' },
-  { id: '12', name: 'Redux', category: 'Frontend', proficiency: 7, icon: 'redux' },
-  { id: '13', name: 'GraphQL', category: 'Backend', proficiency: 6, icon: 'graphql' },
-  { id: '14', name: 'Figma', category: 'Design', proficiency: 7, icon: 'figma' },
-];
+// Empty array for skills
+const fallbackSkills: Skill[] = [];
 
 const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps', 'Design', 'Other'];
 

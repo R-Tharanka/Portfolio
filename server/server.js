@@ -28,7 +28,9 @@ app.use(globalLimiter); // Rate limiting
 // Regular Middleware
 // Configure CORS to accept requests from your frontend domain
 app.use(cors({
-  origin: process.env.CORS_ORIGIN
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://ruchira-portfolio.vercel.app', 'https://www.ruchira-portfolio.vercel.app']
+    : process.env.CORS_ORIGIN || 'http://localhost:5173'
 }));
 app.use(express.json({ limit: '10kb' }));  // Limit JSON body size
 

@@ -1,0 +1,37 @@
+name: Automated PR from theme-branch to main
+
+on:
+  # Triggered when changes are pushed to theme-branch
+  push:
+    branches:
+      - theme-branch
+  
+  # Optional: Allow manual triggering from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: Auto PR from theme-branch to main
+          branch: theme-branch
+          base: main
+          title: 'Theme Updates: Merge theme-branch into main'
+          body: |
+            ## Automated Pull Request
+            
+            This PR was automatically created to merge changes from theme-branch into main.
+            
+            Please review the changes before merging.
+          labels: |
+            automated-pr
+            theme-update

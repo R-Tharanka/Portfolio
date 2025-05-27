@@ -1,0 +1,30 @@
+name: Auto-merge PR from theme-branch
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened, labeled]
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    # Only run this on PRs from theme-branch to main with the auto-merge label
+    if: github.event.pull_request.head.ref == 'theme-branch' && contains(github.event.pull_request.labels.*.name, 'auto-merge')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      # Optional: Add any tests or checks here that should pass before merging
+      # - name: Run tests
+      #   run: npm test
+      
+      - name: Auto-merge PR
+        uses: pascalgn/automerge-action@v0.15.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_LABELS: "auto-merge"
+          MERGE_METHOD: "squash"
+          MERGE_COMMIT_MESSAGE: "pull-request-title"
+          MERGE_RETRY_SLEEP: "60000"  # 1 minute
+          MERGE_RETRIES: "6"  # Retry up to 6 times

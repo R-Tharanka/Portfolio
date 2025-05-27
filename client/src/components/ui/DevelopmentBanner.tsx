@@ -7,25 +7,31 @@ interface DevelopmentBannerProps {
 }
 
 const DevelopmentBanner: React.FC<DevelopmentBannerProps> = ({ 
-  message = "🚧 Portfolio under development - some features may be incomplete 🚧" 
+  message = "⚠️ Portfolio under development - some features may be incomplete!" 
 }) => {
   const [isVisible, setIsVisible] = useState(true);
-  
-  // Check if the banner was closed before
+    // Check if the banner was closed before and if the closure is still valid
   useEffect(() => {
-    const bannerClosed = localStorage.getItem('dev-banner-closed');
-    if (bannerClosed) {
-      setIsVisible(false);
+    const bannerClosedExpiry = localStorage.getItem('dev-banner-closed');
+    
+    if (bannerClosedExpiry) {
+      const expiryTime = parseInt(bannerClosedExpiry, 10);
+      const now = Date.now();
+      
+      // If the expiry time is in the future, keep the banner hidden
+      if (now < expiryTime) {
+        setIsVisible(false);
+      } else {
+        // If expired, remove from localStorage
+        localStorage.removeItem('dev-banner-closed');
+      }
     }
   }, []);
-  
-  const closeBanner = () => {
+    const closeBanner = () => {
     setIsVisible(false);
     // Remember the choice for 24 hours
-    localStorage.setItem('dev-banner-closed', 'true');
-    setTimeout(() => {
-      localStorage.removeItem('dev-banner-closed');
-    }, 24 * 60 * 60 * 1000);
+    const expiryTime = Date.now() + (24 * 60 * 60 * 1000);
+    localStorage.setItem('dev-banner-closed', expiryTime.toString());
   };
   
   return (

@@ -32,9 +32,11 @@ router.post('/', [
   }
   try {
     const { name, email, title, message, recaptchaToken } = req.body;
-    
-    // Verify reCAPTCHA token with Google reCAPTCHA API
-    const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY || '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'; // Test key
+      // Verify reCAPTCHA token with Google reCAPTCHA API
+    const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
+    if (!recaptchaSecretKey) {
+      return res.status(500).json({ msg: 'Server configuration error: reCAPTCHA secret key not found' });
+    }
     
     try {
       const verifyURL = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${recaptchaToken}`;

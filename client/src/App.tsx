@@ -40,14 +40,16 @@ function App() {
     <HelmetProvider>
       <ThemeProvider>
         <Toaster position="top-center" />
-        <DevelopmentBanner />
         <Analytics />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<MainPage />} />
-            <Route path="/admin" element={<AdminPanel />} />
-          </Routes>
-        </BrowserRouter>
+        <div className="relative">
+          <DevelopmentBanner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<MainPage />} />
+              <Route path="/admin" element={<AdminPanel />} />
+            </Routes>
+          </BrowserRouter>
+        </div>
       </ThemeProvider>
     </HelmetProvider>
   );

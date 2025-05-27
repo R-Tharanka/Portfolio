@@ -5,65 +5,8 @@ import { ExternalLink, Github, Calendar, Loader2 } from 'lucide-react';
 import { Project } from '../../types';
 import { getProjects } from '../../services/api';
 
-// Fallback mock data in case API fails
-const fallbackProjects: Project[] = [
-  {
-    id: '1',
-    title: 'E-commerce Platform',
-    description: 'A full-featured e-commerce platform with product management, shopping cart, and payment processing.',
-    technologies: ['React', 'Node.js', 'Express', 'MongoDB', 'Stripe'],
-    timeline: {
-      start: '2023-01',
-      end: '2023-04'
-    },
-    imageUrl: 'https://images.pexels.com/photos/230544/pexels-photo-230544.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
-    repoLink: 'https://github.com/yourusername/ecommerce-platform',
-    demoLink: 'https://ecommerce-demo.yourdomain.com',
-    tags: ['Web App', 'E-commerce', 'Full Stack']
-  },
-  {
-    id: '2',
-    title: 'Task Management System',
-    description: 'A Kanban-style task management application with real-time updates and team collaboration features.',
-    technologies: ['React', 'TypeScript', 'Firebase', 'Tailwind CSS'],
-    timeline: {
-      start: '2022-08',
-      end: '2022-12'
-    },
-    imageUrl: 'https://images.pexels.com/photos/3243/pen-calendar-to-do-checklist.jpg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
-    repoLink: 'https://github.com/yourusername/task-management',
-    demoLink: 'https://tasks-demo.yourdomain.com',
-    tags: ['Web App', 'Productivity', 'Frontend']
-  },
-  {
-    id: '3',
-    title: 'Weather Dashboard',
-    description: 'A weather application that displays current and forecasted weather data with beautiful visualizations.',
-    technologies: ['JavaScript', 'Chart.js', 'OpenWeather API', 'CSS3'],
-    timeline: {
-      start: '2022-05',
-      end: '2022-07'
-    },
-    imageUrl: 'https://images.pexels.com/photos/1118873/pexels-photo-1118873.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
-    repoLink: 'https://github.com/yourusername/weather-dashboard',
-    demoLink: 'https://weather-demo.yourdomain.com',
-    tags: ['Web App', 'API Integration', 'Frontend']
-  },
-  {
-    id: '4',
-    title: 'Social Media App',
-    description: 'A social networking platform with user profiles, posts, comments, and real-time notifications.',
-    technologies: ['React', 'Node.js', 'Socket.io', 'MongoDB', 'AWS S3'],
-    timeline: {
-      start: '2021-09',
-      end: '2022-02'
-    },
-    imageUrl: 'https://images.pexels.com/photos/607812/pexels-photo-607812.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
-    repoLink: 'https://github.com/yourusername/social-media-app',
-    demoLink: 'https://social-demo.yourdomain.com',
-    tags: ['Web App', 'Social Media', 'Full Stack']
-  }
-];
+// Empty array for projects data
+const fallbackProjects: Project[] = [];
 
 const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');

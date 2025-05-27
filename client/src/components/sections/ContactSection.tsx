@@ -106,20 +106,19 @@ const ContactSection: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-lg font-medium">Email</h4>
-                    <a href="mailto:hello@johndeveloper.com" className="text-foreground/70 hover:text-primary transition-colors">
-                      hello@johndeveloper.com
+                    <a href="mailto:ruchiratharanka1@gmail.com" className="text-foreground/70 hover:text-primary transition-colors">
+                      ruchiratharanka1@gmail.com
                     </a>
                   </div>
                 </div>
-                
-                <div className="flex items-start">
+                  <div className="flex items-start">
                   <div className="p-3 bg-primary/10 rounded-full text-primary mr-4">
                     <Phone size={20} />
                   </div>
                   <div>
                     <h4 className="text-lg font-medium">Phone</h4>
-                    <a href="tel:+1234567890" className="text-foreground/70 hover:text-primary transition-colors">
-                      +1 (234) 567-890
+                    <a href={`tel:${import.meta.env.VITE_PHONE_NUMBER}`} className="text-foreground/70 hover:text-primary transition-colors">
+                      {import.meta.env.VITE_PHONE_NUMBER}
                     </a>
                   </div>
                 </div>
@@ -130,7 +129,7 @@ const ContactSection: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-lg font-medium">Location</h4>
-                    <p className="text-foreground/70">San Francisco, CA</p>
+                    <p className="text-foreground/70">Galle, Sri Lanka</p>
                   </div>
                 </div>
               </div>
@@ -142,12 +141,12 @@ const ContactSection: React.FC = () => {
                   <a href="#" className="p-3 bg-card hover:bg-primary text-foreground hover:text-white rounded-full transition-colors shadow-sm">
                     <span>FB</span>
                   </a>
-                  <a href="#" className="p-3 bg-card hover:bg-primary text-foreground hover:text-white rounded-full transition-colors shadow-sm">
+                  {/* <a href="#" className="p-3 bg-card hover:bg-primary text-foreground hover:text-white rounded-full transition-colors shadow-sm">
                     <span>TW</span>
                   </a>
                   <a href="#" className="p-3 bg-card hover:bg-primary text-foreground hover:text-white rounded-full transition-colors shadow-sm">
                     <span>IG</span>
-                  </a>
+                  </a> */}
                   <a href="#" className="p-3 bg-card hover:bg-primary text-foreground hover:text-white rounded-full transition-colors shadow-sm">
                     <span>LI</span>
                   </a>

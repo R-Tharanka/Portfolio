@@ -25,7 +25,8 @@ const HeroSection: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative">              <div className="w-64 h-64 md:w-80 md:h-80 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full overflow-hidden border-4 border-card shadow-xl">
+            <div className="relative">
+              <div className="w-64 h-64 md:w-80 md:h-80 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full overflow-hidden border-4 border-card shadow-xl">
                 <img
                   src={`${heroProfileImgSrc}?v=2`} /* Adding version query param to bust cache */
                   alt="Ruchira Tharanka profile image"

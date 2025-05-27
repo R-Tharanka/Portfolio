@@ -28,9 +28,7 @@ app.use(globalLimiter); // Rate limiting
 // Regular Middleware
 // Configure CORS to accept requests from your frontend domain
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production'
-    ? process.env.CORS_ORIGIN || 'https://your-portfolio.vercel.app'
-    : 'http://localhost:5173'
+  origin: process.env.CORS_ORIGIN
 }));
 app.use(express.json({ limit: '10kb' }));  // Limit JSON body size
 

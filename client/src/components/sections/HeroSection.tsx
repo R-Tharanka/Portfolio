@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
-import heroProfileImg from '../../assets/img/hero-profile.jpeg';
+import heroProfileImg from '../../assets/img/hero-profile.png';
 
 const HeroSection: React.FC = () => {
   return (

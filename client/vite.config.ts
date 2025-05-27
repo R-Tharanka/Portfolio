@@ -16,12 +16,17 @@ export default defineConfig({
     target: 'esnext',
     minify: 'terser',
     sourcemap: false,
+    // Add asset hashing for better cache control
+    assetsInlineLimit: 4096, // 4kb - files smaller than this will be inlined as base64
+    assetsDir: 'assets',
     rollupOptions: {
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom'],
           ui: ['framer-motion', 'lucide-react'],
-        }
+        },
+        // Ensure assets have content-based hashes in their filenames
+        assetFileNames: 'assets/[name]-[hash].[ext]',
       }
     },
     terserOptions: {

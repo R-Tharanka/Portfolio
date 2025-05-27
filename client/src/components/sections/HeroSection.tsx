@@ -3,7 +3,8 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
-import heroProfileImg from '../../assets/img/hero-profile.png';
+// Import with cache busting query parameter
+import heroProfileImgSrc from '../../assets/img/hero-profile.png';
 
 const HeroSection: React.FC = () => {
   return (
@@ -23,10 +24,9 @@ const HeroSection: React.FC = () => {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <div className="relative">
-              <div className="w-64 h-64 md:w-80 md:h-80 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full overflow-hidden border-4 border-card shadow-xl">
+            <div className="relative">              <div className="w-64 h-64 md:w-80 md:h-80 mx-auto bg-gradient-to-br from-primary to-secondary rounded-full overflow-hidden border-4 border-card shadow-xl">
                 <img
-                  src={heroProfileImg}
+                  src={`${heroProfileImgSrc}?v=2`} /* Adding version query param to bust cache */
                   alt="Ruchira Tharanka profile image"
                   className="w-full h-full object-cover"
                 />

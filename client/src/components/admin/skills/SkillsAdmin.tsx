@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Skill, SkillCategory } from '../../../types';
 import { getSkills, createSkill, updateSkill, deleteSkill } from '../../../services/api';
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { iconMap } from '../../ui/iconMap';
 
 interface SkillsAdminProps {
   token: string | null;
@@ -13,7 +14,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-  
+
   const [formData, setFormData] = useState<Omit<Skill, 'id'>>({
     name: '',
     category: 'Frontend',
@@ -42,13 +43,21 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     };
 
     fetchSkills();
-  }, []);  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'proficiency') {
       // Convert to number and clamp between 1-10
       const numValue = Math.max(1, Math.min(10, Number(value) || 1));
       setFormData(prev => ({ ...prev, [name]: numValue }));
+    } else if (name === 'name') {
+      // Auto-suggest an icon based on the skill name
+      setFormData(prev => ({
+        ...prev,
+        [name]: value,
+        // Only suggest icon if it's currently the default or empty
+        ...(prev.icon === 'code' || prev.icon === '' ? { icon: suggestIconName(value) } : {})
+      }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -77,12 +86,12 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
-    
+
     setLoading(true);
     try {
       if (editingSkill && editingSkill.id) {
@@ -93,8 +102,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
           setError(response.error);
         } else {
           // Update skills list
-          setSkills(prev => 
-            prev.map(skill => 
+          setSkills(prev =>
+            prev.map(skill =>
               skill.id === editingSkill.id ? response.data : skill
             )
           );
@@ -124,11 +133,11 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
-    
+
     if (!window.confirm('Are you sure you want to delete this skill?')) {
       return;
     }
-    
+
     setLoading(true);
     try {
       const response = await deleteSkill(skillId, token);
@@ -161,7 +170,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       .toLowerCase()
       .replace(/\.(png|jpg|jpeg|svg)$/, '')
       .replace(/[^a-z0-9-]/g, '-');
-    
+
     // Only use simplified icon name if it's valid
     if (/^[a-zA-Z0-9-]+$/.test(simplifiedIconName)) {
       setFormData(prev => ({ ...prev, icon: simplifiedIconName }));
@@ -174,7 +183,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       setError('Icon file size must be under 100KB');
       return;
     }
-    
+
     // Convert to base64 (only for small files)
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -182,19 +191,52 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       setFormData(prev => ({ ...prev, icon: base64String }));
     };
     reader.readAsDataURL(file);
-  };
-  const skillCategories: SkillCategory[] = [
-    'Frontend', 
-    'Backend', 
-    'Database', 
-    'DevOps', 
+  }; const skillCategories: SkillCategory[] = [
+    'Frontend',
+    'Backend',
+    'Database',
+    'DevOps',
     'Languages',
-    'Design', 
+    'Design',
     'Other'
   ];
-  
-  // Debug log to check if Languages is included
-  console.log('Available skill categories:', skillCategories);
+
+  // Helper function to suggest icon name based on skill name
+  const suggestIconName = (skillName: string): string => {
+    const name = skillName.toLowerCase().trim();
+
+    // Common mappings
+    const commonMappings: Record<string, string> = {
+      'apache tomcat': 'tomcat',
+      'express.js': 'express',
+      'express js': 'express',
+      'node.js': 'node',
+      'nodejs': 'node',
+      'spring boot': 'springboot',
+      'tailwind': 'tailwind',
+      'tailwindcss': 'tailwind',
+      'tailwind css': 'tailwind',
+      'chart.js': 'chartjs',
+      'c++': 'c++',
+      'c#': 'c#',
+      'c sharp': 'c#',
+    };
+
+    if (commonMappings[name]) {
+      return commonMappings[name];
+    }
+
+    // Try to find exact match in iconMap keys
+    const availableIcons = Object.keys(iconMap);
+    const exactMatch = availableIcons.find(key => key === name);
+    if (exactMatch) return exactMatch;
+
+    // Try to find partial match
+    const partialMatch = availableIcons.find(key => name.includes(key) || key.includes(name));
+    if (partialMatch) return partialMatch;
+
+    return 'default';
+  };
 
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">
@@ -221,7 +263,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
           <h3 className="text-lg font-medium mb-4">
             {editingSkill ? 'Edit Skill' : 'Add New Skill'}
           </h3>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium mb-1">Skill Name</label>
@@ -265,20 +307,31 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                 max="10"
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
-            </div>
-
-            <div>
+            </div>            <div>
               <label htmlFor="icon" className="block text-sm font-medium mb-1">Icon</label>
               <div className="flex gap-2">
-                <input
-                  type="text"
-                  id="icon"
-                  name="icon"
-                  value={formData.icon}
-                  onChange={handleChange}
-                  placeholder="icon-name or URL"
-                  className="flex-1 px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    id="icon"
+                    name="icon"
+                    value={formData.icon}
+                    onChange={handleChange}
+                    placeholder="icon-name or URL"
+                    className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary pr-10"
+                    list="iconSuggestions"
+                  />
+                  {iconMap[formData.icon] && (
+                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xl">
+                      {React.createElement(iconMap[formData.icon])}
+                    </div>
+                  )}
+                  <datalist id="iconSuggestions">
+                    {Object.keys(iconMap).map(iconKey => (
+                      <option key={iconKey} value={iconKey} />
+                    ))}
+                  </datalist>
+                </div>
                 <div className="relative">
                   <input
                     type="file"
@@ -296,7 +349,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                 </div>
               </div>
               <p className="mt-1 text-xs text-foreground/60">
-                Enter an icon name (e.g., 'react'), URL, or upload a file (max 100KB)
+                Enter an icon name (e.g., 'react', 'node', 'java'), or select from available options
               </p>
             </div>
 
@@ -304,9 +357,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors ${
-                  loading ? 'opacity-50 cursor-not-allowed' : ''
-                }`}
+                className={`px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                  }`}
               >
                 {loading ? (
                   <div className="flex items-center">
@@ -360,8 +412,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                     <td className="py-3 px-4">{skill.category}</td>
                     <td className="py-3 px-4">
                       <div className="w-full bg-background rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full" 
+                        <div
+                          className="bg-primary h-2 rounded-full"
                           style={{ width: `${(skill.proficiency / 10) * 100}%` }}
                         />
                       </div>

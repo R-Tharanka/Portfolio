@@ -4,6 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { Skill, SkillCategory } from '../../types';
 import { getSkills } from '../../services/api';
 import { Loader2 } from 'lucide-react';
+import { iconMap } from '../ui/iconMap';
 
 // Empty array for skills
 const fallbackSkills: Skill[] = [];
@@ -44,8 +45,8 @@ const SkillsSection: React.FC = () => {
     fetchSkills();
   }, []);
 
-  const filteredSkills = activeCategory === 'All' 
-    ? skills 
+  const filteredSkills = activeCategory === 'All'
+    ? skills
     : skills.filter(skill => skill.category === activeCategory);
 
   return (
@@ -61,42 +62,40 @@ const SkillsSection: React.FC = () => {
           <p className="section-subtitle">
             Here are the technologies I work with to bring ideas to life
           </p>
-          
+
           {/* Category Filter Bar */}
           <div className="flex flex-wrap justify-center gap-2 mb-12">
             <button
               onClick={() => setActiveCategory('All')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeCategory === 'All' 
-                  ? 'bg-primary text-white' 
-                  : 'bg-card hover:bg-card/80 text-foreground'
-              }`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === 'All'
+                ? 'bg-primary text-white'
+                : 'bg-card hover:bg-card/80 text-foreground'
+                }`}
             >
               All
             </button>
-            
+
             {categories.map(category => (
               <button
                 key={category}
                 onClick={() => setActiveCategory(category)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  activeCategory === category 
-                    ? 'bg-primary text-white' 
-                    : 'bg-card hover:bg-card/80 text-foreground'
-                }`}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === category
+                  ? 'bg-primary text-white'
+                  : 'bg-card hover:bg-card/80 text-foreground'
+                  }`}
               >
                 {category}
               </button>
             ))}
           </div>
-          
+
           {/* Skills Cloud */}
           <div className="relative min-h-[400px] bg-card/30 rounded-xl p-8 flex items-center justify-center">
             {loading ? (
               <Loader2 className="animate-spin h-10 w-10 text-primary" />
             ) : (
               <AnimatePresence mode="wait">
-                <motion.div 
+                <motion.div
                   key={activeCategory}
                   className="w-full h-full flex flex-wrap justify-center items-center gap-4 md:gap-8"
                   initial={{ opacity: 0 }}
@@ -110,27 +109,25 @@ const SkillsSection: React.FC = () => {
                       className="relative group"
                       initial={{ scale: 0 }}
                       animate={{ scale: 1 }}
-                      transition={{ 
+                      transition={{
                         type: 'spring',
                         stiffness: 260,
                         damping: 20,
                         delay: Math.random() * 0.3
                       }}
                       whileHover={{ scale: 1.1 }}
+                    >                      <div
+                      className={`flex flex-col items-center justify-center p-4 bg-card rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30`}
+                      style={{
+                        width: `${Math.max(skill.proficiency * 12, 80)}px`,
+                        height: `${Math.max(skill.proficiency * 12, 80)}px`,
+                      }}
                     >
-                      <div 
-                        className={`flex flex-col items-center justify-center p-4 bg-card rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30`}
-                        style={{ 
-                          width: `${Math.max(skill.proficiency * 12, 80)}px`,
-                          height: `${Math.max(skill.proficiency * 12, 80)}px`,
-                        }}
-                      >
                         <div className="text-4xl mb-2">
-                          {/* This would normally be an actual icon, using emoji as placeholder */}
-                          {getSkillEmoji(skill.icon)}
+                          {React.createElement(iconMap[skill.icon] || iconMap['default'], { className: "text-4xl mb-2" })}
                         </div>
                         <span className="text-xs font-medium text-center">{skill.name}</span>
-                        
+
                         {/* Tooltip */}
                         <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-card text-foreground text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-border/50">
                           {/*{skill.name} - {skill.proficiency}/10 */}
@@ -149,26 +146,6 @@ const SkillsSection: React.FC = () => {
   );
 };
 
-// Helper function to return emoji based on skill name (in a real app, this would be proper icons)
-const getSkillEmoji = (icon: string): string => {
-  const iconMap: Record<string, string> = {
-    react: '⚛️',
-    typescript: '📘',
-    javascript: '📙',
-    html: '🌐',
-    css: '🎨',
-    node: '🟢',
-    express: '🚂',
-    mongodb: '🍃',
-    postgresql: '🐘',
-    docker: '🐳',
-    aws: '☁️',
-    redux: '🔄',
-    graphql: '📊',
-    figma: '🖌️',
-  };
-  
-  return iconMap[icon] || '🔧';
-};
+// Using React Icons components from iconMap.tsx instead of emojis
 
 export default SkillsSection;

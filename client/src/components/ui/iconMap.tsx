@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 
 export const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
+    // Technical exact matches for the icons
     tomcat: SiApachetomcat,
     php: SiPhp,
     express: SiExpress,
@@ -38,7 +39,7 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     bootstrap: FaBootstrap,
     java: FaJava,
     python: FaPython,
-    javafx: FaJava,
+    javafx: FaJava, // Using FaJava as a fallback for JavaFX
     c: SiC,
     'c++': SiCplusplus,
     'c#': SiSharp,
@@ -46,6 +47,21 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     postman: SiPostman,
     wordpress: SiWordpress,
     twilio: SiTwilio,
+    // Common variations for better matching
+    'apache tomcat': SiApachetomcat,
+    'express.js': SiExpress,
+    'node.js': SiNodedotjs,
+    'spring boot': SiSpringboot,
+    'spring': SiSpringboot,
+    'mongo': SiMongodb,
+    'adobe illustrator': SiAdobeillustrator,
+    'adobe photoshop': SiAdobephotoshop,
+    'tailwindcss': SiTailwindcss,
+    'tailwind css': SiTailwindcss,
+    'js': SiJavascript,
+    'cplusplus': SiCplusplus,
+    'csharp': SiSharp,
+
     // Add a default icon
     default: FaCode
 };

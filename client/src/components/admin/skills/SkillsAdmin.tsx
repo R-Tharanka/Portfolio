@@ -40,10 +40,10 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       } finally {
         setLoading(false);
       }
-    };
+    }; fetchSkills();
+  }, []);
 
-    fetchSkills();
-  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     if (name === 'proficiency') {
@@ -189,9 +189,10 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     reader.onloadend = () => {
       const base64String = reader.result as string;
       setFormData(prev => ({ ...prev, icon: base64String }));
-    };
-    reader.readAsDataURL(file);
-  }; const skillCategories: SkillCategory[] = [
+    }; reader.readAsDataURL(file);
+  };
+
+  const skillCategories: SkillCategory[] = [
     'Frontend',
     'Backend',
     'Database',
@@ -203,23 +204,64 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
 
   // Helper function to suggest icon name based on skill name
   const suggestIconName = (skillName: string): string => {
+    if (!skillName) return 'default';
+
     const name = skillName.toLowerCase().trim();
 
-    // Common mappings
+    // Common mappings for exact and partial matches
     const commonMappings: Record<string, string> = {
       'apache tomcat': 'tomcat',
+      'tomcat': 'tomcat',
+      'apache': 'tomcat',
+      'php': 'php',
       'express.js': 'express',
       'express js': 'express',
+      'express': 'express',
       'node.js': 'node',
       'nodejs': 'node',
+      'node': 'node',
       'spring boot': 'springboot',
+      'spring': 'springboot',
+      'springboot': 'springboot',
+      'mongodb': 'mongodb',
+      'mongo': 'mongodb',
+      'mysql': 'mysql',
+      'canva': 'canva',
+      'figma': 'figma',
+      'illustrator': 'illustrator',
+      'adobe illustrator': 'illustrator',
+      'photoshop': 'photoshop',
+      'adobe photoshop': 'photoshop',
+      'git': 'git',
+      'github': 'github',
+      'vercel': 'vercel',
+      'railway': 'railway',
+      'docker': 'docker',
+      'html': 'html',
+      'html5': 'html',
+      'css': 'css',
+      'css3': 'css',
+      'react': 'react',
       'tailwind': 'tailwind',
       'tailwindcss': 'tailwind',
       'tailwind css': 'tailwind',
+      'javascript': 'javascript',
+      'js': 'javascript',
       'chart.js': 'chartjs',
+      'chartjs': 'chartjs',
+      'bootstrap': 'bootstrap',
+      'java': 'java',
+      'python': 'python',
+      'javafx': 'javafx',
+      'c': 'c',
       'c++': 'c++',
       'c#': 'c#',
       'c sharp': 'c#',
+      'csharp': 'c#',
+      'kotlin': 'kotlin',
+      'postman': 'postman',
+      'wordpress': 'wordpress',
+      'twilio': 'twilio'
     };
 
     if (commonMappings[name]) {
@@ -232,7 +274,12 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     if (exactMatch) return exactMatch;
 
     // Try to find partial match
-    const partialMatch = availableIcons.find(key => name.includes(key) || key.includes(name));
+    // First check if any key contains the name
+    let partialMatch = availableIcons.find(key => key.includes(name));
+    if (partialMatch) return partialMatch;
+
+    // Then check if name contains any key
+    partialMatch = availableIcons.find(key => name.includes(key) && key.length > 2); // Only consider keys longer than 2 chars
     if (partialMatch) return partialMatch;
 
     return 'default';

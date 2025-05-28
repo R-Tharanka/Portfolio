@@ -133,7 +133,8 @@ const SkillsSection: React.FC = () => {
                         
                         {/* Tooltip */}
                         <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-card text-foreground text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-border/50">
-                          {skill.name} - {skill.proficiency}/10
+                          {/*{skill.name} - {skill.proficiency}/10 */}
+                          {skill.name}
                         </div>
                       </div>
                     </motion.div>

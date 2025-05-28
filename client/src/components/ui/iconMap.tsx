@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-    SiApachetomcat, SiPhp, SiExpress, SiNodedotjs, SiSpringboot,
+    SiApachetomcat, SiPhp, SiCss3, SiExpress, SiNodedotjs, SiSpringboot,
     SiMongodb, SiMysql, SiCanva, SiFigma, SiAdobeillustrator, SiAdobephotoshop,
     SiVercel, SiRailway, SiTailwindcss, SiJavascript, SiChartdotjs,
     SiC, SiCplusplus, SiSharp, SiKotlin,
@@ -31,7 +31,7 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     railway: SiRailway,
     docker: FaDocker,
     html: FaHtml5,
-    css: FaCss3Alt,
+    css: SiCss3,
     react: FaReact,
     tailwind: SiTailwindcss,
     javascript: SiJavascript,

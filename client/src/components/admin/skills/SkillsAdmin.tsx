@@ -183,7 +183,6 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     };
     reader.readAsDataURL(file);
   };
-
   const skillCategories: SkillCategory[] = [
     'Frontend', 
     'Backend', 
@@ -193,6 +192,9 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     'Design', 
     'Other'
   ];
+  
+  // Debug log to check if Languages is included
+  console.log('Available skill categories:', skillCategories);
 
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">

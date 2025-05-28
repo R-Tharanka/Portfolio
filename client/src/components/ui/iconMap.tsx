@@ -38,7 +38,7 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     bootstrap: FaBootstrap,
     java: FaJava,
     python: FaPython,
-    javafx: FaJava, // Using Java icon for JavaFX since SiJavafx doesn't exist
+    javafx: FaJava,
     c: SiC,
     'c++': SiCplusplus,
     'c#': SiSharp,
@@ -47,5 +47,5 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     wordpress: SiWordpress,
     twilio: SiTwilio,
     // Add a default icon
-    default: FaCode
+    // default: FaCode
 };

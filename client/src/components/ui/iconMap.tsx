@@ -47,5 +47,5 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     wordpress: SiWordpress,
     twilio: SiTwilio,
     // Add a default icon
-    // default: FaCode
+    // default: FaCode 
 };

@@ -6,6 +6,50 @@ import { getSkills } from '../../services/api';
 import { Loader2 } from 'lucide-react';
 import { iconMap } from '../ui/iconMap';
 
+// Function to get the closest matching icon component
+const getIconComponent = (iconName: string) => {
+  if (!iconName) return iconMap['default'];
+
+  // Normalize the icon name (lowercase, trim whitespace)
+  const normalizedName = iconName.toLowerCase().trim();
+
+  // Direct match
+  if (iconMap[normalizedName]) return iconMap[normalizedName];
+
+  // Check common variations
+  const commonVariations: Record<string, string> = {
+    'apache tomcat': 'tomcat',
+    'express.js': 'express',
+    'express js': 'express',
+    'node.js': 'node',
+    'nodejs': 'node',
+    'spring boot': 'springboot',
+    'tailwind': 'tailwind',
+    'tailwindcss': 'tailwind',
+    'tailwind css': 'tailwind',
+    'chart.js': 'chartjs',
+    'c++': 'c++',
+    'c#': 'c#',
+    'c sharp': 'c#',
+    'js': 'javascript'
+  };
+
+  if (commonVariations[normalizedName] && iconMap[commonVariations[normalizedName]]) {
+    return iconMap[commonVariations[normalizedName]];
+  }
+
+  // Try to find partial match
+  const iconKeys = Object.keys(iconMap);
+  for (const key of iconKeys) {
+    if (normalizedName.includes(key) || key.includes(normalizedName)) {
+      return iconMap[key];
+    }
+  }
+
+  // Return default icon if no match found
+  return iconMap['default'];
+};
+
 // Empty array for skills
 const fallbackSkills: Skill[] = [];
 
@@ -116,15 +160,16 @@ const SkillsSection: React.FC = () => {
                         delay: Math.random() * 0.3
                       }}
                       whileHover={{ scale: 1.1 }}
-                    >                      <div
-                      className={`flex flex-col items-center justify-center p-4 bg-card rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30`}
-                      style={{
-                        width: `${Math.max(skill.proficiency * 12, 80)}px`,
-                        height: `${Math.max(skill.proficiency * 12, 80)}px`,
-                      }}
                     >
+                      <div
+                        className={`flex flex-col items-center justify-center p-4 bg-card rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30`}
+                        style={{
+                          width: `${Math.max(skill.proficiency * 12, 80)}px`,
+                          height: `${Math.max(skill.proficiency * 12, 80)}px`,
+                        }}
+                      >
                         <div className="text-4xl mb-2">
-                          {React.createElement(iconMap[skill.icon] || iconMap['default'], { className: "text-4xl mb-2" })}
+                          {React.createElement(getIconComponent(skill.icon), { className: "text-4xl mb-2" })}
                         </div>
                         <span className="text-xs font-medium text-center">{skill.name}</span>
 

@@ -1,6 +1,59 @@
 import React, { useState, useEffect } from 'react';
 import { getContactMessages, deleteContactMessage } from '../../../services/api';
-import { Loader2, Trash2, Mail, Calendar } from 'lucide-react';
+import { Loader2, Trash2, Mail, Calendar, X } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Simple Dialog component for delete confirmation
+const DeleteConfirmationDialog = ({ 
+  isOpen, 
+  onClose, 
+  onConfirm, 
+  message 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  onConfirm: () => void; 
+  message: ContactMessage | null 
+}) => {
+  if (!isOpen || !message) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold">Confirm Deletion</h3>
+          <button onClick={onClose} className="text-foreground/70 hover:text-foreground">
+            <X size={18} />
+          </button>
+        </div>
+        
+        <div className="mb-6">
+          <p className="mb-2">Are you sure you want to delete this message?</p>
+          <div className="bg-background/50 p-2 rounded">
+            <p className="font-medium">{message.title}</p>
+            <p className="text-sm text-foreground/70">{message.name}</p>
+          </div>
+        </div>
+        
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-border rounded-md hover:bg-background"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface ContactAdminProps {
   token: string | null;
@@ -21,12 +74,14 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   // Fetch contact messages
   useEffect(() => {
-    const fetchMessages = async () => {
+  const fetchMessages = async () => {
       if (!token) {
         setError('Authentication token is missing. Please log in again.');
+        toast.error('Authentication token is missing. Please log in again.');
         return;
       }
 
@@ -35,13 +90,15 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
         const response = await getContactMessages(token);
         if (response.error) {
           setError(response.error);
+          toast.error(`Failed to load messages: ${response.error}`);
         } else {
           setMessages(response.data);
           setError(null);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error('Failed to fetch contact messages:', err);
         setError('Failed to load contact messages.');
+        toast.error(err.message || 'Failed to load contact messages');
       } finally {
         setLoading(false);
       }
@@ -49,35 +106,47 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
 
     fetchMessages();
   }, [token]);
-
   const handleDelete = async (messageId: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
+      toast.error('Authentication token missing. Please log in again.');
       return;
     }
 
-    if (!window.confirm('Are you sure you want to delete this message?')) {
+    // Find the message to delete (if not already selected)
+    const messageToDelete = messages.find(message => message._id === messageId);
+    if (!messageToDelete) {
+      toast.error('Message not found');
       return;
     }
+    
+    setIsDialogOpen(true);
+    // If clicking delete button in the detail view, we already have the selectedMessage
+    if (selectedMessage?._id !== messageId) {
+      setSelectedMessage(messageToDelete);
+    }
+  };
+  const confirmDelete = async () => {
+    if (!token || !selectedMessage) return;
 
     setLoading(true);
     try {
-      const response = await deleteContactMessage(messageId, token);
+      const response = await deleteContactMessage(selectedMessage._id, token);
       if (response.error) {
         setError(response.error);
+        toast.error(`Failed to delete: ${response.error}`);
       } else {
         // Remove message from list
-        setMessages(prev => prev.filter(message => message._id !== messageId));
-        // Clear selected message if it was deleted
-        if (selectedMessage && selectedMessage._id === messageId) {
-          setSelectedMessage(null);
-        }
+        setMessages(prev => prev.filter(message => message._id !== selectedMessage._id));
+        toast.success('Message deleted successfully!');
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete message:', err);
       setError('Failed to delete message. Please try again.');
+      toast.error(err.message || 'Failed to delete message');
     } finally {
       setLoading(false);
+      setIsDialogOpen(false);
     }
   };
 
@@ -194,6 +263,17 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
           </div>
         </div>
       )}
+
+      {/* Toast notifications container */}
+      <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
+      
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmationDialog
+        isOpen={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onConfirm={confirmDelete}
+        message={selectedMessage}
+      />
     </div>
   );
 };

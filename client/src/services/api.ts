@@ -348,4 +348,19 @@ export const getContactMessages = async (token: string): Promise<ApiResponse<any
   }
 };
 
+export const deleteContactMessage = async (messageId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
+  try {
+    const response = await api.delete(`/contact/${messageId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return { data: response.data };
+  } catch (error: any) {
+    console.error('Error deleting contact message:', error);
+    return {
+      data: { msg: '' },
+      error: error.response?.data?.msg || 'Failed to delete contact message'
+    };
+  }
+};
+
 export default api;

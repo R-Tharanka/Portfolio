@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getContactMessages } from '../../../services/api';
+import { getContactMessages, deleteContactMessage } from '../../../services/api';
 import { Loader2, Trash2, Mail, Calendar } from 'lucide-react';
 
 interface ContactAdminProps {
@@ -7,7 +7,8 @@ interface ContactAdminProps {
 }
 
 interface ContactMessage {
-  id: string;
+  _id: string;
+  id?: string; // Optional field for compatibility
   name: string;
   email: string;
   title: string;
@@ -28,7 +29,7 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
         setError('Authentication token is missing. Please log in again.');
         return;
       }
-      
+
       setLoading(true);
       try {
         const response = await getContactMessages(token);
@@ -49,11 +50,42 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
     fetchMessages();
   }, [token]);
 
+  const handleDelete = async (messageId: string) => {
+    if (!token) {
+      setError('Authentication token is missing. Please log in again.');
+      return;
+    }
+
+    if (!window.confirm('Are you sure you want to delete this message?')) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await deleteContactMessage(messageId, token);
+      if (response.error) {
+        setError(response.error);
+      } else {
+        // Remove message from list
+        setMessages(prev => prev.filter(message => message._id !== messageId));
+        // Clear selected message if it was deleted
+        if (selectedMessage && selectedMessage._id === messageId) {
+          setSelectedMessage(null);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to delete message:', err);
+      setError('Failed to delete message. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
@@ -81,7 +113,7 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
             <div className="mb-4 font-medium text-foreground/70">
               {messages.length} {messages.length === 1 ? 'Message' : 'Messages'}
             </div>
-            
+
             {messages.length === 0 ? (
               <div className="text-center py-12 text-foreground/60">
                 No messages yet.
@@ -89,14 +121,13 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
             ) : (
               <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
                 {messages.map(message => (
-                  <div 
-                    key={message.id}
+                  <div
+                    key={message._id}
                     onClick={() => setSelectedMessage(message)}
-                    className={`p-3 rounded-lg cursor-pointer transition-colors ${
-                      selectedMessage?.id === message.id
-                        ? 'bg-primary/10 border-primary/30'
-                        : 'hover:bg-background border-transparent'
-                    } border`}
+                    className={`p-3 rounded-lg cursor-pointer transition-colors ${selectedMessage?._id === message._id
+                      ? 'bg-primary/10 border-primary/30'
+                      : 'hover:bg-background border-transparent'
+                      } border`}
                   >
                     <div className="font-medium truncate">{message.name}</div>
                     <div className="text-sm text-foreground/70 truncate">{message.title}</div>
@@ -116,33 +147,35 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
               <div>
                 <div className="bg-background p-4 rounded-lg mb-4">
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold">{selectedMessage.title}</h3>
-                    <button className="text-red-500 hover:text-red-600">
+                    <h3 className="text-xl font-bold">{selectedMessage.title}</h3>                    <button
+                      className="text-red-500 hover:text-red-600"
+                      onClick={() => handleDelete(selectedMessage._id)}
+                    >
                       <Trash2 size={18} />
                     </button>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 mb-2">
                     <span className="font-medium">{selectedMessage.name}</span>
                   </div>
-                  
+
                   <div className="flex items-center gap-1 text-foreground/70 text-sm mb-4">
                     <Mail size={14} />
                     <a href={`mailto:${selectedMessage.email}`} className="hover:text-primary">
                       {selectedMessage.email}
                     </a>
                   </div>
-                  
+
                   <div className="text-xs text-foreground/60 mb-4">
                     Received: {formatDate(selectedMessage.createdAt)}
                   </div>
-                  
+
                   <div className="bg-card p-4 rounded-lg border border-border/50">
                     <p className="whitespace-pre-line">{selectedMessage.message}</p>
                   </div>
-                  
+
                   <div className="mt-4 flex justify-end">
-                    <a 
+                    <a
                       href={`mailto:${selectedMessage.email}`}
                       className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors flex items-center gap-1"
                     >

@@ -115,12 +115,11 @@ router.get('/:id', protect, async (req, res) => {
 router.delete('/:id', protect, async (req, res) => {
   try {
     const message = await Contact.findById(req.params.id);
-    
-    if (!message) {
+      if (!message) {
       return res.status(404).json({ msg: 'Message not found' });
     }
 
-    await Contact.findByIdAndRemove(req.params.id);
+    await message.deleteOne();
     res.json({ msg: 'Message removed' });
   } catch (error) {
     console.error(error.message);

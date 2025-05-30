@@ -6,26 +6,94 @@ import EducationAdmin from './education/EducationAdmin';
 import ContactAdmin from './contact/ContactAdmin';
 import LoginForm from './auth/LoginForm';
 import SEO from '../common/SEO';
+import { isTokenExpired, getTokenRemainingTime } from '../../utils/auth';
 
 const AdminPanel: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [token, setToken] = useState<string | null>(null);  useEffect(() => {
     // Check for existing token in localStorage
     const storedToken = localStorage.getItem('adminToken');
+    
     if (storedToken) {
-      setToken(storedToken);
-      setIsAuthenticated(true);
+      // Verify if token is expired
+      if (isTokenExpired(storedToken)) {
+        // Token is expired, remove it and require login
+        console.log('Admin token expired, logging out');
+        localStorage.removeItem('adminToken');
+        setToken(null);
+        setIsAuthenticated(false);
+      } else {
+        // Valid token, set as authenticated
+        setToken(storedToken);
+        setIsAuthenticated(true);
+        
+        // Set up auto-logout when token expires
+        const remainingTime = getTokenRemainingTime(storedToken);
+        console.log(`Token will expire in ${remainingTime} seconds`);
+        
+        // Set a timer to log out when token expires
+        const logoutTimer = setTimeout(() => {
+          console.log('Token expiration timer triggered, logging out');
+          localStorage.removeItem('adminToken');
+          setToken(null);
+          setIsAuthenticated(false);
+        }, remainingTime * 1000);
+
+        // Check token expiration periodically (every minute)
+        const tokenCheckInterval = setInterval(() => {
+          const currentToken = localStorage.getItem('adminToken');
+          if (currentToken && isTokenExpired(currentToken)) {
+            console.log('Periodic check: Token expired, logging out');
+            localStorage.removeItem('adminToken');
+            setToken(null);
+            setIsAuthenticated(false);
+            clearInterval(tokenCheckInterval);
+          }
+        }, 60000); // Check every minute
+        
+        // Clean up timers if component unmounts
+        return () => {
+          clearTimeout(logoutTimer);
+          clearInterval(tokenCheckInterval);
+        };
+      }
     }
+  }, []);
+
+  // Listen for token expiration events from API interceptors
+  useEffect(() => {
+    const handleTokenExpired = () => {
+      console.log('Token expired event received, logging out');
+      setToken(null);
+      setIsAuthenticated(false);
+    };
+    
+    // Add event listener
+    window.addEventListener('auth:tokenExpired', handleTokenExpired);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('auth:tokenExpired', handleTokenExpired);
+    };
   }, []);
 
   const handleLogin = (authToken: string) => {
     localStorage.setItem('adminToken', authToken);
     setToken(authToken);
     setIsAuthenticated(true);
+    
+    // Set up auto-logout for the new token
+    const remainingTime = getTokenRemainingTime(authToken);
+    console.log(`New token will expire in ${remainingTime} seconds`);
+    
+    // Set a timer to log out when token expires
+    setTimeout(() => {
+      console.log('Token expiration timer triggered, logging out');
+      localStorage.removeItem('adminToken');
+      setToken(null);
+      setIsAuthenticated(false);
+    }, remainingTime * 1000);
   };
-
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     setToken(null);

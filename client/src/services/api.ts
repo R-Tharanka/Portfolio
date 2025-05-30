@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { isTokenExpired } from '../utils/auth';
 
 // Create an axios instance with base URL and improved configuration
 const api = axios.create({
@@ -9,9 +10,33 @@ const api = axios.create({
   }
 });
 
-// Add a request interceptor for logging
+// Add a request interceptor for authentication and logging
 api.interceptors.request.use(config => {
   console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
+  
+  // Check if request has Authorization header (contains a token)
+  const authHeader = config.headers?.Authorization as string;
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
+    
+    // Verify token is not expired
+    if (isTokenExpired(token)) {
+      // Token expired, reject request and force logout
+      console.warn('Token expired, request blocked');
+      console.log('Token expiration details:', { token });
+      
+      // Clear expired token from localStorage
+      localStorage.removeItem('adminToken');
+      
+      // Dispatch a custom event to notify app about token expiration
+      const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
+      window.dispatchEvent(tokenExpiredEvent);
+      
+      // Return a rejected promise to prevent the request
+      return Promise.reject(new Error('Authentication token expired'));
+    }
+  }
+  
   return config;
 }, error => {
   console.error('API Request Error:', error);
@@ -23,7 +48,17 @@ api.interceptors.response.use(response => {
   return response;
 }, error => {
   const { response } = error;
-  if (response?.status === 500) {
+  if (response?.status === 401) {
+    // Unauthorized - token might be invalid or expired
+    console.error('Authentication error:', response?.data?.message || 'Unauthorized access');
+    
+    // Clear token from localStorage
+    localStorage.removeItem('adminToken');
+    
+    // Dispatch a custom event to notify app about token expiration
+    const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
+    window.dispatchEvent(tokenExpiredEvent);
+  } else if (response?.status === 500) {
     console.error('Server Error:', response?.data?.message || 'Unknown server error');
   }
   return Promise.reject(error);

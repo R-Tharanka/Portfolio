@@ -21,12 +21,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
-    restart: unless-stopped
-    environment:
+    restart: unless-stopped    
+    environment:      
       - NODE_ENV=production
       - MONGODB_URI=${MONGODB_URI}
       - JWT_SECRET=${JWT_SECRET}
-      - JWT_EXPIRE=${JWT_EXPIRE:-24h}
+      - JWT_EXPIRE=1h
       - RECAPTCHA_SECRET_KEY=${RECAPTCHA_SECRET_KEY}
     networks:
       - portfolio-network

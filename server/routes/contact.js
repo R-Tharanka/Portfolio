@@ -114,12 +114,11 @@ router.get('/:id', protect, async (req, res) => {
 // @access  Private (Admin only)
 router.delete('/:id', protect, async (req, res) => {
   try {
-    const message = await Contact.findById(req.params.id);
-      if (!message) {
+    const result = await Contact.findOneAndDelete({ _id: req.params.id });
+    if (!result) {
       return res.status(404).json({ msg: 'Message not found' });
     }
 
-    await message.deleteOne();
     res.json({ msg: 'Message removed' });
   } catch (error) {
     console.error(error.message);

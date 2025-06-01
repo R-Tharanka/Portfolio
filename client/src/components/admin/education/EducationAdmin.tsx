@@ -13,7 +13,7 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
-  
+
   const [formData, setFormData] = useState<Omit<Education, 'id'>>({
     institution: '',
     title: '',
@@ -46,10 +46,9 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     };
 
     fetchEducation();
-  }, []);
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     // Handle nested fields
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -64,17 +63,6 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
           }
         };
       });
-    } else if (name === 'skills') {
-      // Handle arrays (comma-separated values), filter out empty items
-      const skillArray = value
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item.length > 0);
-
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: skillArray
-      }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -112,12 +100,12 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
-    
+
     setLoading(true);
     try {
       if (editingEducation) {
@@ -127,8 +115,8 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
           setError(response.error);
         } else {
           // Update education list
-          setEducationItems(prev => 
-            prev.map(item => 
+          setEducationItems(prev =>
+            prev.map(item =>
               item.id === editingEducation.id ? response.data : item
             )
           );
@@ -158,11 +146,11 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
-    
+
     if (!window.confirm('Are you sure you want to delete this education item?')) {
       return;
     }
-    
+
     setLoading(true);
     try {
       const response = await deleteEducation(educationId, token);
@@ -205,7 +193,7 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
           <h3 className="text-lg font-medium mb-4">
             {editingEducation ? 'Edit Education' : 'Add New Education'}
           </h3>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="institution" className="block text-sm font-medium mb-1">Institution</label>
@@ -240,7 +228,6 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                required
                 rows={3}
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
@@ -271,18 +258,48 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                 />
               </div>
             </div>
-
             <div>
-              <label htmlFor="skills" className="block text-sm font-medium mb-1">Skills Acquired (comma-separated)</label>
-              <input
-                type="text"
-                id="skills"
-                name="skills"
-                value={formData.skills.join(', ')}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-              />
+              <label htmlFor="skills" className="block text-sm font-medium mb-1">Skills Acquired</label>
+              <div className="flex flex-wrap gap-2 p-2 bg-card border border-border rounded-md focus-within:ring-1 focus-within:ring-primary">
+                {formData.skills.map((skill, index) => (
+                  <div key={index} className="flex items-center bg-background/80 px-2 py-1 rounded-md">
+                    <span className="text-sm">{skill}</span>
+                    <button
+                      type="button"
+                      className="ml-1 text-foreground/60 hover:text-red-500"
+                      onClick={() => {
+                        const updatedSkills = [...formData.skills];
+                        updatedSkills.splice(index, 1);
+                        setFormData(prev => ({ ...prev, skills: updatedSkills }));
+                      }}
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+                <input
+                  type="text"
+                  id="skillInput"
+                  placeholder="Type skill and press Enter"
+                  className="flex-grow outline-none bg-transparent min-w-[180px] py-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ',') {
+                      e.preventDefault();
+                      const input = e.currentTarget;
+                      const value = input.value.trim();
+
+                      if (value) {
+                        setFormData(prev => ({
+                          ...prev,
+                          skills: [...prev.skills, value]
+                        }));
+                        input.value = '';
+                      }
+                    }
+                  }}
+                />
+              </div>
+              <p className="text-xs text-foreground/60 mt-1">Press Enter or comma to add a skill</p>
             </div>
 
             <div className="flex gap-2 pt-2">
@@ -321,8 +338,8 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                     <h3 className="text-lg font-bold">{item.title}</h3>
                     <p className="text-foreground/80">{item.institution}</p>
                     <div className="text-sm text-foreground/60 mt-1">
-                      {new Date(item.timeline.start).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })} — 
-                      {item.timeline.end 
+                      {new Date(item.timeline.start).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })} —
+                      {item.timeline.end
                         ? new Date(item.timeline.end).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
                         : 'Present'}
                     </div>
@@ -344,9 +361,9 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                     </button>
                   </div>
                 </div>
-                
+
                 <p className="text-sm text-foreground/70 mt-3 mb-3">{item.description}</p>
-                
+
                 <div className="flex flex-wrap gap-1">
                   {item.skills.map((skill, i) => (
                     <span key={i} className="px-2 py-0.5 bg-card text-xs rounded-full">

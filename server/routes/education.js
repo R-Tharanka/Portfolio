@@ -85,11 +85,10 @@ router.post('/', [
 // @desc    Update an education entry
 // @access  Private (Admin only)
 router.put('/:id', [
-  protect,
-  [
+  protect, [
     check('institution', 'Institution name is required').optional().not().isEmpty(),
     check('title', 'Title is required').optional().not().isEmpty(),
-    check('description', 'Description is required').optional().not().isEmpty(),
+    // Description is optional and can be empty
     check('skills', 'Skills should be an array').optional().isArray()
   ]
 ], async (req, res) => {

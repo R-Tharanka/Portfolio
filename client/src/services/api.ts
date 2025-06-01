@@ -13,30 +13,30 @@ const api = axios.create({
 // Add a request interceptor for authentication and logging
 api.interceptors.request.use(config => {
   console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
-  
+
   // Check if request has Authorization header (contains a token)
   const authHeader = config.headers?.Authorization as string;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
-    
+
     // Verify token is not expired
     if (isTokenExpired(token)) {
       // Token expired, reject request and force logout
       console.warn('Token expired, request blocked');
       console.log('Token expiration details:', { token });
-      
+
       // Clear expired token from localStorage
       localStorage.removeItem('adminToken');
-      
+
       // Dispatch a custom event to notify app about token expiration
       const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
       window.dispatchEvent(tokenExpiredEvent);
-      
+
       // Return a rejected promise to prevent the request
       return Promise.reject(new Error('Authentication token expired'));
     }
   }
-  
+
   return config;
 }, error => {
   console.error('API Request Error:', error);
@@ -51,10 +51,10 @@ api.interceptors.response.use(response => {
   if (response?.status === 401) {
     // Unauthorized - token might be invalid or expired
     console.error('Authentication error:', response?.data?.message || 'Unauthorized access');
-    
+
     // Clear token from localStorage
     localStorage.removeItem('adminToken');
-    
+
     // Dispatch a custom event to notify app about token expiration
     const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
     window.dispatchEvent(tokenExpiredEvent);
@@ -78,25 +78,25 @@ export const getSkills = async (): Promise<ApiResponse<Skill[]>> => {
   try {
     // Try to connect to the health endpoint first to check connectivity
     await api.get('/health').catch(() => console.log('Health check failed, continuing anyway'));
-    
+
     const response = await api.get('/skills');
     return { data: response.data };
   } catch (error: any) {
     console.error('Error fetching skills:', error);
-    const errorMessage = error.response?.data?.message || 
-                        error.response?.data?.msg || 
-                        error.message || 
-                        'Failed to fetch skills';
-    
+    const errorMessage = error.response?.data?.message ||
+      error.response?.data?.msg ||
+      error.message ||
+      'Failed to fetch skills';
+
     console.error('Detailed error:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
       message: errorMessage,
       url: error.config?.url
     });
-    
-    return { 
-      data: [], 
+
+    return {
+      data: [],
       error: errorMessage
     };
   }
@@ -107,26 +107,26 @@ export const getProjects = async (): Promise<ApiResponse<Project[]>> => {
   try {
     // Try to connect to the health endpoint first to check connectivity
     await api.get('/health').catch(() => console.log('Health check failed, continuing anyway'));
-    
+
     const response = await api.get('/projects');
     return { data: response.data };
   } catch (error: any) {
     console.error('Error fetching projects:', error);
-    const errorMessage = error.response?.data?.message || 
-                        error.response?.data?.msg || 
-                        error.message || 
-                        'Failed to fetch projects';
-    
+    const errorMessage = error.response?.data?.message ||
+      error.response?.data?.msg ||
+      error.message ||
+      'Failed to fetch projects';
+
     console.error('Detailed error:', {
       status: error.response?.status,
       statusText: error.response?.statusText,
       message: errorMessage,
       url: error.config?.url
     });
-    
-    return { 
-      data: [], 
-      error: errorMessage 
+
+    return {
+      data: [],
+      error: errorMessage
     };
   }
 };
@@ -137,9 +137,9 @@ export const getFeaturedProjects = async (): Promise<ApiResponse<Project[]>> => 
     return { data: response.data };
   } catch (error: any) {
     console.error('Error fetching featured projects:', error);
-    return { 
-      data: [], 
-      error: error.response?.data?.msg || 'Failed to fetch featured projects' 
+    return {
+      data: [],
+      error: error.response?.data?.msg || 'Failed to fetch featured projects'
     };
   }
 };
@@ -151,9 +151,9 @@ export const getEducation = async (): Promise<ApiResponse<Education[]>> => {
     return { data: response.data };
   } catch (error: any) {
     console.error('Error fetching education:', error);
-    return { 
-      data: [], 
-      error: error.response?.data?.msg || 'Failed to fetch education' 
+    return {
+      data: [],
+      error: error.response?.data?.msg || 'Failed to fetch education'
     };
   }
 };
@@ -165,9 +165,9 @@ export const submitContactForm = async (formData: ContactFormData): Promise<ApiR
     return { data: response.data };
   } catch (error: any) {
     console.error('Error submitting contact form:', error);
-    return { 
-      data: null, 
-      error: error.response?.data?.msg || 'Failed to submit contact form' 
+    return {
+      data: null,
+      error: error.response?.data?.msg || 'Failed to submit contact form'
     };
   }
 };
@@ -179,24 +179,25 @@ export const login = async (credentials: { username: string; password: string })
     return { data: response.data };
   } catch (error: any) {
     console.error('Error during login:', error);
-    return { 
-      data: { token: '' }, 
-      error: error.response?.data?.msg || 'Login failed. Check your credentials.' 
+    return {
+      data: { token: '' },
+      error: error.response?.data?.msg || 'Login failed. Check your credentials.'
     };
   }
 };
 
 // ******************* ADMIN SKILLS API *******************
-export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {  try {
+export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
+  try {
     const response = await api.post('/skills', skillData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
     console.error('Error creating skill:', error);
-    return { 
-      data: {} as Skill, 
-      error: error.response?.data?.msg || 'Failed to create skill' 
+    return {
+      data: {} as Skill,
+      error: error.response?.data?.msg || 'Failed to create skill'
     };
   }
 };
@@ -211,45 +212,47 @@ export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>,
         error: 'Invalid skill ID. Please try again or refresh the page.'
       };
     }
-    
+
     // Log what we're sending for debugging
     console.log(`Updating skill ${skillId} with data:`, {
       ...skillData,
-      icon: skillData.icon.length > 50 
+      icon: skillData.icon.length > 50
         ? `${skillData.icon.substring(0, 50)}... (truncated)`
         : skillData.icon
     });
-    
+
     const response = await api.put(`/skills/${skillId}`, skillData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
     console.error('Error updating skill:', error);
-    return { 
-      data: {} as Skill, 
-      error: error.response?.data?.msg || 'Failed to update skill' 
+    return {
+      data: {} as Skill,
+      error: error.response?.data?.msg || 'Failed to update skill'
     };
   }
 };
 
 export const deleteSkill = async (skillId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
-  try {    const response = await api.delete(`/skills/${skillId}`, {
+  try {
+    const response = await api.delete(`/skills/${skillId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
     console.error('Error deleting skill:', error);
-    return { 
-      data: { msg: '' }, 
-      error: error.response?.data?.msg || 'Failed to delete skill' 
+    return {
+      data: { msg: '' },
+      error: error.response?.data?.msg || 'Failed to delete skill'
     };
   }
 };
 
 // ******************* ADMIN PROJECTS API *******************
 export const createProject = async (projectData: Omit<Project, 'id'>, token: string): Promise<ApiResponse<Project>> => {
-  try {    const response = await api.post('/projects', projectData, {
+  try {
+    const response = await api.post('/projects', projectData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
@@ -263,7 +266,8 @@ export const createProject = async (projectData: Omit<Project, 'id'>, token: str
 };
 
 export const updateProject = async (projectId: string, projectData: Omit<Project, 'id'>, token: string): Promise<ApiResponse<Project>> => {
-  try {    const response = await api.put(`/projects/${projectId}`, projectData, {
+  try {
+    const response = await api.put(`/projects/${projectId}`, projectData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
@@ -277,7 +281,8 @@ export const updateProject = async (projectId: string, projectData: Omit<Project
 };
 
 export const deleteProject = async (projectId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
-  try {    const response = await api.delete(`/projects/${projectId}`, {
+  try {
+    const response = await api.delete(`/projects/${projectId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
@@ -292,7 +297,8 @@ export const deleteProject = async (projectId: string, token: string): Promise<A
 
 // ******************* ADMIN EDUCATION API *******************
 export const createEducation = async (educationData: Omit<Education, 'id'>, token: string): Promise<ApiResponse<Education>> => {
-  try {    const response = await api.post('/education', educationData, {
+  try {
+    const response = await api.post('/education', educationData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
@@ -306,7 +312,20 @@ export const createEducation = async (educationData: Omit<Education, 'id'>, toke
 };
 
 export const updateEducation = async (educationId: string, educationData: Omit<Education, 'id'>, token: string): Promise<ApiResponse<Education>> => {
-  try {    const response = await api.put(`/education/${educationId}`, educationData, {
+  try {
+    // Check if educationId is valid
+    if (!educationId || educationId === 'undefined') {
+      console.error('Invalid education ID:', educationId);
+      return {
+        data: {} as Education,
+        error: 'Invalid education ID. Please try again or refresh the page.'
+      };
+    }
+
+    // Log what we're sending for debugging
+    console.log(`Updating education ${educationId} with data:`, educationData);
+
+    const response = await api.put(`/education/${educationId}`, educationData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
@@ -320,7 +339,8 @@ export const updateEducation = async (educationId: string, educationData: Omit<E
 };
 
 export const deleteEducation = async (educationId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
-  try {    const response = await api.delete(`/education/${educationId}`, {
+  try {
+    const response = await api.delete(`/education/${educationId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
@@ -335,15 +355,16 @@ export const deleteEducation = async (educationId: string, token: string): Promi
 
 // ******************* ADMIN CONTACT API *******************
 export const getContactMessages = async (token: string): Promise<ApiResponse<any[]>> => {
-  try {    const response = await api.get('/contact', {
+  try {
+    const response = await api.get('/contact', {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
     console.error('Error fetching contact messages:', error);
-    return { 
-      data: [], 
-      error: error.response?.data?.msg || 'Failed to fetch contact messages' 
+    return {
+      data: [],
+      error: error.response?.data?.msg || 'Failed to fetch contact messages'
     };
   }
 };

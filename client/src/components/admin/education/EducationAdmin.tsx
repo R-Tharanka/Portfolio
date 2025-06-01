@@ -23,7 +23,6 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
       end: null
     }
   });
-
   // Fetch education items
   useEffect(() => {
     const fetchEducation = async () => {
@@ -33,6 +32,14 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
         if (response.error) {
           setError(response.error);
         } else {
+          console.log('Fetched education items:', response.data);
+
+          // Verify all items have IDs
+          const missingIds = response.data.filter(item => !item.id);
+          if (missingIds.length > 0) {
+            console.warn('Some education items are missing IDs:', missingIds);
+          }
+
           setEducationItems(response.data);
           setError(null);
         }
@@ -45,7 +52,9 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     };
 
     fetchEducation();
-  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     // Handle nested fields
@@ -81,8 +90,16 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     setEditingEducation(null);
     setIsFormOpen(false);
   };
-
   const openEditForm = (education: Education) => {
+    console.log('Opening edit form for education with ID:', education.id);
+
+    // Ensure the education object has a valid ID
+    if (!education.id) {
+      console.error('Education item has no ID:', education);
+      setError('Cannot edit this education item: Missing ID');
+      return;
+    }
+
     setFormData({
       institution: education.institution,
       title: education.title,
@@ -96,7 +113,6 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     setEditingEducation(education);
     setIsFormOpen(true);
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -108,6 +124,19 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     setLoading(true);
     try {
       if (editingEducation) {
+        // Log the education being updated
+        console.log('Attempting to update education:', editingEducation);
+
+        // Check if we have a valid ID before attempting to update
+        if (!editingEducation.id) {
+          console.error('Missing ID in editingEducation:', editingEducation);
+          setError('Cannot update education: Missing ID');
+          setLoading(false);
+          return;
+        }
+
+        console.log('Updating education with ID:', editingEducation.id);
+
         // Update existing education item
         const response = await updateEducation(editingEducation.id, formData, token);
         if (response.error) {
@@ -219,9 +248,10 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-
             <div>
-              <label htmlFor="description" className="block text-sm font-medium mb-1">Description</label>
+              <label htmlFor="description" className="block text-sm font-medium mb-1">Description
+                <span className="text-foreground/50 text-xs">(optional)</span>
+              </label>
               <textarea
                 id="description"
                 name="description"
@@ -258,7 +288,9 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
               </div>
             </div>
             <div>
-              <label htmlFor="skills" className="block text-sm font-medium mb-1">Skills Acquired</label>
+              <label htmlFor="skills" className="block text-sm font-medium mb-1">Skills Acquired
+                <span className="text-foreground/50 text-xs">(optional)</span>
+              </label>
               <div className="flex flex-wrap gap-2 p-2 bg-card border border-border rounded-md focus-within:ring-1 focus-within:ring-primary">
                 {formData.skills.map((skill, index) => (
                   <div key={index} className="flex items-center bg-background/80 px-2 py-1 rounded-md">
@@ -279,10 +311,22 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                 <input
                   type="text"
                   id="skillInput"
-                  placeholder="Type skill and press Enter"
+                  placeholder="Type skill and press Enter or comma"
                   className="flex-grow outline-none bg-transparent min-w-[180px] py-1"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
+                      e.preventDefault();
+                      const input = e.currentTarget;
+                      const value = input.value.trim();
+
+                      if (value) {
+                        setFormData(prev => ({
+                          ...prev,
+                          skills: [...prev.skills, value]
+                        }));
+                        input.value = '';
+                      }
+                    } else if (e.key === ',') {
                       e.preventDefault();
                       const input = e.currentTarget;
                       const value = input.value.trim();
@@ -298,15 +342,19 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                   }}
                   onChange={(e) => {
                     const value = e.target.value;
-                    // Handle commas by splitting the input and adding as tags
+                    // If user types a comma, create a new skill
                     if (value.includes(',')) {
-                      const skillsToAdd = value.split(',').map(s => s.trim()).filter(s => s);
-                      if (skillsToAdd.length > 0) {
+                      const skillParts = value.split(',');
+                      const newSkill = skillParts[0].trim();
+
+                      if (newSkill) {
                         setFormData(prev => ({
                           ...prev,
-                          skills: [...prev.skills, ...skillsToAdd]
+                          skills: [...prev.skills, newSkill]
                         }));
-                        e.target.value = '';
+                        e.target.value = skillParts.slice(1).join(',').trim();
+                      } else {
+                        e.target.value = skillParts.slice(1).join(',');
                       }
                     }
                   }}

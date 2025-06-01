@@ -13,8 +13,8 @@ const educationSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: [true, 'Description is required'],
     trim: true
+    // Made description optional by removing required field
   },
   skills: {
     type: [String],

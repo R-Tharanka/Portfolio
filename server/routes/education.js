@@ -23,11 +23,11 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const education = await Education.findById(req.params.id);
-    
+
     if (!education) {
       return res.status(404).json({ msg: 'Education entry not found' });
     }
-    
+
     res.json(education);
   } catch (error) {
     console.error(error.message);
@@ -46,7 +46,7 @@ router.post('/', [
   [
     check('institution', 'Institution name is required').not().isEmpty(),
     check('title', 'Title is required').not().isEmpty(),
-    check('description', 'Description is required').not().isEmpty(),
+    // Description is optional, so we don't validate it here
     check('timeline.start', 'Start date is required').not().isEmpty()
   ]
 ], async (req, res) => {
@@ -100,7 +100,7 @@ router.put('/:id', [
 
   try {
     const education = await Education.findById(req.params.id);
-    
+
     if (!education) {
       return res.status(404).json({ msg: 'Education entry not found' });
     }
@@ -127,7 +127,7 @@ router.put('/:id', [
 router.delete('/:id', protect, async (req, res) => {
   try {
     const education = await Education.findById(req.params.id);
-    
+
     if (!education) {
       return res.status(404).json({ msg: 'Education entry not found' });
     }

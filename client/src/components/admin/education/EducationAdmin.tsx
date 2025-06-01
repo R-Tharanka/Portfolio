@@ -13,7 +13,6 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
-
   const [formData, setFormData] = useState<Omit<Education, 'id'>>({
     institution: '',
     title: '',
@@ -283,7 +282,7 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                   placeholder="Type skill and press Enter"
                   className="flex-grow outline-none bg-transparent min-w-[180px] py-1"
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ',') {
+                    if (e.key === 'Enter') {
                       e.preventDefault();
                       const input = e.currentTarget;
                       const value = input.value.trim();
@@ -294,6 +293,20 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                           skills: [...prev.skills, value]
                         }));
                         input.value = '';
+                      }
+                    }
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    // Handle commas by splitting the input and adding as tags
+                    if (value.includes(',')) {
+                      const skillsToAdd = value.split(',').map(s => s.trim()).filter(s => s);
+                      if (skillsToAdd.length > 0) {
+                        setFormData(prev => ({
+                          ...prev,
+                          skills: [...prev.skills, ...skillsToAdd]
+                        }));
+                        e.target.value = '';
                       }
                     }
                   }}

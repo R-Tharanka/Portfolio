@@ -13,7 +13,7 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState<{show: boolean; id: string | null}>({show: false, id: null});
+  const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; id: string | null }>({ show: false, id: null });
   const [formData, setFormData] = useState<Omit<Education, 'id'>>({
     institution: '',
     title: '',
@@ -183,7 +183,7 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  };  const handleDeleteRequest = (educationId: string) => {
+  }; const handleDeleteRequest = (educationId: string) => {
     // Open the confirmation dialog with the ID to delete
     setConfirmDelete({ show: true, id: educationId });
   };

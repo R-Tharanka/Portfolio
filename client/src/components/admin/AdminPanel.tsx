@@ -11,10 +11,10 @@ import { isTokenExpired, getTokenRemainingTime } from '../../utils/auth';
 
 const AdminPanel: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState<string | null>(null);  useEffect(() => {
+  const [token, setToken] = useState<string | null>(null); useEffect(() => {
     // Check for existing token in localStorage
     const storedToken = localStorage.getItem('adminToken');
-    
+
     if (storedToken) {
       // Verify if token is expired
       if (isTokenExpired(storedToken)) {
@@ -27,11 +27,11 @@ const AdminPanel: React.FC = () => {
         // Valid token, set as authenticated
         setToken(storedToken);
         setIsAuthenticated(true);
-        
+
         // Set up auto-logout when token expires
         const remainingTime = getTokenRemainingTime(storedToken);
         console.log(`Token will expire in ${remainingTime} seconds`);
-        
+
         // Set a timer to log out when token expires
         const logoutTimer = setTimeout(() => {
           console.log('Token expiration timer triggered, logging out');
@@ -51,7 +51,7 @@ const AdminPanel: React.FC = () => {
             clearInterval(tokenCheckInterval);
           }
         }, 60000); // Check every minute
-        
+
         // Clean up timers if component unmounts
         return () => {
           clearTimeout(logoutTimer);
@@ -68,10 +68,10 @@ const AdminPanel: React.FC = () => {
       setToken(null);
       setIsAuthenticated(false);
     };
-    
+
     // Add event listener
     window.addEventListener('auth:tokenExpired', handleTokenExpired);
-    
+
     // Clean up
     return () => {
       window.removeEventListener('auth:tokenExpired', handleTokenExpired);
@@ -82,11 +82,11 @@ const AdminPanel: React.FC = () => {
     localStorage.setItem('adminToken', authToken);
     setToken(authToken);
     setIsAuthenticated(true);
-    
+
     // Set up auto-logout for the new token
     const remainingTime = getTokenRemainingTime(authToken);
     console.log(`New token will expire in ${remainingTime} seconds`);
-    
+
     // Set a timer to log out when token expires
     setTimeout(() => {
       console.log('Token expiration timer triggered, logging out');
@@ -109,13 +109,14 @@ const AdminPanel: React.FC = () => {
       <SEO title="Admin Dashboard" description="Portfolio Admin Panel for content management" />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button 
+        <button
           onClick={handleLogout}
           className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
         >
           Logout
         </button>
-      </div>      <Tabs defaultValue="skills" className="w-full">
+      </div>
+      <Tabs defaultValue="skills" className="w-full">
         <TabsList className="grid grid-cols-5 mb-8">
           <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
@@ -123,26 +124,24 @@ const AdminPanel: React.FC = () => {
           <TabsTrigger value="contact">Contact Messages</TabsTrigger>
           <TabsTrigger value="account">Account Settings</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="skills">
           <SkillsAdmin token={token} />
         </TabsContent>
-        
+
         <TabsContent value="projects">
           <ProjectsAdmin token={token} />
         </TabsContent>
-        
+
         <TabsContent value="education">
           <EducationAdmin token={token} />
         </TabsContent>
-          <TabsContent value="account">
+
+        <TabsContent value="account">
           <AccountSettings onCredentialsUpdated={handleLogin} />
         </TabsContent>
-        
         <TabsContent value="contact">
           <ContactAdmin token={token} />
-        </TabsContent>
-          <AccountSettings token={token} />
         </TabsContent>
       </Tabs>
     </div>

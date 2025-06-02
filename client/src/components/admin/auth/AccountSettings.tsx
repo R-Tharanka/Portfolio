@@ -103,7 +103,6 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ onCredentialsUpdated 
                             <KeyRound className="h-6 w-6" />
                             Account Security
                         </h2>
-                        <p className="text-white/80 mt-1">Update your credentials and keep your account secure</p>
                     </div>
 
                     <div className="p-6">
@@ -208,8 +207,8 @@ const AccountSettings: React.FC<AccountSettingsProps> = ({ onCredentialsUpdated 
                                     type="submit"
                                     disabled={isSubmitting}
                                     className={`w-full py-2.5 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 ${isSubmitting
-                                            ? 'bg-primary/70 cursor-not-allowed'
-                                            : 'bg-primary hover:bg-primary-dark'
+                                        ? 'bg-primary/70 cursor-not-allowed'
+                                        : 'bg-primary hover:bg-primary-dark'
                                         } text-white`}
                                 >
                                     {isSubmitting ? (

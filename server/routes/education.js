@@ -10,7 +10,17 @@ const { protect } = require('../middleware/auth');
 router.get('/', async (req, res) => {
   try {
     const education = await Education.find().sort({ 'timeline.start': -1 });
-    res.json(education);
+
+    // Convert to plain objects and ensure each document has an 'id' field
+    // that matches its '_id' for consistency with the client
+    const educationWithIds = education.map(doc => {
+      const item = doc.toObject();
+      item.id = item._id.toString();
+      return item;
+    });
+
+    console.log(`Returning ${educationWithIds.length} education entries, all with IDs`);
+    res.json(educationWithIds);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');
@@ -28,7 +38,12 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ msg: 'Education entry not found' });
     }
 
-    res.json(education);
+    // Convert to a plain object and ensure it has an 'id' field
+    // that matches its '_id' for consistency with the client
+    const educationWithId = education.toObject();
+    educationWithId.id = educationWithId._id.toString();
+
+    res.json(educationWithId);
   } catch (error) {
     console.error(error.message);
     if (error.kind === 'ObjectId') {
@@ -62,9 +77,7 @@ router.post('/', [
       description,
       skills,
       timeline
-    } = req.body;
-
-    // Create new education entry
+    } = req.body;    // Create new education entry
     const education = new Education({
       institution,
       title,
@@ -74,7 +87,14 @@ router.post('/', [
     });
 
     const savedEducation = await education.save();
-    res.json(savedEducation);
+
+    // Convert to a plain object and ensure it has an 'id' field
+    // that matches its '_id' for consistency with the client
+    const educationWithId = savedEducation.toObject();
+    educationWithId.id = educationWithId._id.toString();
+
+    console.log('Created new education entry with ID:', educationWithId.id);
+    res.json(educationWithId);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');
@@ -98,11 +118,24 @@ router.put('/:id', [
   }
 
   try {
+    // Log the ID we're trying to update for debugging purposes
+    console.log(`Server: Attempting to update education with ID: ${req.params.id}`);
+
+    // Validate that the ID is a valid MongoDB ObjectId
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      console.error(`Invalid ObjectId format: ${req.params.id}`);
+      return res.status(400).json({ msg: 'Invalid ID format' });
+    }
+
     const education = await Education.findById(req.params.id);
 
     if (!education) {
+      console.log(`Education with ID ${req.params.id} not found`);
       return res.status(404).json({ msg: 'Education entry not found' });
     }
+
+    // Log the education entry we found
+    console.log(`Found education entry to update:`, education);
 
     const updatedEducation = await Education.findByIdAndUpdate(
       req.params.id,
@@ -110,9 +143,14 @@ router.put('/:id', [
       { new: true }
     );
 
-    res.json(updatedEducation);
+    // Add id field explicitly for the client
+    const responseData = updatedEducation.toObject();
+    responseData.id = responseData._id;
+
+    console.log(`Successfully updated education:`, responseData);
+    res.json(responseData);
   } catch (error) {
-    console.error(error.message);
+    console.error('Error updating education:', error.message);
     if (error.kind === 'ObjectId') {
       return res.status(404).json({ msg: 'Education entry not found' });
     }

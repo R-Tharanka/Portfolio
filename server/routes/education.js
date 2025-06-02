@@ -177,12 +177,11 @@ router.delete('/:id', protect, async (req, res) => {
     if (!education) {
       console.log(`Education with ID ${req.params.id} not found`);
       return res.status(404).json({ msg: 'Education entry not found' });
-    }
-
-    // Log the education entry we found
+    }    // Log the education entry we found
     console.log(`Found education entry to delete:`, education);
 
-    await Education.findByIdAndRemove(req.params.id);
+    // Changed from findByIdAndRemove to findByIdAndDelete (findByIdAndRemove is deprecated)
+    await Education.findByIdAndDelete(req.params.id);
     console.log(`Successfully deleted education with ID: ${req.params.id}`);
     res.json({ msg: 'Education entry removed' });
   } catch (error) {

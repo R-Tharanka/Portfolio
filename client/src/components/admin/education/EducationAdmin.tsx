@@ -13,6 +13,7 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingEducation, setEditingEducation] = useState<Education | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState<{ show: boolean; id: string | null }>({ show: false, id: null });
   const [formData, setFormData] = useState<Omit<Education, 'id'>>({
     institution: '',
     title: '',
@@ -182,14 +183,14 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
+  }; const handleDeleteRequest = (educationId: string) => {
+    // Open the confirmation dialog with the ID to delete
+    setConfirmDelete({ show: true, id: educationId });
   };
+
   const handleDelete = async (educationId: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
-      return;
-    }
-
-    if (!window.confirm('Are you sure you want to delete this education item?')) {
       return;
     }
 
@@ -231,6 +232,8 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
       setError(err?.message || 'Failed to delete education item. Please try again.');
     } finally {
       setLoading(false);
+      // Close the confirmation dialog
+      setConfirmDelete({ show: false, id: null });
     }
   };
 
@@ -250,6 +253,30 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
       {error && (
         <div className="p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm">
           {error}
+        </div>
+      )}
+
+      {/* Confirmation Dialog */}
+      {confirmDelete.show && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full">
+            <h3 className="text-lg font-medium mb-4">Confirm Delete</h3>
+            <p className="text-foreground/80 mb-6">Are you sure you want to delete this education item? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDelete({ show: false, id: null })}
+                className="px-4 py-2 bg-background text-foreground rounded-md hover:bg-background/80 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => confirmDelete.id && handleDelete(confirmDelete.id)}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -457,9 +484,8 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
                         title="Edit"
                       >
                         <Pencil size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(itemId)}
+                      </button>                      <button
+                        onClick={() => handleDeleteRequest(itemId)}
                         className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                         title="Delete"
                       >

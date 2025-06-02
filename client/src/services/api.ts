@@ -154,7 +154,7 @@ export const getEducation = async (): Promise<ApiResponse<Education[]>> => {
     const educationWithIds = response.data.map((item: any) => {
       // Make sure we use a consistent ID field, preferring id but falling back to _id
       const id = item.id || item._id;
-      console.log(`Processing education item with raw ID: ${item._id}, mapped ID: ${id}`);
+      console.log(`Processing education item with raw ID: ${item._id || 'undefined'}, mapped ID: ${id}`);
 
       return {
         ...item,
@@ -378,15 +378,54 @@ export const updateEducation = async (educationId: string, educationData: Omit<E
 
 export const deleteEducation = async (educationId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
   try {
+    // Check if educationId is valid
+    if (!educationId || educationId === 'undefined') {
+      console.error('Invalid education ID for deletion:', educationId);
+      return {
+        data: { msg: '' },
+        error: 'Invalid education ID. Please try again or refresh the page.'
+      };
+    }
+
+    // Ensure the ID format is valid for MongoDB (24 character hex)
+    if (!educationId.match(/^[0-9a-fA-F]{24}$/)) {
+      console.error(`Invalid ObjectId format: ${educationId}`);
+      return {
+        data: { msg: '' },
+        error: 'Invalid ID format. Please try again or refresh the page.'
+      };
+    }
+
+    // Log the deletion attempt
+    console.log(`Attempting to delete education with ID: ${educationId}`);
+
     const response = await api.delete(`/education/${educationId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+
+    console.log('Successfully deleted education:', response.data);
     return { data: response.data };
   } catch (error: any) {
     console.error('Error deleting education:', error);
+
+    // Provide detailed error information for debugging
+    console.error('Detailed error info:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      message: error.response?.data?.msg || error.message,
+      serverError: error.response?.data?.error,
+      url: error.config?.url
+    });
+
+    // Provide more detailed error information to the user
+    const errorMsg = error.response?.data?.msg ||
+      (error.response?.status === 500 ? 'Server error occurred. Please try again.' :
+        (error.response?.status === 404 ? 'Education record not found.' :
+          'Failed to delete education. ' + (error.message || '')));
+
     return {
       data: { msg: '' },
-      error: error.response?.data?.msg || 'Failed to delete education'
+      error: errorMsg
     };
   }
 };

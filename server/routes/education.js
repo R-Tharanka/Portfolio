@@ -163,20 +163,42 @@ router.put('/:id', [
 // @access  Private (Admin only)
 router.delete('/:id', protect, async (req, res) => {
   try {
+    // Log the ID we're trying to delete for debugging purposes
+    console.log(`Server: Attempting to delete education with ID: ${req.params.id}`);
+
+    // Validate that the ID is a valid MongoDB ObjectId
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      console.error(`Invalid ObjectId format: ${req.params.id}`);
+      return res.status(400).json({ msg: 'Invalid ID format' });
+    }
+
     const education = await Education.findById(req.params.id);
 
     if (!education) {
+      console.log(`Education with ID ${req.params.id} not found`);
       return res.status(404).json({ msg: 'Education entry not found' });
     }
 
+    // Log the education entry we found
+    console.log(`Found education entry to delete:`, education);
+
     await Education.findByIdAndRemove(req.params.id);
+    console.log(`Successfully deleted education with ID: ${req.params.id}`);
     res.json({ msg: 'Education entry removed' });
   } catch (error) {
-    console.error(error.message);
+    console.error('Error deleting education:', error);
+
+    // Check if it's an ObjectID error
     if (error.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Education entry not found' });
+      return res.status(404).json({ msg: 'Education entry not found - Invalid ID format' });
     }
-    res.status(500).send('Server Error');
+
+    // Send back detailed error for debugging
+    return res.status(500).json({
+      msg: 'Server Error when deleting education',
+      error: error.message,
+      stack: process.env.NODE_ENV === 'production' ? undefined : error.stack
+    });
   }
 });
 

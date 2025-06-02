@@ -183,7 +183,6 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
       setLoading(false);
     }
   };
-
   const handleDelete = async (educationId: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
@@ -194,18 +193,42 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
       return;
     }
 
+    // Ensure we have a valid ID to work with
+    if (!educationId) {
+      console.error('Attempted to delete education with invalid ID:', educationId);
+      setError('Cannot delete this education item: Missing ID');
+      return;
+    }
+
     setLoading(true);
     try {
+      console.log('Attempting to delete education with ID:', educationId);
+
+      // Check if the ID format is valid for MongoDB (24 character hex)
+      if (!educationId.match(/^[0-9a-fA-F]{24}$/)) {
+        console.error(`Invalid MongoDB ObjectId format: ${educationId}`);
+        setError('Cannot delete: Invalid ID format');
+        setLoading(false);
+        return;
+      }
+
       const response = await deleteEducation(educationId, token);
+
       if (response.error) {
+        console.error('Error returned from deleteEducation:', response.error);
         setError(response.error);
       } else {
-        // Remove education item from list
-        setEducationItems(prev => prev.filter(item => item.id !== educationId));
+        console.log('Successfully deleted education item:', educationId);
+        // Remove education item from list - match by either id or _id
+        setEducationItems(prev => prev.filter(item => {
+          const itemId = item.id || (item as any)._id;
+          return itemId !== educationId;
+        }));
+        setError(null); // Clear any existing errors
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete education item:', err);
-      setError('Failed to delete education item. Please try again.');
+      setError(err?.message || 'Failed to delete education item. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -407,48 +430,56 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
           {educationItems.length === 0 ? (
             <p className="text-center py-8 text-foreground/70">No education items found. Add your first education item!</p>
           ) : (
-            educationItems.map(item => (
-              <div key={item.id} className="border border-border/50 rounded-lg p-4 bg-background/50">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-bold">{item.title}</h3>
-                    <p className="text-foreground/80">{item.institution}</p>
-                    <div className="text-sm text-foreground/60 mt-1">
-                      {new Date(item.timeline.start).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })} —
-                      {item.timeline.end
-                        ? new Date(item.timeline.end).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
-                        : 'Present'}
+            educationItems.map(item => {
+              // Ensure item has an id for the key and delete operation
+              const itemId = item.id || (item as any)._id;
+              if (!itemId) {
+                console.warn('Education item missing ID:', item);
+              }
+
+              return (
+                <div key={itemId} className="border border-border/50 rounded-lg p-4 bg-background/50">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="text-lg font-bold">{item.title}</h3>
+                      <p className="text-foreground/80">{item.institution}</p>
+                      <div className="text-sm text-foreground/60 mt-1">
+                        {new Date(item.timeline.start).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })} —
+                        {item.timeline.end
+                          ? new Date(item.timeline.end).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+                          : 'Present'}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => openEditForm(item)}
+                        className="p-1 text-foreground/70 hover:text-primary transition-colors"
+                        title="Edit"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(itemId)}
+                        className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
                     </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => openEditForm(item)}
-                      className="p-1 text-foreground/70 hover:text-primary transition-colors"
-                      title="Edit"
-                    >
-                      <Pencil size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+
+                  <p className="text-sm text-foreground/70 mt-3 mb-3">{item.description}</p>
+
+                  <div className="flex flex-wrap gap-1">
+                    {item.skills.map((skill, i) => (
+                      <span key={i} className="px-2 py-0.5 bg-card text-xs rounded-full">
+                        {skill}
+                      </span>
+                    ))}
                   </div>
                 </div>
-
-                <p className="text-sm text-foreground/70 mt-3 mb-3">{item.description}</p>
-
-                <div className="flex flex-wrap gap-1">
-                  {item.skills.map((skill, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-card text-xs rounded-full">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}

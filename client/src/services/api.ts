@@ -148,7 +148,23 @@ export const getFeaturedProjects = async (): Promise<ApiResponse<Project[]>> => 
 export const getEducation = async (): Promise<ApiResponse<Education[]>> => {
   try {
     const response = await api.get('/education');
-    return { data: response.data };
+
+    // Ensure each education item has a proper id property 
+    // MongoDB returns _id, we need to map it to id if it doesn't exist
+    const educationWithIds = response.data.map((item: any) => {
+      // Make sure we use a consistent ID field, preferring id but falling back to _id
+      const id = item.id || item._id;
+      console.log(`Processing education item with raw ID: ${item._id}, mapped ID: ${id}`);
+
+      return {
+        ...item,
+        id
+      };
+    });
+
+    console.log('Education items with mapped IDs:', educationWithIds);
+
+    return { data: educationWithIds };
   } catch (error: any) {
     console.error('Error fetching education:', error);
     return {
@@ -301,7 +317,20 @@ export const createEducation = async (educationData: Omit<Education, 'id'>, toke
     const response = await api.post('/education', educationData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    return { data: response.data };
+
+    // Log the raw response to debug
+    console.log('Raw education creation response:', response.data);
+
+    // Ensure the education item has an id property
+    // MongoDB returns _id, we need to map it to id if it doesn't exist
+    const educationWithId = {
+      ...response.data,
+      id: response.data.id || response.data._id
+    };
+
+    console.log('Processed education with ID:', educationWithId);
+
+    return { data: educationWithId };
   } catch (error: any) {
     console.error('Error creating education:', error);
     return {
@@ -328,7 +357,16 @@ export const updateEducation = async (educationId: string, educationData: Omit<E
     const response = await api.put(`/education/${educationId}`, educationData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    return { data: response.data };
+
+    // Ensure the returned data has the id field properly mapped
+    const educationWithId = {
+      ...response.data,
+      id: response.data.id || response.data._id
+    };
+
+    console.log('Successfully updated education, returned data:', educationWithId);
+
+    return { data: educationWithId };
   } catch (error: any) {
     console.error('Error updating education:', error);
     return {

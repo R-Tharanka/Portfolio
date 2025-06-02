@@ -91,14 +91,22 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     setIsFormOpen(false);
   };
   const openEditForm = (education: Education) => {
-    console.log('Opening edit form for education with ID:', education.id);
+    // Ensure we have a valid ID (either id or _id from MongoDB)
+    const educationId = education.id || (education as any)._id;
+    console.log('Opening edit form for education with ID:', educationId);
 
     // Ensure the education object has a valid ID
-    if (!education.id) {
+    if (!educationId) {
       console.error('Education item has no ID:', education);
       setError('Cannot edit this education item: Missing ID');
       return;
     }
+
+    // Create a copy of the education object with the properly set ID
+    const educationWithId = {
+      ...education,
+      id: educationId
+    };
 
     setFormData({
       institution: education.institution,
@@ -110,7 +118,7 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
         end: education.timeline.end
       }
     });
-    setEditingEducation(education);
+    setEditingEducation(educationWithId);
     setIsFormOpen(true);
   };
   const handleSubmit = async (e: React.FormEvent) => {
@@ -124,29 +132,34 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
     setLoading(true);
     try {
       if (editingEducation) {
+        // Get the education ID (could be in id or _id)
+        const educationId = editingEducation.id || (editingEducation as any)._id;
+
         // Log the education being updated
         console.log('Attempting to update education:', editingEducation);
+        console.log('Using education ID:', educationId);
 
         // Check if we have a valid ID before attempting to update
-        if (!editingEducation.id) {
+        if (!educationId) {
           console.error('Missing ID in editingEducation:', editingEducation);
           setError('Cannot update education: Missing ID');
           setLoading(false);
           return;
         }
 
-        console.log('Updating education with ID:', editingEducation.id);
-
         // Update existing education item
-        const response = await updateEducation(editingEducation.id, formData, token);
+        const response = await updateEducation(educationId, formData, token);
         if (response.error) {
           setError(response.error);
         } else {
-          // Update education list
+          console.log('Successfully updated education item:', response.data);
+
+          // Update education list, ensuring we match by the correct ID
           setEducationItems(prev =>
-            prev.map(item =>
-              item.id === editingEducation.id ? response.data : item
-            )
+            prev.map(item => {
+              const itemId = item.id || (item as any)._id;
+              return itemId === educationId ? response.data : item;
+            })
           );
           resetForm();
         }
@@ -156,6 +169,8 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
         if (response.error) {
           setError(response.error);
         } else {
+          console.log('Successfully created education item:', response.data);
+
           // Add new education item to list
           setEducationItems(prev => [...prev, response.data]);
           resetForm();

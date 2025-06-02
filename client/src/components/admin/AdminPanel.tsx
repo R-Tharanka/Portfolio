@@ -4,6 +4,7 @@ import SkillsAdmin from './skills/SkillsAdmin';
 import ProjectsAdmin from './projects/ProjectsAdmin';
 import EducationAdmin from './education/EducationAdmin';
 import ContactAdmin from './contact/ContactAdmin';
+import AccountSettings from './auth/AccountSettings';
 import LoginForm from './auth/LoginForm';
 import SEO from '../common/SEO';
 import { isTokenExpired, getTokenRemainingTime } from '../../utils/auth';
@@ -114,14 +115,13 @@ const AdminPanel: React.FC = () => {
         >
           Logout
         </button>
-      </div>
-
-      <Tabs defaultValue="skills" className="w-full">
-        <TabsList className="grid grid-cols-4 mb-8">
+      </div>      <Tabs defaultValue="skills" className="w-full">
+        <TabsList className="grid grid-cols-5 mb-8">
           <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="education">Education</TabsTrigger>
           <TabsTrigger value="contact">Contact Messages</TabsTrigger>
+          <TabsTrigger value="account">Account Settings</TabsTrigger>
         </TabsList>
         
         <TabsContent value="skills">
@@ -135,9 +135,14 @@ const AdminPanel: React.FC = () => {
         <TabsContent value="education">
           <EducationAdmin token={token} />
         </TabsContent>
+          <TabsContent value="account">
+          <AccountSettings onCredentialsUpdated={handleLogin} />
+        </TabsContent>
         
         <TabsContent value="contact">
           <ContactAdmin token={token} />
+        </TabsContent>
+          <AccountSettings token={token} />
         </TabsContent>
       </Tabs>
     </div>

@@ -202,6 +202,25 @@ export const login = async (credentials: { username: string; password: string })
   }
 };
 
+export const updateCredentials = async (data: {
+  currentPassword: string;
+  newUsername?: string;
+  newPassword?: string
+}, token: string): Promise<ApiResponse<{ token: string; msg: string }>> => {
+  try {
+    const response = await api.put('/auth/update-credentials', data, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return { data: response.data };
+  } catch (error: any) {
+    console.error('Error updating credentials:', error);
+    return {
+      data: { token: '', msg: '' },
+      error: error.response?.data?.msg || 'Failed to update credentials'
+    };
+  }
+};
+
 // ******************* ADMIN SKILLS API *******************
 export const createSkill = async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
   try {

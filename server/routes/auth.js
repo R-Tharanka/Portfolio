@@ -35,7 +35,7 @@ router.post('/register', [
 
     // Return JWT
     const token = admin.getSignedJwtToken();
-    
+
     res.json({ token });
   } catch (error) {
     console.error(error.message);
@@ -72,7 +72,7 @@ router.post('/login', [
 
     // Return JWT
     const token = admin.getSignedJwtToken();
-    
+
     res.json({ token });
   } catch (error) {
     console.error(error.message);
@@ -87,6 +87,64 @@ router.get('/', protect, async (req, res) => {
   try {
     const admin = await Admin.findById(req.admin.id).select('-password');
     res.json(admin);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT /api/auth/update-credentials
+// @desc    Update admin credentials (username and/or password)
+// @access  Private
+router.put('/update-credentials', [
+  protect,
+  check('currentPassword', 'Current password is required').exists(),
+  check('newPassword', 'New password must be at least 6 characters').optional().isLength({ min: 6 }),
+  check('newUsername', 'Username cannot be empty').optional().not().isEmpty()
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
+  const { currentPassword, newPassword, newUsername } = req.body;
+
+  try {
+    // Get admin with password
+    const admin = await Admin.findById(req.admin.id).select('+password');
+
+    // Verify current password
+    const isMatch = await admin.matchPassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({ msg: 'Current password is incorrect' });
+    }
+
+    // Update username if provided
+    if (newUsername && newUsername !== admin.username) {
+      // Check if new username already exists
+      const usernameExists = await Admin.findOne({ username: newUsername });
+      if (usernameExists) {
+        return res.status(400).json({ msg: 'Username already exists' });
+      }
+
+      admin.username = newUsername;
+    }
+
+    // Update password if provided
+    if (newPassword) {
+      admin.password = newPassword;
+    }
+
+    // Save changes
+    await admin.save();
+
+    // Generate new token with updated info
+    const token = admin.getSignedJwtToken();
+
+    res.json({
+      msg: 'Credentials updated successfully',
+      token
+    });
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Server Error');

@@ -46,7 +46,13 @@ coverage
 **/*-local.ps1
 **/*-local.js
 
-# Docker files (since you're not using Docker)
+# Docker files
 .docker
 docker-compose.yml
 **/Dockerfile
+
+# Backup files
+*.bak
+
+# Automatic deploy files (these should be generated, not tracked)
+stats.html

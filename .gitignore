@@ -13,6 +13,11 @@
 node_modules
 **/node_modules
 
+# Deployment and build scripts
+DEPLOYMENT.md
+build.ps1
+vercel.json
+
 # Logs
 logs
 *.log

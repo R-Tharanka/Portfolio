@@ -2,6 +2,13 @@
 
 This document describes the automated Git workflows configured for this portfolio project.
 
+## Overview
+
+We have implemented two workflows to automate the theme management process:
+
+1. **Auto PR from Theme Branch** - Creates a pull request when changes are made to the theme-branch
+2. **Auto Merge Theme PR** - Automatically approves and merges PRs from the theme-branch
+
 ## Pull Request Automation
 
 This repository contains GitHub Actions workflows that automate pull requests from the `theme-branch` to the `main` branch:

@@ -13,6 +13,11 @@
 node_modules
 **/node_modules
 
+# Deployment and build scripts
+DEPLOYMENT.md
+build.ps1
+vercel.json
+
 # Logs
 logs
 *.log
@@ -46,7 +51,13 @@ coverage
 **/*-local.ps1
 **/*-local.js
 
-# Docker files (since you're not using Docker)
+# Docker files
 .docker
 docker-compose.yml
 **/Dockerfile
+
+# Backup files
+*.bak
+
+# Automatic deploy files (these should be generated, not tracked)
+stats.html

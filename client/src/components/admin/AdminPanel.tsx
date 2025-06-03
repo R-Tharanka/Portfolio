@@ -11,7 +11,15 @@ import { isTokenExpired, getTokenRemainingTime } from '../../utils/auth';
 
 const AdminPanel: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [token, setToken] = useState<string | null>(null); useEffect(() => {
+  const [token, setToken] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("skills");
+
+  // Toggle between account settings and the previously active tab
+  const toggleAccountSettings = () => {
+    setActiveTab(prev => prev === "account" ? "skills" : "account");
+  };
+
+  useEffect(() => {
     // Check for existing token in localStorage
     const storedToken = localStorage.getItem('adminToken');
 
@@ -109,20 +117,36 @@ const AdminPanel: React.FC = () => {
       <SEO title="Admin Dashboard" description="Portfolio Admin Panel for content management" />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <button
-          onClick={handleLogout}
-          className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+        <div className="flex items-center space-x-2">          <button
+          onClick={toggleAccountSettings}
+          className={`p-2 ${activeTab === "account"
+            ? "bg-green-500 hover:bg-green-600"
+            : "bg-blue-500 hover:bg-blue-600"
+            } text-white rounded-lg transition-colors relative`}
+          title="Account Settings"
+          aria-label="Account Settings"
         >
-          Logout
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          {activeTab === "account" && (
+            <span className="absolute top-0 right-0 block w-2 h-2 bg-white rounded-full transform translate-x-1/2 -translate-y-1/2"></span>
+          )}
         </button>
-      </div>
-      <Tabs defaultValue="skills" className="w-full">
-        <TabsList className="grid grid-cols-5 mb-8">
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+          >
+            Logout
+          </button>
+        </div>
+      </div>      <Tabs defaultValue={activeTab} className="w-full">
+        <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-8">
           <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="education">Education</TabsTrigger>
-          <TabsTrigger value="contact">Contact Messages</TabsTrigger>
-          <TabsTrigger value="account">Account Settings</TabsTrigger>
+          <TabsTrigger value="contact">Messages</TabsTrigger>
         </TabsList>
 
         <TabsContent value="skills">
@@ -137,11 +161,12 @@ const AdminPanel: React.FC = () => {
           <EducationAdmin token={token} />
         </TabsContent>
 
-        <TabsContent value="account">
-          <AccountSettings onCredentialsUpdated={handleLogin} />
-        </TabsContent>
         <TabsContent value="contact">
           <ContactAdmin token={token} />
+        </TabsContent>
+
+        <TabsContent value="account">
+          <AccountSettings onCredentialsUpdated={handleLogin} />
         </TabsContent>
       </Tabs>
     </div>

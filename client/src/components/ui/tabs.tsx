@@ -9,6 +9,11 @@ type TabsProps = {
 export const Tabs: React.FC<TabsProps> = ({ defaultValue, className = "", children }) => {
   const [activeTab, setActiveTab] = React.useState(defaultValue);
 
+  // Update the activeTab state when defaultValue changes
+  React.useEffect(() => {
+    setActiveTab(defaultValue);
+  }, [defaultValue]);
+
   // Clone children and inject the active tab state
   const childrenWithProps = React.Children.map(children, (child) => {
     if (React.isValidElement(child)) {
@@ -36,11 +41,11 @@ type TabsListProps = {
   setActiveTab?: React.Dispatch<React.SetStateAction<string>>;
 };
 
-export const TabsList: React.FC<TabsListProps> = ({ 
-  className = "", 
+export const TabsList: React.FC<TabsListProps> = ({
+  className = "",
   children,
   activeTab,
-  setActiveTab 
+  setActiveTab
 }) => {
   // Clone children and inject the active tab state
   const childrenWithProps = React.Children.map(children, (child) => {
@@ -54,7 +59,7 @@ export const TabsList: React.FC<TabsListProps> = ({
   });
 
   return (
-    <div className={`inline-flex p-1 bg-card rounded-lg ${className}`}>
+    <div className={`inline-flex flex-wrap w-full p-1 bg-card rounded-lg ${className}`}>
       {childrenWithProps}
     </div>
   );
@@ -68,15 +73,15 @@ type TabsTriggerProps = {
   className?: string;
 };
 
-export const TabsTrigger: React.FC<TabsTriggerProps> = ({ 
-  value, 
+export const TabsTrigger: React.FC<TabsTriggerProps> = ({
+  value,
   children,
   activeTab,
   setActiveTab,
   className = ""
 }) => {
   const isActive = activeTab === value;
-  
+
   const handleClick = () => {
     if (setActiveTab) {
       setActiveTab(value);
@@ -85,11 +90,10 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
 
   return (
     <button
-      className={`px-3 py-1.5 text-sm font-medium transition-all ${
-        isActive 
-          ? "bg-background text-foreground shadow-sm" 
+      className={`px-3 py-1.5 text-sm font-medium transition-all flex-grow ${isActive
+          ? "bg-background text-foreground shadow-sm"
           : "text-foreground/60 hover:text-foreground/80"
-      } rounded-md ${className}`}
+        } rounded-md ${className}`}
       onClick={handleClick}
     >
       {children}
@@ -104,16 +108,16 @@ type TabsContentProps = {
   className?: string;
 };
 
-export const TabsContent: React.FC<TabsContentProps> = ({ 
-  value, 
+export const TabsContent: React.FC<TabsContentProps> = ({
+  value,
   children,
   activeTab,
   className = ""
 }) => {
   const isActive = activeTab === value;
-  
+
   if (!isActive) return null;
-  
+
   return (
     <div className={`mt-2 ${className}`}>
       {children}

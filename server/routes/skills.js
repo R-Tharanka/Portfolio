@@ -85,9 +85,22 @@ router.put('/:id', [
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
-
   try {
     const { name, category, proficiency, icon } = req.body;
+    
+    // Find the skill we're trying to update
+    let skill = await Skill.findById(req.params.id);
+    if (!skill) {
+      return res.status(404).json({ msg: 'Skill not found' });
+    }
+    
+    // If name is being updated, check if the new name already exists for OTHER skills
+    if (name && name !== skill.name) {
+      const existingSkill = await Skill.findOne({ name, _id: { $ne: req.params.id } });
+      if (existingSkill) {
+        return res.status(400).json({ msg: 'Skill with this name already exists' });
+      }
+    }
     
     // Build skill object
     const skillFields = {};
@@ -95,11 +108,6 @@ router.put('/:id', [
     if (category) skillFields.category = category;
     if (proficiency !== undefined) skillFields.proficiency = proficiency;
     if (icon) skillFields.icon = icon;
-    
-    let skill = await Skill.findById(req.params.id);
-    if (!skill) {
-      return res.status(404).json({ msg: 'Skill not found' });
-    }
 
     skill = await Skill.findByIdAndUpdate(
       req.params.id,

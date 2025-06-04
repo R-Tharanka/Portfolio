@@ -538,8 +538,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                           title="Edit"
                         >
                           <Pencil size={16} />
-                        </button>
-                        <button
+                        </button>                        <button
                           onClick={() => handleDeleteRequest(skill)}
                           className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                           title="Delete"
@@ -556,20 +555,28 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
         </div>
       )}
 
-      {/* Delete confirmation dialog */}
-      <DeleteConfirmationDialog
+      {/* Delete confirmation dialog */}      <DeleteConfirmationDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => {
           setIsDeleteDialogOpen(false);
           setSkillToDelete(null);
         }}
         onConfirm={async () => {
+          if (!token) {
+            setError('Authentication token is missing. Please log in again.');
+            setIsDeleteDialogOpen(false);
+            setSkillToDelete(null);
+            return;
+          }
+          
           if (skillToDelete && skillToDelete.id) {
             setLoading(true);
             try {
-              const response = await deleteSkillFixed(skillToDelete.id, token as string);
+              const response = await deleteSkillFixed(skillToDelete.id, token);
               if (response.error) {
                 setError(response.error);
+                setIsDeleteDialogOpen(false);
+                setSkillToDelete(null);
               } else {
                 // Remove skill from list
                 setSkills(prev => prev.filter(skill => skill.id !== skillToDelete.id));
@@ -580,9 +587,15 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
             } catch (err) {
               console.error('Failed to delete skill:', err);
               setError('Failed to delete skill. Please try again.');
+              setIsDeleteDialogOpen(false);
+              setSkillToDelete(null);
             } finally {
               setLoading(false);
             }
+          } else {
+            setError('Invalid skill selected for deletion.');
+            setIsDeleteDialogOpen(false);
+            setSkillToDelete(null);
           }
         }}
         skill={skillToDelete}

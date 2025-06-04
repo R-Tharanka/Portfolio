@@ -19,12 +19,9 @@ api.interceptors.request.use(
     console.log(`Method: ${config.method?.toUpperCase()}`);
     console.log('Headers:', config.headers);
     console.log('Request Data:', config.data);
-    console.log('========== API REQUEST END ==========');
-
-    // Add a special header for skill updates to ensure they're treated as PUT requests
+    console.log('========== API REQUEST END ==========');    // Skills update debug log
     if (config.url?.startsWith('/skills/') && config.method === 'put') {
-      console.log('🔄 Adding special header for skill update');
-      config.headers.set('X-HTTP-Method-Override', 'PUT');
+      console.log('🔄 Skill update request detected');
     }
 
     // Authentication check

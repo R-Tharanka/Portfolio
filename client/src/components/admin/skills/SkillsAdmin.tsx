@@ -208,10 +208,20 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }; const handleDeleteRequest = (skill: Skill) => {
+    console.log('Delete requested for skill:', skill);
 
-  const handleDeleteRequest = (skill: Skill) => {
-    setSkillToDelete(skill);
+    // Make sure we capture the ID properly (could be id or _id from MongoDB)
+    const skillId = skill?.id || (skill as any)?._id;
+    console.log('Skill ID:', skillId);
+
+    // Create a normalized skill object with the id properly set
+    const normalizedSkill = {
+      ...skill,
+      id: skillId
+    };
+
+    setSkillToDelete(normalizedSkill);
     setIsDeleteDialogOpen(true);
   };
 
@@ -561,39 +571,63 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
           setIsDeleteDialogOpen(false);
           setSkillToDelete(null);
         }}
-        onConfirm={async () => {
+        onConfirm={() => {
+          // Store skill in local variable to prevent it from being lost during async operation
+          const skillToBeDeleted = skillToDelete;
+
+          console.log('Delete confirmation clicked');
+          console.log('Token available:', !!token);
+          console.log('skillToDelete:', skillToBeDeleted);
+          console.log('skillToDelete.id:', skillToBeDeleted?.id);
+
           if (!token) {
             setError('Authentication token is missing. Please log in again.');
             setIsDeleteDialogOpen(false);
             setSkillToDelete(null);
             return;
           }
-          
-          if (skillToDelete && skillToDelete.id) {
-            setLoading(true);
-            try {
-              const response = await deleteSkillFixed(skillToDelete.id, token);
-              if (response.error) {
-                setError(response.error);
-                setIsDeleteDialogOpen(false);
-                setSkillToDelete(null);
-              } else {
-                // Remove skill from list
-                setSkills(prev => prev.filter(skill => skill.id !== skillToDelete.id));
-                // Clear the dialog state
-                setIsDeleteDialogOpen(false);
-                setSkillToDelete(null);
-              }
-            } catch (err) {
-              console.error('Failed to delete skill:', err);
-              setError('Failed to delete skill. Please try again.');
+
+          if (skillToBeDeleted) {
+            // Get skill ID from either id or _id property (MongoDB might return _id)
+            const skillId = skillToBeDeleted.id || (skillToBeDeleted as any)._id;
+
+            if (!skillId) {
+              console.error('No valid ID found in skill object:', skillToBeDeleted);
+              setError('Could not determine skill ID. Please refresh the page and try again.');
               setIsDeleteDialogOpen(false);
               setSkillToDelete(null);
-            } finally {
-              setLoading(false);
+              return;
             }
+
+            console.log('Proceeding with deletion using ID:', skillId);
+
+            setLoading(true);
+
+            // Execute the deletion asynchronously
+            deleteSkillFixed(skillId, token)
+              .then(response => {
+                if (response.error) {
+                  setError(response.error);
+                } else {
+                  // Remove skill from list
+                  setSkills(prev => prev.filter(skill => {
+                    const currentId = skill.id || (skill as any)._id;
+                    return currentId !== skillId;
+                  }));
+                }
+              })
+              .catch(err => {
+                console.error('Failed to delete skill:', err);
+                setError('Failed to delete skill. Please try again.');
+              })
+              .finally(() => {
+                setLoading(false);
+                setIsDeleteDialogOpen(false);
+                setSkillToDelete(null);
+              });
           } else {
-            setError('Invalid skill selected for deletion.');
+            console.error('No skill object found when trying to delete');
+            setError('Invalid skill selected for deletion. Please try again.');
             setIsDeleteDialogOpen(false);
             setSkillToDelete(null);
           }

@@ -10,38 +10,53 @@ const api = axios.create({
   }
 });
 
-// Add a request interceptor for authentication and logging
-api.interceptors.request.use(config => {
-  console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
+// Single consolidated request interceptor for debugging, authentication and special headers
+api.interceptors.request.use(
+  (config) => {
+    // Debug logging for all requests
+    console.log('========== API REQUEST START ==========');
+    console.log(`URL: ${config.baseURL}${config.url}`);
+    console.log(`Method: ${config.method?.toUpperCase()}`);
+    console.log('Headers:', config.headers);
+    console.log('Request Data:', config.data);
+    console.log('========== API REQUEST END ==========');
 
-  // Check if request has Authorization header (contains a token)
-  const authHeader = config.headers?.Authorization as string;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-
-    // Verify token is not expired
-    if (isTokenExpired(token)) {
-      // Token expired, reject request and force logout
-      console.warn('Token expired, request blocked');
-      console.log('Token expiration details:', { token });
-
-      // Clear expired token from localStorage
-      localStorage.removeItem('adminToken');
-
-      // Dispatch a custom event to notify app about token expiration
-      const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
-      window.dispatchEvent(tokenExpiredEvent);
-
-      // Return a rejected promise to prevent the request
-      return Promise.reject(new Error('Authentication token expired'));
+    // Add a special header for skill updates to ensure they're treated as PUT requests
+    if (config.url?.startsWith('/skills/') && config.method === 'put') {
+      console.log('🔄 Adding special header for skill update');
+      config.headers.set('X-HTTP-Method-Override', 'PUT');
     }
-  }
 
-  return config;
-}, error => {
-  console.error('API Request Error:', error);
-  return Promise.reject(error);
-});
+    // Authentication check
+    const authHeader = config.headers?.Authorization as string;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+
+      // Verify token is not expired
+      if (isTokenExpired(token)) {
+        // Token expired, reject request and force logout
+        console.warn('Token expired, request blocked');
+        console.log('Token expiration details:', { token });
+
+        // Clear expired token from localStorage
+        localStorage.removeItem('adminToken');
+
+        // Dispatch a custom event to notify app about token expiration
+        const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
+        window.dispatchEvent(tokenExpiredEvent);
+
+        // Return a rejected promise to prevent the request
+        return Promise.reject(new Error('Authentication token expired'));
+      }
+    }
+
+    return config;
+  },
+  (error) => {
+    console.error('API Request Error:', error);
+    return Promise.reject(error);
+  }
+);
 
 // Add a response interceptor for logging and error handling
 api.interceptors.response.use(response => {
@@ -68,7 +83,7 @@ api.interceptors.response.use(response => {
 import { Skill, Project, Education, ContactFormData } from '../types';
 
 // API response types
-interface ApiResponse<T> {
+export interface ApiResponse<T> {
   data: T;
   error?: string;
 }
@@ -248,15 +263,22 @@ export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>,
       };
     }
 
+    // MongoDB might return _id instead of id, so handle both
+    // This shouldn't happen due to our fixes above, but let's be extra safe
+    const actualId = skillId.toString();
+
     // Log what we're sending for debugging
-    console.log(`Updating skill ${skillId} with data:`, {
+    console.log(`Updating skill ${actualId} with data:`, {
       ...skillData,
       icon: skillData.icon.length > 50
         ? `${skillData.icon.substring(0, 50)}... (truncated)`
         : skillData.icon
-    });
+    });    // Explicitly use PUT method to update
+    console.log(`SKILL UPDATE: Making PUT request to /skills/${actualId}`);
+    console.log('Request headers:', { 'Authorization': `Bearer ${token ? token.substring(0, 15) + '...' : 'undefined'}` });
+    console.log('Request data:', skillData);
 
-    const response = await api.put(`/skills/${skillId}`, skillData, {
+    const response = await api.put(`/skills/${actualId}`, skillData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
@@ -477,6 +499,45 @@ export const deleteContactMessage = async (messageId: string, token: string): Pr
       data: { msg: '' },
       error: error.response?.data?.msg || 'Failed to delete contact message'
     };
+  }
+};
+
+// Debug function for skill operations
+export const debugSkillOperations = {
+  create: async (skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
+    console.log('DEBUG: Creating skill with data:', skillData);
+    try {
+      const response = await api.post('/skills', skillData, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      console.log('DEBUG: Create skill response:', response.data);
+      return { data: response.data };
+    } catch (error: any) {
+      console.error('DEBUG: Error creating skill:', error);
+      console.error('DEBUG: Error response:', error.response?.data);
+      return {
+        data: {} as Skill,
+        error: error.response?.data?.msg || 'Failed to create skill'
+      };
+    }
+  },
+  update: async (skillId: string, skillData: Omit<Skill, 'id'>, token: string): Promise<ApiResponse<Skill>> => {
+    console.log(`DEBUG: Updating skill with ID: ${skillId}`);
+    console.log('DEBUG: Update data:', skillData);
+    try {
+      const response = await api.put(`/skills/${skillId}`, skillData, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      console.log('DEBUG: Update skill response:', response.data);
+      return { data: response.data };
+    } catch (error: any) {
+      console.error('DEBUG: Error updating skill:', error);
+      console.error('DEBUG: Error response:', error.response?.data);
+      return {
+        data: {} as Skill,
+        error: error.response?.data?.msg || 'Failed to update skill'
+      };
+    }
   }
 };
 

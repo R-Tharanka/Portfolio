@@ -93,13 +93,17 @@ router.put('/:id', [
     if (!skill) {
       return res.status(404).json({ msg: 'Skill not found' });
     }
-    
-    // If name is being updated, check if the new name already exists for OTHER skills
+      // If name is being updated, check if the new name already exists for OTHER skills
+    // Only perform this check if the name is actually changing
     if (name && name !== skill.name) {
+      console.log(`Name changed from "${skill.name}" to "${name}". Checking if new name exists...`);
       const existingSkill = await Skill.findOne({ name, _id: { $ne: req.params.id } });
       if (existingSkill) {
+        console.log(`Conflict: Skill with name "${name}" already exists with ID ${existingSkill._id}`);
         return res.status(400).json({ msg: 'Skill with this name already exists' });
       }
+    } else {
+      console.log(`Name unchanged: "${skill.name}"`);
     }
     
     // Build skill object

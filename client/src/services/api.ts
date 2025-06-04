@@ -10,66 +10,53 @@ const api = axios.create({
   }
 });
 
-// Debug network requests 
+// Single consolidated request interceptor for debugging, authentication and special headers
 api.interceptors.request.use(
   (config) => {
-    // Enhanced debug logging for ALL requests
+    // Debug logging for all requests
     console.log('========== API REQUEST START ==========');
     console.log(`URL: ${config.baseURL}${config.url}`);
     console.log(`Method: ${config.method?.toUpperCase()}`);
     console.log('Headers:', config.headers);
     console.log('Request Data:', config.data);
     console.log('========== API REQUEST END ==========');
-    
-    // Add a special header for our skill updates to ensure they're treated as PUT
+
+    // Add a special header for skill updates to ensure they're treated as PUT requests
     if (config.url?.startsWith('/skills/') && config.method === 'put') {
-      console.log('🔄 Adding special headers for skill update');
-      config.headers = {
-        ...config.headers,
-        'X-HTTP-Method-Override': 'PUT'
-      };
+      console.log('🔄 Adding special header for skill update');
+      config.headers.set('X-HTTP-Method-Override', 'PUT');
     }
-    
+
+    // Authentication check
+    const authHeader = config.headers?.Authorization as string;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.split(' ')[1];
+
+      // Verify token is not expired
+      if (isTokenExpired(token)) {
+        // Token expired, reject request and force logout
+        console.warn('Token expired, request blocked');
+        console.log('Token expiration details:', { token });
+
+        // Clear expired token from localStorage
+        localStorage.removeItem('adminToken');
+
+        // Dispatch a custom event to notify app about token expiration
+        const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
+        window.dispatchEvent(tokenExpiredEvent);
+
+        // Return a rejected promise to prevent the request
+        return Promise.reject(new Error('Authentication token expired'));
+      }
+    }
+
     return config;
   },
   (error) => {
-    console.error('[API Debug] Request Error:', error);
+    console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
-
-// Add a request interceptor for authentication and logging
-api.interceptors.request.use(config => {
-  console.log(`API Request: ${config.method?.toUpperCase()} ${config.url}`);
-
-  // Check if request has Authorization header (contains a token)
-  const authHeader = config.headers?.Authorization as string;
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-
-    // Verify token is not expired
-    if (isTokenExpired(token)) {
-      // Token expired, reject request and force logout
-      console.warn('Token expired, request blocked');
-      console.log('Token expiration details:', { token });
-
-      // Clear expired token from localStorage
-      localStorage.removeItem('adminToken');
-
-      // Dispatch a custom event to notify app about token expiration
-      const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
-      window.dispatchEvent(tokenExpiredEvent);
-
-      // Return a rejected promise to prevent the request
-      return Promise.reject(new Error('Authentication token expired'));
-    }
-  }
-
-  return config;
-}, error => {
-  console.error('API Request Error:', error);
-  return Promise.reject(error);
-});
 
 // Add a response interceptor for logging and error handling
 api.interceptors.response.use(response => {
@@ -290,7 +277,7 @@ export const updateSkill = async (skillId: string, skillData: Omit<Skill, 'id'>,
     console.log(`SKILL UPDATE: Making PUT request to /skills/${actualId}`);
     console.log('Request headers:', { 'Authorization': `Bearer ${token ? token.substring(0, 15) + '...' : 'undefined'}` });
     console.log('Request data:', skillData);
-    
+
     const response = await api.put(`/skills/${actualId}`, skillData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });

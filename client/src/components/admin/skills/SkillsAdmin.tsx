@@ -1,9 +1,60 @@
 import React, { useState, useEffect } from 'react';
 import { Skill, SkillCategory } from '../../../types';
-import { getSkills, createSkill, deleteSkill } from '../../../services/api';
-import { updateSkillFixed } from '../../../services/skillsService';
-import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { getSkills, createSkill } from '../../../services/api';
+import { updateSkillFixed, deleteSkillFixed } from '../../../services/skillsService';
+import { Loader2, Plus, Pencil, Trash2, X } from 'lucide-react';
 import { iconMap } from '../../ui/iconMap';
+
+// Simple Dialog component for delete confirmation
+const DeleteConfirmationDialog = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  skill
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  skill: Skill | null
+}) => {
+  if (!isOpen || !skill) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-bold">Confirm Deletion</h3>
+          <button onClick={onClose} className="text-foreground/70 hover:text-foreground">
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <p className="mb-2">Are you sure you want to delete this skill?</p>
+          <div className="bg-background/50 p-2 rounded">
+            <p className="font-medium">{skill.name}</p>
+            <p className="text-sm text-foreground/70">{skill.category}</p>
+          </div>
+        </div>
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-border rounded-md hover:bg-background"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface SkillsAdminProps {
   token: string | null;
@@ -15,6 +66,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
+  const [skillToDelete, setSkillToDelete] = useState<Skill | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const [formData, setFormData] = useState<Omit<Skill, 'id'>>({
     name: '',
@@ -41,7 +94,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
       } finally {
         setLoading(false);
       }
-    }; fetchSkills();
+    };
+    fetchSkills();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -74,19 +128,20 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     setEditingSkill(null);
     setIsFormOpen(false);
   };
+
   const openEditForm = (skill: Skill) => {
     // Ensure we have a valid ID (either id or _id from MongoDB)
     const skillId = skill.id || (skill as any)._id;
-    
+
     console.log('Opening edit form for skill:', skill);
     console.log('Skill ID:', skillId);
-    
+
     // Create a copy of the skill object with the properly set ID
     const skillWithId = {
       ...skill,
       id: skillId
     };
-    
+
     setFormData({
       name: skill.name,
       category: skill.category,
@@ -95,7 +150,9 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     });
     setEditingSkill(skillWithId);
     setIsFormOpen(true);
-  };  const handleSubmit = async (e: React.FormEvent) => {
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!token) {
@@ -105,21 +162,23 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
 
     setLoading(true);
     console.log('Form submission - editingSkill:', editingSkill);
-      try {
+    try {
       if (editingSkill && editingSkill.id) {
         // Update existing skill
         console.log("Updating skill with ID:", editingSkill.id);
         console.log("Skill object being edited:", editingSkill);
         console.log("Form data being sent:", formData);
         console.log("Token available:", !!token);
-          const skillId = editingSkill.id;
+        const skillId = editingSkill.id;
+
         // Double check the ID is a valid string
         if (typeof skillId !== 'string' || !skillId.trim()) {
           setError('Invalid skill ID. Cannot update skill.');
           setLoading(false);
           return;
         }
-          // Use our fixed update function
+
+        // Use our fixed update function
         const response = await updateSkillFixed(skillId, formData, token);
         if (response.error) {
           setError(response.error);
@@ -131,7 +190,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
             )
           );
           resetForm();
-        }      } else {
+        }
+      } else {
         // Create new skill
         const response = await createSkill(formData, token);
         if (response.error) {
@@ -150,32 +210,11 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     }
   };
 
-  const handleDelete = async (skillId: string) => {
-    if (!token) {
-      setError('Authentication token is missing. Please log in again.');
-      return;
-    }
-
-    if (!window.confirm('Are you sure you want to delete this skill?')) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await deleteSkill(skillId, token);
-      if (response.error) {
-        setError(response.error);
-      } else {
-        // Remove skill from list
-        setSkills(prev => prev.filter(skill => skill.id !== skillId));
-      }
-    } catch (err) {
-      console.error('Failed to delete skill:', err);
-      setError('Failed to delete skill. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const handleDeleteRequest = (skill: Skill) => {
+    setSkillToDelete(skill);
+    setIsDeleteDialogOpen(true);
   };
+
   const handleIconUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -211,7 +250,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     reader.onloadend = () => {
       const base64String = reader.result as string;
       setFormData(prev => ({ ...prev, icon: base64String }));
-    }; reader.readAsDataURL(file);
+    };
+    reader.readAsDataURL(file);
   };
 
   const skillCategories: SkillCategory[] = [
@@ -376,7 +416,9 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                 max="10"
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
-            </div>            <div>
+            </div>
+
+            <div>
               <label htmlFor="icon" className="block text-sm font-medium mb-1">Icon</label>
               <div className="flex gap-2">
                 <div className="flex-1 relative">
@@ -498,7 +540,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                           <Pencil size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(skill.id)}
+                          onClick={() => handleDeleteRequest(skill)}
                           className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                           title="Delete"
                         >
@@ -513,6 +555,38 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
           </table>
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSkillToDelete(null);
+        }}
+        onConfirm={async () => {
+          if (skillToDelete && skillToDelete.id) {
+            setLoading(true);
+            try {
+              const response = await deleteSkillFixed(skillToDelete.id, token as string);
+              if (response.error) {
+                setError(response.error);
+              } else {
+                // Remove skill from list
+                setSkills(prev => prev.filter(skill => skill.id !== skillToDelete.id));
+                // Clear the dialog state
+                setIsDeleteDialogOpen(false);
+                setSkillToDelete(null);
+              }
+            } catch (err) {
+              console.error('Failed to delete skill:', err);
+              setError('Failed to delete skill. Please try again.');
+            } finally {
+              setLoading(false);
+            }
+          }
+        }}
+        skill={skillToDelete}
+      />
     </div>
   );
 };

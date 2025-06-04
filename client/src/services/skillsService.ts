@@ -73,3 +73,35 @@ export const updateSkillFixed = async (
         };
     }
 };
+
+// Delete skill function with improved error handling
+export const deleteSkillFixed = async (
+    skillId: string,
+    token: string
+): Promise<ApiResponse<{ msg: string }>> => {
+    try {
+        if (!skillId) {
+            console.error('Invalid skill ID for deletion:', skillId);
+            return {
+                data: { msg: '' },
+                error: 'Invalid skill ID. Please try again or refresh the page.'
+            };
+        }
+
+        console.log(`▶️ Using dedicated service to delete skill ${skillId}`);
+        
+        const response = await skillsApi.delete(`/skills/${skillId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+
+        return { data: response.data };
+    } catch (error: any) {
+        console.error('Error deleting skill with fixed service:', error);
+        return {
+            data: { msg: '' },
+            error: error.response?.data?.msg || 'Failed to delete skill'
+        };
+    }
+};

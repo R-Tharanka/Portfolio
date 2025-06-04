@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Skill, SkillCategory } from '../../../types';
-import { getSkills, createSkill, updateSkill, deleteSkill } from '../../../services/api';
+import { getSkills, createSkill, deleteSkill } from '../../../services/api';
+import { updateSkillFixed } from '../../../services/skillsService';
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
 import { iconMap } from '../../ui/iconMap';
 
@@ -73,18 +74,28 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     setEditingSkill(null);
     setIsFormOpen(false);
   };
-
   const openEditForm = (skill: Skill) => {
+    // Ensure we have a valid ID (either id or _id from MongoDB)
+    const skillId = skill.id || (skill as any)._id;
+    
+    console.log('Opening edit form for skill:', skill);
+    console.log('Skill ID:', skillId);
+    
+    // Create a copy of the skill object with the properly set ID
+    const skillWithId = {
+      ...skill,
+      id: skillId
+    };
+    
     setFormData({
       name: skill.name,
       category: skill.category,
       proficiency: skill.proficiency,
       icon: skill.icon,
     });
-    setEditingSkill(skill);
+    setEditingSkill(skillWithId);
     setIsFormOpen(true);
-  };
-  const handleSubmit = async (e: React.FormEvent) => {
+  };  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!token) {
@@ -93,11 +104,23 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
     }
 
     setLoading(true);
-    try {
+    console.log('Form submission - editingSkill:', editingSkill);
+      try {
       if (editingSkill && editingSkill.id) {
         // Update existing skill
         console.log("Updating skill with ID:", editingSkill.id);
-        const response = await updateSkill(editingSkill.id, formData, token);
+        console.log("Skill object being edited:", editingSkill);
+        console.log("Form data being sent:", formData);
+        console.log("Token available:", !!token);
+          const skillId = editingSkill.id;
+        // Double check the ID is a valid string
+        if (typeof skillId !== 'string' || !skillId.trim()) {
+          setError('Invalid skill ID. Cannot update skill.');
+          setLoading(false);
+          return;
+        }
+          // Use our fixed update function
+        const response = await updateSkillFixed(skillId, formData, token);
         if (response.error) {
           setError(response.error);
         } else {
@@ -108,8 +131,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
             )
           );
           resetForm();
-        }
-      } else {
+        }      } else {
         // Create new skill
         const response = await createSkill(formData, token);
         if (response.error) {

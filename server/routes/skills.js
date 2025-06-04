@@ -87,13 +87,13 @@ router.put('/:id', [
   }
   try {
     const { name, category, proficiency, icon } = req.body;
-    
+
     // Find the skill we're trying to update
     let skill = await Skill.findById(req.params.id);
     if (!skill) {
       return res.status(404).json({ msg: 'Skill not found' });
     }
-      // If name is being updated, check if the new name already exists for OTHER skills
+    // If name is being updated, check if the new name already exists for OTHER skills
     // Only perform this check if the name is actually changing
     if (name && name !== skill.name) {
       console.log(`Name changed from "${skill.name}" to "${name}". Checking if new name exists...`);
@@ -105,7 +105,7 @@ router.put('/:id', [
     } else {
       console.log(`Name unchanged: "${skill.name}"`);
     }
-    
+
     // Build skill object
     const skillFields = {};
     if (name) skillFields.name = name;
@@ -132,16 +132,17 @@ router.put('/:id', [
 router.delete('/:id', protect, async (req, res) => {
   try {
     const skill = await Skill.findById(req.params.id);
-    
+
     if (!skill) {
       return res.status(404).json({ msg: 'Skill not found' });
     }
 
-    await Skill.findByIdAndRemove(req.params.id);
+    // Use deleteOne instead of findByIdAndDelete/Remove
+    await Skill.deleteOne({ _id: req.params.id });
     res.json({ msg: 'Skill removed' });
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Server Error');
+    console.error('Error deleting skill:', error.message);
+    res.status(500).json({ msg: 'Server Error', error: error.message });
   }
 });
 

@@ -88,9 +88,19 @@ export const deleteSkillFixed = async (
             };
         }
 
-        console.log(`▶️ Using dedicated service to delete skill ${skillId}`);
-        
-        const response = await skillsApi.delete(`/skills/${skillId}`, {
+        // Ensure skillId is a string and trimmed
+        const cleanSkillId = String(skillId).trim();
+
+        if (!cleanSkillId) {
+            console.error('Skill ID is empty after cleaning:', skillId);
+            return {
+                data: { msg: '' },
+                error: 'Invalid skill ID format. Please try again or refresh the page.'
+            };
+        }
+
+        console.log(`▶️ Using dedicated service to delete skill ${cleanSkillId}`);
+        const response = await skillsApi.delete(`/skills/${cleanSkillId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }

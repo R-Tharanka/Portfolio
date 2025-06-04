@@ -4,6 +4,7 @@ import { getSkills, createSkill } from '../../../services/api';
 import { updateSkillFixed, deleteSkillFixed } from '../../../services/skillsService';
 import { Loader2, Plus, Pencil, Trash2, X } from 'lucide-react';
 import { iconMap } from '../../ui/iconMap';
+import toast from 'react-hot-toast';
 
 // Simple Dialog component for delete confirmation
 const DeleteConfirmationDialog = ({
@@ -578,10 +579,10 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
           console.log('Delete confirmation clicked');
           console.log('Token available:', !!token);
           console.log('skillToDelete:', skillToBeDeleted);
-          console.log('skillToDelete.id:', skillToBeDeleted?.id);
-
-          if (!token) {
-            setError('Authentication token is missing. Please log in again.');
+          console.log('skillToDelete.id:', skillToBeDeleted?.id); if (!token) {
+            const errorMsg = 'Authentication token is missing. Please log in again.';
+            setError(errorMsg);
+            toast.error(errorMsg);
             setIsDeleteDialogOpen(false);
             setSkillToDelete(null);
             return;
@@ -592,8 +593,10 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
             const skillId = skillToBeDeleted.id || (skillToBeDeleted as any)._id;
 
             if (!skillId) {
+              const errorMsg = 'Could not determine skill ID. Please refresh the page and try again.';
               console.error('No valid ID found in skill object:', skillToBeDeleted);
-              setError('Could not determine skill ID. Please refresh the page and try again.');
+              setError(errorMsg);
+              toast.error(errorMsg);
               setIsDeleteDialogOpen(false);
               setSkillToDelete(null);
               return;
@@ -601,24 +604,31 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
 
             console.log('Proceeding with deletion using ID:', skillId);
 
-            setLoading(true);
+            setLoading(true);          // Show loading toast while deleting
+            toast.loading('Deleting skill...', { id: 'deleteSkill' });
 
             // Execute the deletion asynchronously
             deleteSkillFixed(skillId, token)
               .then(response => {
                 if (response.error) {
                   setError(response.error);
+                  // Show error toast
+                  toast.error(`Failed to delete skill: ${response.error}`, { id: 'deleteSkill' });
                 } else {
                   // Remove skill from list
                   setSkills(prev => prev.filter(skill => {
                     const currentId = skill.id || (skill as any)._id;
                     return currentId !== skillId;
                   }));
+                  // Show success toast
+                  toast.success('Skill deleted successfully!', { id: 'deleteSkill' });
                 }
               })
               .catch(err => {
                 console.error('Failed to delete skill:', err);
                 setError('Failed to delete skill. Please try again.');
+                // Show error toast
+                toast.error('Failed to delete skill. Please try again.', { id: 'deleteSkill' });
               })
               .finally(() => {
                 setLoading(false);
@@ -626,8 +636,10 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                 setSkillToDelete(null);
               });
           } else {
+            const errorMsg = 'Invalid skill selected for deletion. Please try again.';
             console.error('No skill object found when trying to delete');
-            setError('Invalid skill selected for deletion. Please try again.');
+            setError(errorMsg);
+            toast.error(errorMsg);
             setIsDeleteDialogOpen(false);
             setSkillToDelete(null);
           }

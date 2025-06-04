@@ -43,7 +43,7 @@ app.use(cors({
     // Fallback to development origin if no origins are specified
     const originsToCheck = allowedOrigins.length > 0 
       ? allowedOrigins
-      : [process.env.CORS_ORIGIN || 'http://localhost:5173'];
+      : [process.env.CORS_ORIGIN];
     
     if (originsToCheck.indexOf(origin) !== -1 || !origin) {
       callback(null, true);

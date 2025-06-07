@@ -3,6 +3,7 @@ import { Project } from '../../../types';
 import { getProjects, createProject, updateProject, deleteProject } from '../../../services/api';
 import { deleteProjectFixed } from '../../../services/projectsService';
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface ProjectsAdminProps {
   token: string | null;
@@ -180,12 +181,13 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
     // Debug log to check the ID
     console.log('Set editingProject with ID:', projectWithId.id);
-  };
-  const handleSubmit = async (e: React.FormEvent) => {
+  }; const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!token) {
-      setError('Authentication token is missing. Please log in again.');
+      const errorMsg = 'Authentication token is missing. Please log in again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -203,7 +205,9 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         // Validate ID before update
         if (!projectId) {
           console.error('Missing ID in editingProject:', editingProject);
-          setError('Cannot update project: Missing ID');
+          const errorMsg = 'Cannot update project: Missing ID';
+          setError(errorMsg);
+          toast.error(errorMsg);
           setLoading(false);
           return;
         }
@@ -211,7 +215,9 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         // Double check and verify the projectId is not undefined or empty
         if (projectId === 'undefined' || projectId === '') {
           console.error('Invalid project ID:', projectId);
-          setError('Cannot update project: Invalid project ID');
+          const errorMsg = 'Cannot update project: Invalid project ID';
+          setError(errorMsg);
+          toast.error(errorMsg);
           setLoading(false);
           return;
         }
@@ -224,6 +230,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
         if (response.error) {
           setError(response.error);
+          toast.error(`Failed to update project: ${response.error}`);
         } else {
           // Update projects list, ensuring we match by the correct ID
           setProjects(prev =>
@@ -232,6 +239,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
               return String(itemId) === String(projectId) ? response.data : project;
             })
           );
+          toast.success('Project updated successfully');
           resetForm();
         }
       } else {
@@ -239,41 +247,49 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         const response = await createProject(formData, token);
         if (response.error) {
           setError(response.error);
+          toast.error(`Failed to create project: ${response.error}`);
         } else {
           // Add new project to list
           setProjects(prev => [...prev, response.data]);
+          toast.success('Project created successfully');
           resetForm();
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save project:', err);
-      setError('Failed to save project. Please try again.');
+      const errorMsg = err.message || 'Failed to save project. Please try again.';
+      setError(`Failed to save project: ${errorMsg}`);
+      toast.error(`Failed to save project: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
-  };
-  // Initiates the delete confirmation process
+  };// Initiates the delete confirmation process
   const initiateDelete = (id: string, title: string, description: string) => {
     if (!token) {
-      setError('Authentication token is missing. Please log in again.');
+      const errorMsg = 'Authentication token is missing. Please log in again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     // Validate project ID
     if (!id || id === 'undefined') {
-      setError('Cannot delete project: Invalid project ID');
+      const errorMsg = 'Cannot delete project: Invalid project ID';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     // Set the project to delete and show the confirmation dialog
     setProjectToDelete({ id, title, description });
     setShowDeleteConfirm(true);
-  };
-  // Handle the actual deletion after confirmation
+  };// Handle the actual deletion after confirmation
   const handleDelete = async (projectToDelete: { id: string, title: string, description: string }) => {
     const projectId = projectToDelete.id;
     if (!token) {
-      setError('Authentication token is missing. Please log in again.');
+      const errorMsg = 'Authentication token is missing. Please log in again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -300,6 +316,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
         if (fallbackResponse.error) {
           setError(fallbackResponse.error);
+          toast.error(`Failed to delete project: ${fallbackResponse.error}`);
         } else {
           // Success with fallback
           updateProjectsList(cleanProjectId);
@@ -312,20 +329,24 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
       console.error('Failed to delete project:', err);
       const errorMsg = err.message || 'Failed to delete project. Please try again.';
       setError(`Failed to delete project: ${errorMsg}`);
+      toast.error(`Failed to delete project: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
-  };
-  // Helper function to update projects list after successful deletion
+  };// Helper function to update projects list after successful deletion
   const updateProjectsList = (deletedProjectId: string) => {
     setProjects(prev => prev.filter((project: Project) => {
       const itemId = project.id || (project as any)._id;
       return String(itemId) !== String(deletedProjectId);
     }));
 
-    // Show success message
+    // Show success message with toast notification
     setError(null);
-    window.alert('Project deleted successfully');
+    toast.success('Project deleted successfully', {
+      duration: 3000,
+      position: 'top-center',
+      icon: '🗑️',
+    });
   };
 
   return (

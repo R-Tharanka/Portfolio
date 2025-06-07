@@ -13,7 +13,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  
+
   const [formData, setFormData] = useState<Omit<Project, 'id'>>({
     title: '',
     description: '',
@@ -37,7 +37,17 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
         if (response.error) {
           setError(response.error);
         } else {
-          setProjects(response.data);
+          // Add additional logging to debug project IDs
+          console.log('Projects loaded:', response.data);
+          console.log('Project IDs:', response.data.map((p: Project) => ({ id: p.id, _id: (p as any)._id })));
+
+          // Ensure each project has a proper id property
+          const projectsWithIds = response.data.map((project: any) => ({
+            ...project,
+            id: project.id || project._id
+          }));
+
+          setProjects(projectsWithIds);
           setError(null);
         }
       } catch (err) {
@@ -52,7 +62,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
   }, []);
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    
+
     // Handle nested fields
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
@@ -69,9 +79,9 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       });
     } else if (name === 'technologies' || name === 'tags') {
       // Handle arrays (comma-separated values)
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: value.split(',').map(item => item.trim()) 
+      setFormData(prev => ({
+        ...prev,
+        [name]: value.split(',').map(item => item.trim())
       }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -95,8 +105,23 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     setEditingProject(null);
     setIsFormOpen(false);
   };
-
   const openEditForm = (project: Project) => {
+    // Log to debug the project object
+    console.log('Opening edit form with project:', project);
+
+    // Ensure we have an ID (either id or _id)
+    if (!project.id && !(project as any)._id) {
+      console.error('Project has no ID:', project);
+      setError('Cannot edit project: Missing ID');
+      return;
+    }
+
+    // Make sure we have a proper id saved in the editingProject
+    const projectWithId = {
+      ...project,
+      id: project.id || (project as any)._id
+    };
+
     setFormData({
       title: project.title,
       description: project.description,
@@ -110,31 +135,62 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       demoLink: project.demoLink || '',
       tags: project.tags
     });
-    setEditingProject(project);
+    setEditingProject(projectWithId);
     setIsFormOpen(true);
-  };
 
+    // Debug log to check the ID
+    console.log('Set editingProject with ID:', projectWithId.id);
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
-    
+
     setLoading(true);
     try {
       if (editingProject) {
-        // Update existing project
-        const response = await updateProject(editingProject.id, formData, token);
+        // Get project ID, ensuring we handle both id and _id from MongoDB
+        const projectId = editingProject.id || (editingProject as any)._id;
+
+        // Log debugging information
+        console.log('Attempting to update project:', editingProject);
+        console.log('Using project ID:', projectId);
+        console.log('Project data being sent:', formData);
+
+        // Validate ID before update
+        if (!projectId) {
+          console.error('Missing ID in editingProject:', editingProject);
+          setError('Cannot update project: Missing ID');
+          setLoading(false);
+          return;
+        }
+
+        // Double check and verify the projectId is not undefined or empty
+        if (projectId === 'undefined' || projectId === '') {
+          console.error('Invalid project ID:', projectId);
+          setError('Cannot update project: Invalid project ID');
+          setLoading(false);
+          return;
+        }
+
+        // Update existing project with a string ID (ensure it's a string)
+        const response = await updateProject(String(projectId), formData, token);
+
+        // Log the response
+        console.log('Project update response:', response);
+
         if (response.error) {
           setError(response.error);
         } else {
-          // Update projects list
-          setProjects(prev => 
-            prev.map(project => 
-              project.id === editingProject.id ? response.data : project
-            )
+          // Update projects list, ensuring we match by the correct ID
+          setProjects(prev =>
+            prev.map(project => {
+              const itemId = project.id || (project as any)._id;
+              return String(itemId) === String(projectId) ? response.data : project;
+            })
           );
           resetForm();
         }
@@ -162,19 +218,30 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
-    
+
+    // Validate project ID
+    if (!projectId || projectId === 'undefined') {
+      setError('Cannot delete project: Invalid project ID');
+      return;
+    }
+
     if (!window.confirm('Are you sure you want to delete this project?')) {
       return;
     }
-    
+
     setLoading(true);
     try {
+      console.log(`Attempting to delete project with ID: ${projectId}`);
+
       const response = await deleteProject(projectId, token);
       if (response.error) {
         setError(response.error);
       } else {
         // Remove project from list
-        setProjects(prev => prev.filter(project => project.id !== projectId));
+        setProjects(prev => prev.filter(project => {
+          const itemId = project.id || (project as any)._id;
+          return itemId !== projectId;
+        }));
       }
     } catch (err) {
       console.error('Failed to delete project:', err);
@@ -209,7 +276,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
           <h3 className="text-lg font-medium mb-4">
             {editingProject ? 'Edit Project' : 'Add New Project'}
           </h3>
-          
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="title" className="block text-sm font-medium mb-1">Title</label>
@@ -356,56 +423,61 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
           {projects.length === 0 ? (
             <p className="text-center py-8 text-foreground/70">No projects found. Add your first project!</p>
           ) : (
-            projects.map(project => (
-              <div key={project.id} className="flex flex-col md:flex-row gap-4 border border-border/50 rounded-lg overflow-hidden">
-                <div className="md:w-1/4 h-48 md:h-auto">
-                  <img 
-                    src={project.imageUrl} 
-                    alt={project.title}
-                    className="w-full h-full object-cover" 
-                  />
-                </div>
-                <div className="p-4 flex-1">
-                  <div className="flex justify-between items-start">
-                    <h3 className="text-lg font-bold">{project.title}</h3>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => openEditForm(project)}
-                        className="p-1 text-foreground/70 hover:text-primary transition-colors"
-                        title="Edit"
-                      >
-                        <Pencil size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(project.id)}
-                        className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+            projects.map(project => {
+              // Ensure we have an ID to use as a key, falling back to index if needed
+              const projectId = project.id || (project as any)._id || `project-${Math.random()}`;
+
+              return (
+                <div key={projectId} className="flex flex-col md:flex-row gap-4 border border-border/50 rounded-lg overflow-hidden">
+                  <div className="md:w-1/4 h-48 md:h-auto">
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4 flex-1">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-lg font-bold">{project.title}</h3>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => openEditForm(project)}
+                          className="p-1 text-foreground/70 hover:text-primary transition-colors"
+                          title="Edit"
+                        >
+                          <Pencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(projectId)}
+                          className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-foreground/70 mt-1 mb-2">{project.description}</p>
+
+                    <div className="flex flex-wrap gap-1 mb-2">
+                      {project.technologies.map((tech, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-background text-xs rounded-full">
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex gap-2 mt-2">
+                      {project.tags.map((tag, i) => (
+                        <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                  
-                  <p className="text-sm text-foreground/70 mt-1 mb-2">{project.description}</p>
-                  
-                  <div className="flex flex-wrap gap-1 mb-2">
-                    {project.technologies.map((tech, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-background text-xs rounded-full">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                  
-                  <div className="flex gap-2 mt-2">
-                    {project.tags.map((tag, i) => (
-                      <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       )}

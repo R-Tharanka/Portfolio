@@ -5,29 +5,33 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Simple Dialog component for delete confirmation
-const DeleteConfirmationDialog = ({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  message 
-}: { 
-  isOpen: boolean; 
-  onClose: () => void; 
-  onConfirm: () => void; 
-  message: ContactMessage | null 
+const DeleteConfirmationDialog = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  message
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  message: ContactMessage | null
 }) => {
   if (!isOpen || !message) return null;
-  
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold">Confirm Deletion</h3>
-          <button onClick={onClose} className="text-foreground/70 hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="text-foreground/70 hover:text-foreground"
+            aria-label="Close dialog"
+          >
             <X size={18} />
           </button>
         </div>
-        
+
         <div className="mb-6">
           <p className="mb-2">Are you sure you want to delete this message?</p>
           <div className="bg-background/50 p-2 rounded">
@@ -35,7 +39,7 @@ const DeleteConfirmationDialog = ({
             <p className="text-sm text-foreground/70">{message.name}</p>
           </div>
         </div>
-        
+
         <div className="flex justify-end gap-3">
           <button
             onClick={onClose}
@@ -78,7 +82,7 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
 
   // Fetch contact messages
   useEffect(() => {
-  const fetchMessages = async () => {
+    const fetchMessages = async () => {
       if (!token) {
         setError('Authentication token is missing. Please log in again.');
         toast.error('Authentication token is missing. Please log in again.');
@@ -119,7 +123,7 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
       toast.error('Message not found');
       return;
     }
-    
+
     setIsDialogOpen(true);
     // If clicking delete button in the detail view, we already have the selectedMessage
     if (selectedMessage?._id !== messageId) {
@@ -216,9 +220,11 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
               <div>
                 <div className="bg-background p-4 rounded-lg mb-4">
                   <div className="flex justify-between items-start mb-4">
-                    <h3 className="text-xl font-bold">{selectedMessage.title}</h3>                    <button
+                    <h3 className="text-xl font-bold">{selectedMessage.title}</h3>
+                    <button
                       className="text-red-500 hover:text-red-600"
                       onClick={() => handleDelete(selectedMessage._id)}
+                      aria-label="Delete message"
                     >
                       <Trash2 size={18} />
                     </button>
@@ -266,7 +272,7 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
 
       {/* Toast notifications container */}
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} />
-      
+
       {/* Delete confirmation dialog */}
       <DeleteConfirmationDialog
         isOpen={isDialogOpen}

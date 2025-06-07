@@ -121,7 +121,17 @@ export const getProjects = async (): Promise<ApiResponse<Project[]>> => {
     await api.get('/health').catch(() => console.log('Health check failed, continuing anyway'));
 
     const response = await api.get('/projects');
-    return { data: response.data };
+
+    // Ensure each project has a proper id field
+    // MongoDB returns _id, we map it to id for consistency
+    const projectsWithIds = response.data.map((item: any) => {
+      return {
+        ...item,
+        id: item.id || item._id
+      };
+    });
+
+    return { data: projectsWithIds };
   } catch (error: any) {
     console.error('Error fetching projects:', error);
     const errorMessage = error.response?.data?.message ||
@@ -319,14 +329,63 @@ export const createProject = async (projectData: Omit<Project, 'id'>, token: str
   }
 };
 
+// Helper function to validate MongoDB ObjectId
+const isValidObjectId = (id: string): boolean => {
+  return /^[0-9a-fA-F]{24}$/.test(id);
+};
+
 export const updateProject = async (projectId: string, projectData: Omit<Project, 'id'>, token: string): Promise<ApiResponse<Project>> => {
   try {
-    const response = await api.put(`/projects/${projectId}`, projectData, {
+    // Check if projectId is valid
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID:', projectId);
+      return {
+        data: {} as Project,
+        error: 'Invalid project ID. Please try again or refresh the page.'
+      };
+    }
+
+    // Check if ID format is valid for MongoDB
+    if (!isValidObjectId(projectId)) {
+      console.error(`Invalid ObjectId format: ${projectId}`);
+      return {
+        data: {} as Project,
+        error: 'Invalid ID format. Please try again or refresh the page.'
+      };
+    }
+
+    // Enhanced debugging
+    console.log(`Updating project with ID: ${projectId}`);
+    console.log('Project data:', JSON.stringify(projectData));
+    console.log('API token present:', !!token);
+
+    // Log the full request URL for debugging
+    const requestUrl = `/projects/${projectId}`;
+    console.log(`Making PUT request to: ${requestUrl}`);
+
+    const response = await api.put(requestUrl, projectData, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
-    return { data: response.data };
+
+    // Log successful response
+    console.log('Project update successful, response:', response.data);
+
+    // Ensure the returned data has the id field properly mapped
+    const projectWithId = {
+      ...response.data,
+      id: response.data.id || response.data._id
+    };
+
+    return { data: projectWithId };
   } catch (error: any) {
     console.error('Error updating project:', error);
+    console.error('Error details:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      message: error.response?.data?.msg || error.message,
+      serverError: error.response?.data?.error,
+      url: error.config?.url
+    });
     return {
       data: {} as Project,
       error: error.response?.data?.msg || 'Failed to update project'
@@ -336,12 +395,31 @@ export const updateProject = async (projectId: string, projectData: Omit<Project
 
 export const deleteProject = async (projectId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
   try {
+    // Check if projectId is valid
+    if (!projectId || projectId === 'undefined') {
+      console.error('Invalid project ID for deletion:', projectId);
+      return {
+        data: { msg: '' },
+        error: 'Invalid project ID. Please try again or refresh the page.'
+      };
+    }
+
+    console.log(`Deleting project with ID: ${projectId}`);
+
     const response = await api.delete(`/projects/${projectId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     return { data: response.data };
   } catch (error: any) {
     console.error('Error deleting project:', error);
+    console.error('Detailed error:', {
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      message: error.response?.data?.msg || error.message,
+      serverError: error.response?.data?.error,
+      url: error.config?.url
+    });
+
     return {
       data: { msg: '' },
       error: error.response?.data?.msg || 'Failed to delete project'

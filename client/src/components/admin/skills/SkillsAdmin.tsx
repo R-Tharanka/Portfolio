@@ -25,7 +25,12 @@ const DeleteConfirmationDialog = ({
       <div className="bg-card p-6 rounded-lg shadow-lg max-w-md w-full">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold">Confirm Deletion</h3>
-          <button onClick={onClose} className="text-foreground/70 hover:text-foreground">
+          <button
+            onClick={onClose}
+            className="text-foreground/70 hover:text-foreground"
+            aria-label="Close dialog"
+            title="Close"
+          >
             <X size={18} />
           </button>
         </div>
@@ -461,6 +466,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                     accept="image/png,image/jpeg,image/svg+xml"
                     onChange={handleIconUpload}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    title="Upload icon image"
                   />
                   <button
                     type="button"

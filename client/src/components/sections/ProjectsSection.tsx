@@ -9,7 +9,7 @@ import { getProjects } from '../../services/api';
 const fallbackProjects: Project[] = [];
 
 // Maximum description length before truncation
-const MAX_DESCRIPTION_LENGTH = 210;
+const MAX_DESCRIPTION_LENGTH = 200;
 
 const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');

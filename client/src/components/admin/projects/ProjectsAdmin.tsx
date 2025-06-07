@@ -8,16 +8,15 @@ interface ProjectsAdminProps {
   token: string | null;
 }
 
-const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
+function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-
   // Add state for the delete confirmation popup
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<{ id: string, title: string, description: string } | null>(null);
 
   const [formData, setFormData] = useState<Omit<Project, 'id'>>({
     title: '',
@@ -64,7 +63,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     };
 
     fetchProjects();
-  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []);  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     // Handle nested fields
@@ -74,18 +73,36 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
         // Ensure we're working with an object that can be spread
         const parentObj = prev[parent as keyof typeof prev] as Record<string, any>;
 
-        // Handle month inputs specifically
-        if (child === 'end' && value === '') {
-          // For end date, if empty, set to null (indicating "Present")
-          return {
-            ...prev,
-            [parent]: {
-              ...parentObj,
-              [child]: null
-            }
-          };
+        // Handle date fields
+        if (name === 'timeline.start' || name === 'timeline.end') {
+          // Check if it's a date field and validate format
+          const dateRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+          
+          if (child === 'end' && value === '') {
+            // For end date, if empty, set to null (indicating "Present")
+            return {
+              ...prev,
+              [parent]: {
+                ...parentObj,
+                [child]: null
+              }
+            };
+          } else if (value === '' || dateRegex.test(value)) {
+            // If it's valid YYYY-MM format or empty
+            return {
+              ...prev,
+              [parent]: {
+                ...parentObj,
+                [child]: value
+              }
+            };
+          } else {
+            // Invalid format - don't update state
+            console.warn(`Invalid date format: ${value}. Expected YYYY-MM`);
+            return prev;
+          }
         } else {
-          // For other nested fields or start date
+          // For other nested fields
           return {
             ...prev,
             [parent]: {
@@ -234,26 +251,27 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  };  // Initiates the delete confirmation process 
-  const initiateDelete = (projectId: string) => {
+  };
+  // Initiates the delete confirmation process
+  const initiateDelete = (id: string, title: string, description: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
 
     // Validate project ID
-    if (!projectId || projectId === 'undefined') {
+    if (!id || id === 'undefined') {
       setError('Cannot delete project: Invalid project ID');
       return;
     }
 
     // Set the project to delete and show the confirmation dialog
-    setProjectToDelete(projectId);
+    setProjectToDelete({ id, title, description });
     setShowDeleteConfirm(true);
   };
-
   // Handle the actual deletion after confirmation
-  const handleDelete = async (projectId: string) => {
+  const handleDelete = async (projectToDelete: { id: string, title: string, description: string }) => {
+    const projectId = projectToDelete.id;
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
@@ -298,10 +316,9 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       setLoading(false);
     }
   };
-
   // Helper function to update projects list after successful deletion
   const updateProjectsList = (deletedProjectId: string) => {
-    setProjects(prev => prev.filter(project => {
+    setProjects(prev => prev.filter((project: Project) => {
       const itemId = project.id || (project as any)._id;
       return String(itemId) !== String(deletedProjectId);
     }));
@@ -363,12 +380,13 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">              <div>
                 <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
                 <div className="relative">
                   <input
-                    type="month"
+                    type="text" 
+                    pattern="[0-9]{4}-(0[1-9]|1[012])"
+                    placeholder="YYYY-MM"
                     id="timeline.start"
                     name="timeline.start"
                     value={formData.timeline.start}
@@ -380,9 +398,12 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                 <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (e.g., 2023-01)</small>
               </div>
               <div>
-                <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>                <div className="relative">
+                <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>
+                <div className="relative">
                   <input
-                    type="month"
+                    type="text"
+                    pattern="[0-9]{4}-(0[1-9]|1[012])"
+                    placeholder="YYYY-MM"
                     id="timeline.end"
                     name="timeline.end"
                     value={formData.timeline.end || ''}
@@ -510,8 +531,8 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                           title="Edit"
                         >
                           <Pencil size={16} />
-                        </button>                        <button
-                          onClick={() => initiateDelete(projectId)}
+                        </button>                        <button 
+                          onClick={() => initiateDelete(String(projectId), project.title, project.description)}
                           className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                           title="Delete"
                         >
@@ -542,14 +563,27 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
               );
             })
           )}        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      {showDeleteConfirm && (
+      )}      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && projectToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
-            <p className="mb-6">Are you sure you want to delete this project? This action cannot be undone.</p>
+            <p className="mb-2">
+              Are you sure you want to delete the following project?
+            </p>
+            <div className="mb-4">
+              <p className="text-primary font-medium text-lg">
+                "{projectToDelete.title}"
+              </p>
+              <p className="text-foreground/70 text-sm italic mt-2">
+                {projectToDelete.description.length > 100
+                  ? `${projectToDelete.description.substring(0, 100)}...`
+                  : projectToDelete.description}
+              </p>
+            </div>
+            <p className="text-red-500 text-sm mb-6">
+              This action cannot be undone.
+            </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
@@ -559,11 +593,9 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
               </button>
               <button
                 onClick={() => {
-                  if (projectToDelete) {
-                    handleDelete(projectToDelete);
-                    setShowDeleteConfirm(false);
-                    setProjectToDelete(null);
-                  }
+                  handleDelete(projectToDelete);
+                  setShowDeleteConfirm(false);
+                  setProjectToDelete(null);
                 }}
                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
               >

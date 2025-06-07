@@ -8,8 +8,8 @@ import { getProjects } from '../../services/api';
 // Empty array for projects data
 const fallbackProjects: Project[] = [];
 
-// Maximum description length before truncation (roughly 4 lines of text)
-const MAX_DESCRIPTION_LENGTH = 180;
+// Maximum description length before truncation
+const MAX_DESCRIPTION_LENGTH = 220;
 
 const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
@@ -88,8 +88,8 @@ const ProjectsSection: React.FC = () => {
             <button
               onClick={() => setActiveTag('All')}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTag === 'All'
-                  ? 'bg-primary text-white'
-                  : 'bg-card hover:bg-card/80 text-foreground'
+                ? 'bg-primary text-white'
+                : 'bg-card hover:bg-card/80 text-foreground'
                 }`}
             >
               All Projects
@@ -100,8 +100,8 @@ const ProjectsSection: React.FC = () => {
                 key={tag}
                 onClick={() => setActiveTag(tag)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTag === tag
-                    ? 'bg-primary text-white'
-                    : 'bg-card hover:bg-card/80 text-foreground'
+                  ? 'bg-primary text-white'
+                  : 'bg-card hover:bg-card/80 text-foreground'
                   }`}
               >
                 {tag}
@@ -164,9 +164,12 @@ const ProjectsSection: React.FC = () => {
 
                     <div className="p-6">
                       <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-
                       <div className="mb-4">
-                        <p className="text-foreground/70">
+                        <p className="text-foreground/70 line-clamp-4" style={{
+                          maxHeight: expandedDescriptions[project.id] ? 'none' : '6rem',
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}>
                           {expandedDescriptions[project.id]
                             ? project.description
                             : truncateText(project.description, MAX_DESCRIPTION_LENGTH)

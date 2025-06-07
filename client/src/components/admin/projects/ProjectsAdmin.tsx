@@ -60,7 +60,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     };
 
     fetchProjects();
-  }, []);  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     // Handle nested fields
@@ -69,7 +69,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       setFormData(prev => {
         // Ensure we're working with an object that can be spread
         const parentObj = prev[parent as keyof typeof prev] as Record<string, any>;
-        
+
         // Handle month inputs specifically
         if (child === 'end' && value === '') {
           // For end date, if empty, set to null (indicating "Present")
@@ -100,7 +100,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
-    
+
     // Debug log for date values
     if (name === 'timeline.start' || name === 'timeline.end') {
       console.log(`Date field ${name} changed to:`, value);
@@ -350,21 +350,22 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">              <div>
-              <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
-              <div className="relative">
-                <input
-                  type="month"
-                  id="timeline.start"
-                  name="timeline.start"
-                  value={formData.timeline.start}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
+                <div className="relative">
+                  <input
+                    type="month"
+                    id="timeline.start"
+                    name="timeline.start"
+                    value={formData.timeline.start}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                </div>
+                <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (e.g., 2023-01)</small>
               </div>
-              <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (e.g., 2023-01)</small>
-            </div>
               <div>
                 <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>                <div className="relative">
                   <input
@@ -378,87 +379,87 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                 </div>
                 <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (or leave empty)</small>
               </div>
-              </div>
+            </div>
 
+            <div>
+              <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">Image URL</label>
+              <input
+                type="text"
+                id="imageUrl"
+                name="imageUrl"
+                value={formData.imageUrl}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">Image URL</label>
+                <label htmlFor="repoLink" className="block text-sm font-medium mb-1">Repository Link (optional)</label>
                 <input
                   type="text"
-                  id="imageUrl"
-                  name="imageUrl"
-                  value={formData.imageUrl}
+                  id="repoLink"
+                  name="repoLink"
+                  value={formData.repoLink}
                   onChange={handleChange}
-                  required
                   className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="repoLink" className="block text-sm font-medium mb-1">Repository Link (optional)</label>
-                  <input
-                    type="text"
-                    id="repoLink"
-                    name="repoLink"
-                    value={formData.repoLink}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-                <div>
-                  <label htmlFor="demoLink" className="block text-sm font-medium mb-1">Demo Link (optional)</label>
-                  <input
-                    type="text"
-                    id="demoLink"
-                    name="demoLink"
-                    value={formData.demoLink}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-              </div>
-
               <div>
-                <label htmlFor="technologies" className="block text-sm font-medium mb-1">Technologies (comma-separated)</label>
+                <label htmlFor="demoLink" className="block text-sm font-medium mb-1">Demo Link (optional)</label>
                 <input
                   type="text"
-                  id="technologies"
-                  name="technologies"
-                  value={formData.technologies.join(', ')}
+                  id="demoLink"
+                  name="demoLink"
+                  value={formData.demoLink}
                   onChange={handleChange}
-                  required
                   className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
+            </div>
 
-              <div>
-                <label htmlFor="tags" className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
-                <input
-                  type="text"
-                  id="tags"
-                  name="tags"
-                  value={formData.tags.join(', ')}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
+            <div>
+              <label htmlFor="technologies" className="block text-sm font-medium mb-1">Technologies (comma-separated)</label>
+              <input
+                type="text"
+                id="technologies"
+                name="technologies"
+                value={formData.technologies.join(', ')}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
 
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
-                >
-                  {editingProject ? 'Update Project' : 'Add Project'}
-                </button>
-                <button
-                  type="button"
-                  onClick={resetForm}
-                  className="px-4 py-2 bg-background text-foreground rounded-md hover:bg-background/80 transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
+            <div>
+              <label htmlFor="tags" className="block text-sm font-medium mb-1">Tags (comma-separated)</label>
+              <input
+                type="text"
+                id="tags"
+                name="tags"
+                value={formData.tags.join(', ')}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <button
+                type="submit"
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors"
+              >
+                {editingProject ? 'Update Project' : 'Add Project'}
+              </button>
+              <button
+                type="button"
+                onClick={resetForm}
+                className="px-4 py-2 bg-background text-foreground rounded-md hover:bg-background/80 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
           </form>
         </div>
       )}

@@ -63,7 +63,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     };
 
     fetchProjects();
-  }, []);  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     // Handle nested fields
@@ -77,7 +77,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         if (name === 'timeline.start' || name === 'timeline.end') {
           // Check if it's a date field and validate format
           const dateRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
-          
+
           if (child === 'end' && value === '') {
             // For end date, if empty, set to null (indicating "Present")
             return {
@@ -381,22 +381,22 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">              <div>
-                <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
-                <div className="relative">
-                  <input
-                    type="text" 
-                    pattern="[0-9]{4}-(0[1-9]|1[012])"
-                    placeholder="YYYY-MM"
-                    id="timeline.start"
-                    name="timeline.start"
-                    value={formData.timeline.start}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-                <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (e.g., 2023-01)</small>
+              <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  pattern="[0-9]{4}-(0[1-9]|1[012])"
+                  placeholder="YYYY-MM"
+                  id="timeline.start"
+                  name="timeline.start"
+                  value={formData.timeline.start}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                />
               </div>
+              <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (e.g., 2023-01)</small>
+            </div>
               <div>
                 <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>
                 <div className="relative">
@@ -531,7 +531,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                           title="Edit"
                         >
                           <Pencil size={16} />
-                        </button>                        <button 
+                        </button>                        <button
                           onClick={() => initiateDelete(String(projectId), project.title, project.description)}
                           className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                           title="Delete"
@@ -573,12 +573,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
             </p>
             <div className="mb-4">
               <p className="text-primary font-medium text-lg">
-                "{projectToDelete.title}"
-              </p>
-              <p className="text-foreground/70 text-sm italic mt-2">
-                {projectToDelete.description.length > 100
-                  ? `${projectToDelete.description.substring(0, 100)}...`
-                  : projectToDelete.description}
+                {projectToDelete.title}
               </p>
             </div>
             <p className="text-red-500 text-sm mb-6">

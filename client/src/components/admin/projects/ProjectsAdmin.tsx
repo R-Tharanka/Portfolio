@@ -6,7 +6,7 @@ import { Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-re
 import toast from 'react-hot-toast';
 
 // Maximum description length before truncation (approximately 4 lines)
-const MAX_ADMIN_DESCRIPTION_LENGTH = 260;
+const MAX_ADMIN_DESCRIPTION_LENGTH = 300;
 
 interface ProjectsAdminProps {
   token: string | null;

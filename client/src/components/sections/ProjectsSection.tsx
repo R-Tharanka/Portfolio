@@ -1,18 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ExternalLink, Github, Calendar, Loader2 } from 'lucide-react';
+import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Project } from '../../types';
 import { getProjects } from '../../services/api';
 
 // Empty array for projects data
 const fallbackProjects: Project[] = [];
 
+// Maximum description length before truncation (roughly 4 lines of text)
+const MAX_DESCRIPTION_LENGTH = 180;
+
 const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -47,8 +51,22 @@ const ProjectsSection: React.FC = () => {
     fetchProjects();
   }, []);
 
-  const filteredProjects = activeTag === 'All' 
-    ? projects 
+  // Toggle description expansion for a specific project
+  const toggleDescription = (projectId: string) => {
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
+  };
+
+  // Helper function to truncate text
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength).trim() + '...';
+  };
+
+  const filteredProjects = activeTag === 'All'
+    ? projects
     : projects.filter(project => project.tags.includes(activeTag));
 
   return (
@@ -64,53 +82,51 @@ const ProjectsSection: React.FC = () => {
           <p className="section-subtitle">
             Check out some of my recent work
           </p>
-          
+
           {/* Tags Filter */}
           <div className="flex flex-wrap justify-center gap-2 mb-12">
             <button
               onClick={() => setActiveTag('All')}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                activeTag === 'All' 
-                  ? 'bg-primary text-white' 
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTag === 'All'
+                  ? 'bg-primary text-white'
                   : 'bg-card hover:bg-card/80 text-foreground'
-              }`}
+                }`}
             >
               All Projects
             </button>
-            
+
             {allTags.map(tag => (
               <button
                 key={tag}
                 onClick={() => setActiveTag(tag)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                  activeTag === tag 
-                    ? 'bg-primary text-white' 
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTag === tag
+                    ? 'bg-primary text-white'
                     : 'bg-card hover:bg-card/80 text-foreground'
-                }`}
+                  }`}
               >
                 {tag}
               </button>
             ))}
           </div>
-          
+
           {/* Loading State */}
           {loading && (
             <div className="flex justify-center py-16">
               <Loader2 className="animate-spin h-10 w-10 text-primary" />
             </div>
           )}
-          
+
           {/* Error State */}
           {error && !loading && filteredProjects.length === 0 && (
             <div className="text-center py-16">
               <p className="text-foreground/70">{error}</p>
             </div>
           )}
-          
+
           {/* Projects Grid */}
           {!loading && (
             <AnimatePresence mode="wait">
-              <motion.div 
+              <motion.div
                 key={activeTag}
                 className="grid grid-cols-1 md:grid-cols-2 gap-8"
                 initial={{ opacity: 0 }}
@@ -128,16 +144,16 @@ const ProjectsSection: React.FC = () => {
                     whileHover={{ y: -5 }}
                   >
                     <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={project.imageUrl} 
-                        alt={project.title} 
+                      <img
+                        src={project.imageUrl}
+                        alt={project.title}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       />
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/60 to-transparent"></div>
                       <div className="absolute bottom-0 left-0 w-full p-4 flex flex-wrap gap-2">
                         {project.tags.map(tag => (
-                          <span 
-                            key={tag} 
+                          <span
+                            key={tag}
                             className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full"
                           >
                             {tag}
@@ -145,35 +161,61 @@ const ProjectsSection: React.FC = () => {
                         ))}
                       </div>
                     </div>
-                    
+
                     <div className="p-6">
                       <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                      
-                      <p className="text-foreground/70 mb-4">{project.description}</p>
-                      
+
+                      <div className="mb-4">
+                        <p className="text-foreground/70">
+                          {expandedDescriptions[project.id]
+                            ? project.description
+                            : truncateText(project.description, MAX_DESCRIPTION_LENGTH)
+                          }
+                        </p>
+
+                        {project.description.length > MAX_DESCRIPTION_LENGTH && (
+                          <button
+                            onClick={() => toggleDescription(project.id)}
+                            className="flex items-center gap-1 mt-1 text-sm text-primary font-medium hover:underline"
+                          >
+                            {expandedDescriptions[project.id] ? (
+                              <>
+                                Show less
+                                <ChevronUp size={16} />
+                              </>
+                            ) : (
+                              <>
+                                Read more
+                                <ChevronDown size={16} />
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
                       <div className="flex items-center gap-1 text-xs text-foreground/60 mb-4">
                         <Calendar size={14} />
                         <span>
                           {formatDate(project.timeline.start)} — {project.timeline.end ? formatDate(project.timeline.end) : 'Present'}
                         </span>
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-2 mb-4">
                         {project.technologies.map(tech => (
-                          <span 
-                            key={tech} 
+                          <span
+                            key={tech}
                             className="px-2 py-1 bg-background text-foreground/80 text-xs rounded-md"
                           >
                             {tech}
                           </span>
                         ))}
                       </div>
-                      
+
                       <div className="flex gap-4 mt-4">
                         {project.demoLink && (
-                          <a 
-                            href={project.demoLink} 
-                            target="_blank" 
+                          <a
+                            href={project.demoLink}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-sm font-medium text-primary hover:text-primary-dark transition-colors"
                           >
@@ -181,11 +223,11 @@ const ProjectsSection: React.FC = () => {
                             Live Demo
                           </a>
                         )}
-                        
+
                         {project.repoLink && (
-                          <a 
-                            href={project.repoLink} 
-                            target="_blank" 
+                          <a
+                            href={project.repoLink}
+                            target="_blank"
                             rel="noopener noreferrer"
                             className="flex items-center gap-1 text-sm font-medium text-foreground/80 hover:text-foreground transition-colors"
                           >

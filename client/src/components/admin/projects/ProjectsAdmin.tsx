@@ -181,7 +181,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
     // Debug log to check the ID
     console.log('Set editingProject with ID:', projectWithId.id);
-  };  const handleSubmit = async (e: React.FormEvent) => {
+  }; const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!token) {

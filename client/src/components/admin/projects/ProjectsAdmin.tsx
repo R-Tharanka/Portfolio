@@ -384,7 +384,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
             </div>
           </div>
           {projects.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-border/30">
+            <div className="mt-4 pt-4 border-t border-border/30">
               <h4 className="text-xs font-medium mb-2">Common Technologies</h4>
               <div className="flex flex-wrap gap-1">
                 {Array.from(

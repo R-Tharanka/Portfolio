@@ -339,11 +339,73 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
           <Plus size={16} />
           Add Project
         </button>
-      </div>
-
-      {error && (
+      </div>      {error && (
         <div className="p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm">
           {error}
+        </div>
+      )}      {/* Project Overview */}
+      {!loading && (
+        <div className="p-5 mb-6 bg-background/50 rounded-lg border border-border/40 shadow-sm">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+            <div className="mb-4 sm:mb-0">
+              <div className="flex items-center mb-1">
+                <h3 className="text-md font-semibold">Project Overview</h3>
+                {projects.length > 0 && (
+                  <span className="ml-2 px-2 py-0.5 bg-primary text-white text-xs rounded-full">
+                    {projects.length}
+                  </span>
+                )}
+              </div>
+              <p className="text-sm text-foreground/70">
+                You have <span className="font-medium text-primary">{projects.length}</span> {projects.length === 1 ? 'project' : 'projects'} in your portfolio.
+              </p>
+              <p className="text-xs text-foreground/60 mt-1">
+                {projects.filter(p => !p.timeline.end).length} ongoing {projects.filter(p => !p.timeline.end).length === 1 ? 'project' : 'projects'} •
+                Last updated: {projects.length > 0 ? new Date().toLocaleDateString() : 'N/A'}
+              </p>
+            </div>
+            <div className="mt-2 sm:mt-0 grid grid-cols-2 gap-2 w-full sm:w-auto">
+              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
+                <span className="font-medium mr-1">{projects.filter(p => p.technologies?.length).length}</span>
+                <span>with technologies</span>
+              </div>
+              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
+                <span className="font-medium mr-1">{projects.filter(p => p.demoLink).length}</span>
+                <span>with demo links</span>
+              </div>
+              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
+                <span className="font-medium mr-1">{projects.filter(p => p.repoLink).length}</span>
+                <span>with repo links</span>
+              </div>
+              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
+                <span className="font-medium mr-1">{projects.filter(p => Array.isArray(p.tags) && p.tags.length > 0).length}</span>
+                <span>with tags</span>
+              </div>
+            </div>
+          </div>
+          {projects.length > 0 && (
+            <div className="mt-4 pt-3 border-t border-border/30">
+              <h4 className="text-xs font-medium mb-2">Common Technologies</h4>
+              <div className="flex flex-wrap gap-1">
+                {Array.from(
+                  new Set(
+                    projects.flatMap(p => p.technologies || [])
+                  )
+                )
+                  .slice(0, 8)
+                  .map((tech, i) => (
+                    <span key={i} className="px-2 py-0.5 bg-background text-xs rounded-full border border-border/40">
+                      {tech}
+                    </span>
+                  ))}
+                {projects.flatMap(p => p.technologies || []).filter((v, i, a) => a.indexOf(v) === i).length > 8 && (
+                  <span className="px-2 py-0.5 bg-background text-xs rounded-full border border-border/40">
+                    +{projects.flatMap(p => p.technologies || []).filter((v, i, a) => a.indexOf(v) === i).length - 8} more
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Project } from '../../../types';
 import { getProjects, createProject, updateProject, deleteProject } from '../../../services/api';
 import { deleteProjectFixed } from '../../../services/projectsService';
-import { Loader2, Plus, Pencil, Trash2, Calendar } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
 interface ProjectsAdminProps {
   token: string | null;
@@ -66,47 +64,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     };
 
     fetchProjects();
-  }, []);
-
-  // Handle date changes from DatePicker
-  const handleDateChange = (date: Date | null, fieldName: 'start' | 'end') => {
-    if (date) {
-      // Format date to YYYY-MM format
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const formattedDate = `${year}-${month}`;
-
-      setFormData(prev => ({
-        ...prev,
-        timeline: {
-          ...prev.timeline,
-          [fieldName]: formattedDate
-        }
-      }));
-    } else if (fieldName === 'end') {
-      // If end date is cleared, set to null (indicating "Present")
-      setFormData(prev => ({
-        ...prev,
-        timeline: {
-          ...prev.timeline,
-          end: null
-        }
-      }));
-    }
-  };
-
-  // Helper function to parse YYYY-MM date string to Date object
-  const parseYearMonthToDate = (dateString: string | null): Date | null => {
-    if (!dateString) return null;
-
-    const [year, month] = dateString.split('-').map(Number);
-    if (!year || !month) return null;
-
-    const date = new Date(year, month - 1); // month is 0-indexed in JS Date
-    return date;
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
 
     // Handle nested fields
@@ -116,15 +74,34 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         // Ensure we're working with an object that can be spread
         const parentObj = prev[parent as keyof typeof prev] as Record<string, any>;
 
-        if (child === 'end' && value === '') {
-          // For end date, if empty, set to null (indicating "Present")
-          return {
-            ...prev,
-            [parent]: {
-              ...parentObj,
-              [child]: null
-            }
-          };
+        // Handle date fields
+        if (name === 'timeline.start' || name === 'timeline.end') {
+          // Check if it's a date field and validate format
+          const dateRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
+
+          if (child === 'end' && value === '') {
+            // For end date, if empty, set to null (indicating "Present")
+            return {
+              ...prev,
+              [parent]: {
+                ...parentObj,
+                [child]: null
+              }
+            };
+          } else if (value === '' || dateRegex.test(value)) {
+            // If it's valid YYYY-MM format or empty
+            return {
+              ...prev,
+              [parent]: {
+                ...parentObj,
+                [child]: value
+              }
+            };
+          } else {
+            // Invalid format - don't update state
+            console.warn(`Invalid date format: ${value}. Expected YYYY-MM`);
+            return prev;
+          }
         } else {
           // For other nested fields
           return {
@@ -145,6 +122,11 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
+
+    // Debug log for date values
+    if (name === 'timeline.start' || name === 'timeline.end') {
+      console.log(`Date field ${name} changed to:`, value);
+    }
   };
 
   const resetForm = () => {
@@ -164,7 +146,6 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     setEditingProject(null);
     setIsFormOpen(false);
   };
-
   const openEditForm = (project: Project) => {
     // Log to debug the project object
     console.log('Opening edit form with project:', project);
@@ -200,13 +181,13 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
     // Debug log to check the ID
     console.log('Set editingProject with ID:', projectWithId.id);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  }; const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!token) {
-      setError('Authentication token is missing. Please log in again.');
+      const errorMsg = 'Authentication token is missing. Please log in again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
@@ -224,7 +205,9 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         // Validate ID before update
         if (!projectId) {
           console.error('Missing ID in editingProject:', editingProject);
-          setError('Cannot update project: Missing ID');
+          const errorMsg = 'Cannot update project: Missing ID';
+          setError(errorMsg);
+          toast.error(errorMsg);
           setLoading(false);
           return;
         }
@@ -232,7 +215,9 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         // Double check and verify the projectId is not undefined or empty
         if (projectId === 'undefined' || projectId === '') {
           console.error('Invalid project ID:', projectId);
-          setError('Cannot update project: Invalid project ID');
+          const errorMsg = 'Cannot update project: Invalid project ID';
+          setError(errorMsg);
+          toast.error(errorMsg);
           setLoading(false);
           return;
         }
@@ -245,6 +230,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
         if (response.error) {
           setError(response.error);
+          toast.error(`Failed to update project: ${response.error}`);
         } else {
           // Update projects list, ensuring we match by the correct ID
           setProjects(prev =>
@@ -253,6 +239,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
               return String(itemId) === String(projectId) ? response.data : project;
             })
           );
+          toast.success('Project updated successfully');
           resetForm();
         }
       } else {
@@ -260,39 +247,43 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         const response = await createProject(formData, token);
         if (response.error) {
           setError(response.error);
+          toast.error(`Failed to create project: ${response.error}`);
         } else {
           // Add new project to list
           setProjects(prev => [...prev, response.data]);
+          toast.success('Project created successfully');
           resetForm();
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to save project:', err);
-      setError('Failed to save project. Please try again.');
+      const errorMsg = err.message || 'Failed to save project. Please try again.';
+      setError(`Failed to save project: ${errorMsg}`);
+      toast.error(`Failed to save project: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
-  };
-
-  // Initiates the delete confirmation process
+  };// Initiates the delete confirmation process
   const initiateDelete = (id: string, title: string, description: string) => {
     if (!token) {
-      setError('Authentication token is missing. Please log in again.');
+      const errorMsg = 'Authentication token is missing. Please log in again.';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     // Validate project ID
     if (!id || id === 'undefined') {
-      setError('Cannot delete project: Invalid project ID');
+      const errorMsg = 'Cannot delete project: Invalid project ID';
+      setError(errorMsg);
+      toast.error(errorMsg);
       return;
     }
 
     // Set the project to delete and show the confirmation dialog
     setProjectToDelete({ id, title, description });
     setShowDeleteConfirm(true);
-  };
-
-  // Handle the actual deletion after confirmation
+  };// Handle the actual deletion after confirmation
   const handleDelete = async (projectToDelete: { id: string, title: string, description: string }) => {
     const projectId = projectToDelete.id;
     if (!token) {
@@ -342,9 +333,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Helper function to update projects list after successful deletion
+  };// Helper function to update projects list after successful deletion
   const updateProjectsList = (deletedProjectId: string) => {
     setProjects(prev => prev.filter((project: Project) => {
       const itemId = project.id || (project as any)._id;
@@ -412,61 +401,38 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
-                <div className="relative">
-                  <DatePicker
-                    selected={parseYearMonthToDate(formData.timeline.start)}
-                    onChange={(date) => handleDateChange(date, 'start')}
-                    dateFormat="yyyy-MM"
-                    showMonthYearPicker
-                    required
-                    id="timeline.start"
-                    placeholderText="YYYY-MM"
-                    className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    customInput={
-                      <input
-                        type="text"
-                        placeholder="YYYY-MM"
-                        className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary pr-10"
-                        readOnly
-                      />
-                    }
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <Calendar size={16} className="text-foreground/60" />
-                  </div>
-                </div>
-                <small className="text-xs text-foreground/60 mt-1 block">Click to open calendar and select month/year</small>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">              <div>
+              <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  pattern="[0-9]{4}-(0[1-9]|1[012])"
+                  placeholder="YYYY-MM"
+                  id="timeline.start"
+                  name="timeline.start"
+                  value={formData.timeline.start}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                />
               </div>
+              <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (e.g., 2023-01)</small>
+            </div>
               <div>
                 <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>
                 <div className="relative">
-                  <DatePicker
-                    selected={parseYearMonthToDate(formData.timeline.end)}
-                    onChange={(date) => handleDateChange(date, 'end')}
-                    dateFormat="yyyy-MM"
-                    showMonthYearPicker
-                    isClearable
+                  <input
+                    type="text"
+                    pattern="[0-9]{4}-(0[1-9]|1[012])"
+                    placeholder="YYYY-MM"
                     id="timeline.end"
-                    placeholderText="YYYY-MM or empty for Present"
+                    name="timeline.end"
+                    value={formData.timeline.end || ''}
+                    onChange={handleChange}
                     className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                    customInput={
-                      <input
-                        type="text"
-                        placeholder="YYYY-MM or empty for Present"
-                        className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary pr-10"
-                        readOnly
-                      />
-                    }
                   />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                    <Calendar size={16} className="text-foreground/60" />
-                  </div>
                 </div>
-                <small className="text-xs text-foreground/60 mt-1 block">Click to open calendar or clear for "Present"</small>
+                <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (or leave empty)</small>
               </div>
             </div>
 
@@ -586,8 +552,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                           title="Edit"
                         >
                           <Pencil size={16} />
-                        </button>
-                        <button
+                        </button>                        <button
                           onClick={() => initiateDelete(String(projectId), project.title, project.description)}
                           className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                           title="Delete"
@@ -618,11 +583,8 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                 </div>
               );
             })
-          )}
-        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
+          )}        </div>
+      )}      {/* Delete Confirmation Dialog */}
       {showDeleteConfirm && projectToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full">
@@ -632,12 +594,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
             </p>
             <div className="mb-4">
               <p className="text-primary font-medium text-lg">
-                "{projectToDelete.title}"
-              </p>
-              <p className="text-foreground/70 text-sm italic mt-2">
-                {projectToDelete.description.length > 100
-                  ? `${projectToDelete.description.substring(0, 100)}...`
-                  : projectToDelete.description}
+                {projectToDelete.title}
               </p>
             </div>
             <p className="text-red-500 text-sm mb-6">
@@ -666,6 +623,6 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
       )}
     </div>
   );
-}
+};
 
 export default ProjectsAdmin;

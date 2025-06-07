@@ -15,6 +15,10 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
 
+  // Add state for the delete confirmation popup
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+
   const [formData, setFormData] = useState<Omit<Project, 'id'>>({
     title: '',
     description: '',
@@ -230,7 +234,8 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  }; const handleDelete = async (projectId: string) => {
+  };  // Initiates the delete confirmation process 
+  const initiateDelete = (projectId: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
@@ -242,7 +247,15 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       return;
     }
 
-    if (!window.confirm('Are you sure you want to delete this project?')) {
+    // Set the project to delete and show the confirmation dialog
+    setProjectToDelete(projectId);
+    setShowDeleteConfirm(true);
+  };
+
+  // Handle the actual deletion after confirmation
+  const handleDelete = async (projectId: string) => {
+    if (!token) {
+      setError('Authentication token is missing. Please log in again.');
       return;
     }
 
@@ -497,9 +510,8 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                           title="Edit"
                         >
                           <Pencil size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(projectId)}
+                        </button>                        <button
+                          onClick={() => initiateDelete(projectId)}
                           className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                           title="Delete"
                         >
@@ -529,7 +541,36 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                 </div>
               );
             })
-          )}
+          )}        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full">
+            <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
+            <p className="mb-6">Are you sure you want to delete this project? This action cannot be undone.</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 bg-background text-foreground rounded-md hover:bg-background/80 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (projectToDelete) {
+                    handleDelete(projectToDelete);
+                    setShowDeleteConfirm(false);
+                    setProjectToDelete(null);
+                  }
+                }}
+                className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

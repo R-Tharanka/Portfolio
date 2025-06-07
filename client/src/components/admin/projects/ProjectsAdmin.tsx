@@ -609,20 +609,36 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                           <Trash2 size={16} />
                         </button>
                       </div>
+                    </div>                    <div className="mt-1 mb-2">
+                      <p className="text-sm text-foreground/70" style={{
+                        maxHeight: expandedDescriptions[projectId] ? 'none' : '5rem',
+                        overflow: 'hidden',
+                        position: 'relative'
+                      }}>
+                        {expandedDescriptions[projectId]
+                          ? project.description
+                          : truncateText(project.description, MAX_ADMIN_DESCRIPTION_LENGTH)}
+                      </p>
+
+                      {project.description.length > MAX_ADMIN_DESCRIPTION_LENGTH && (
+                        <button
+                          onClick={() => toggleDescription(projectId)}
+                          className="flex items-center gap-1 mt-1 text-xs text-primary font-medium hover:underline"
+                        >
+                          {expandedDescriptions[projectId] ? (
+                            <>
+                              Show less
+                              <ChevronUp size={14} />
+                            </>
+                          ) : (
+                            <>
+                              Show more
+                              <ChevronDown size={14} />
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
-
-                    <p className="text-sm text-foreground/70 mt-1 mb-2">
-                      {expandedDescriptions[projectId]
-                        ? project.description
-                        : truncateText(project.description, MAX_ADMIN_DESCRIPTION_LENGTH)}
-                    </p>
-
-                    <button
-                      onClick={() => toggleDescription(projectId)}
-                      className="text-primary text-xs font-medium"
-                    >
-                      {expandedDescriptions[projectId] ? 'Show less' : 'Show more'}
-                    </button>
 
                     <div className="flex flex-wrap gap-1 mb-2">
                       {project.technologies.map((tech, i) => (

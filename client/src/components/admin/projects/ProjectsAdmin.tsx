@@ -65,45 +65,24 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
     fetchProjects();
   }, []); const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-
-    // Handle nested fields
+    const { name, value } = e.target;    // Handle nested fields
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData(prev => {
         // Ensure we're working with an object that can be spread
         const parentObj = prev[parent as keyof typeof prev] as Record<string, any>;
 
-        // Handle date fields
-        if (name === 'timeline.start' || name === 'timeline.end') {
-          // Check if it's a date field and validate format
-          const dateRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
-
-          if (child === 'end' && value === '') {
-            // For end date, if empty, set to null (indicating "Present")
-            return {
-              ...prev,
-              [parent]: {
-                ...parentObj,
-                [child]: null
-              }
-            };
-          } else if (value === '' || dateRegex.test(value)) {
-            // If it's valid YYYY-MM format or empty
-            return {
-              ...prev,
-              [parent]: {
-                ...parentObj,
-                [child]: value
-              }
-            };
-          } else {
-            // Invalid format - don't update state
-            console.warn(`Invalid date format: ${value}. Expected YYYY-MM`);
-            return prev;
-          }
+        // Special handling for end date - if empty, set to null (indicating "Present")
+        if (child === 'end' && value === '') {
+          return {
+            ...prev,
+            [parent]: {
+              ...parentObj,
+              [child]: null
+            }
+          };
         } else {
-          // For other nested fields
+          // For all other nested fields
           return {
             ...prev,
             [parent]: {
@@ -403,36 +382,26 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">              <div>
               <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
-              <div className="relative">
-                <input
-                  type="text"
-                  pattern="[0-9]{4}-(0[1-9]|1[012])"
-                  placeholder="YYYY-MM"
-                  id="timeline.start"
-                  name="timeline.start"
-                  value={formData.timeline.start}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-              <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (e.g., 2023-01)</small>
+              <input
+                type="month"
+                id="timeline.start"
+                name="timeline.start"
+                value={formData.timeline.start}
+                onChange={handleChange}
+                required
+                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+              />
             </div>
               <div>
                 <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    pattern="[0-9]{4}-(0[1-9]|1[012])"
-                    placeholder="YYYY-MM"
-                    id="timeline.end"
-                    name="timeline.end"
-                    value={formData.timeline.end || ''}
-                    onChange={handleChange}
-                    className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                </div>
-                <small className="text-xs text-foreground/60 mt-1 block">Format: YYYY-MM (or leave empty)</small>
+                <input
+                  type="month"
+                  id="timeline.end"
+                  name="timeline.end"
+                  value={formData.timeline.end || ''}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                />
               </div>
             </div>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Project } from '../../../types';
 import { getProjects, createProject, updateProject, deleteProject } from '../../../services/api';
+import { deleteProjectFixed } from '../../../services/projectsService';
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
 
 interface ProjectsAdminProps {
@@ -211,9 +212,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDelete = async (projectId: string) => {
+  }; const handleDelete = async (projectId: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
@@ -233,22 +232,52 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     try {
       console.log(`Attempting to delete project with ID: ${projectId}`);
 
-      const response = await deleteProject(projectId, token);
+      // Make sure we're using a clean string version of the ID
+      const cleanProjectId = String(projectId).trim();
+      console.log(`Clean project ID for deletion: ${cleanProjectId}`);
+
+      // First try with the specialized service
+      console.log('Using specialized project service for deletion');
+      const response = await deleteProjectFixed(cleanProjectId, token);
+
+      console.log('Delete project response:', response);
+
       if (response.error) {
-        setError(response.error);
+        console.error('Error from specialized service:', response.error);
+
+        // Fallback to original method if specialized service fails
+        console.log('Falling back to standard delete method');
+        const fallbackResponse = await deleteProject(cleanProjectId, token);
+
+        if (fallbackResponse.error) {
+          setError(fallbackResponse.error);
+        } else {
+          // Success with fallback
+          updateProjectsList(cleanProjectId);
+        }
       } else {
-        // Remove project from list
-        setProjects(prev => prev.filter(project => {
-          const itemId = project.id || (project as any)._id;
-          return itemId !== projectId;
-        }));
+        // Success with specialized service
+        updateProjectsList(cleanProjectId);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to delete project:', err);
-      setError('Failed to delete project. Please try again.');
+      const errorMsg = err.message || 'Failed to delete project. Please try again.';
+      setError(`Failed to delete project: ${errorMsg}`);
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to update projects list after successful deletion
+  const updateProjectsList = (deletedProjectId: string) => {
+    setProjects(prev => prev.filter(project => {
+      const itemId = project.id || (project as any)._id;
+      return String(itemId) !== String(deletedProjectId);
+    }));
+
+    // Show success message
+    setError(null);
+    window.alert('Project deleted successfully');
   };
 
   return (
@@ -305,26 +334,30 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
+              <div>                <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date (YYYY-MM format)</label>
                 <input
-                  type="month"
+                  type="text"
                   id="timeline.start"
                   name="timeline.start"
+                  placeholder="YYYY-MM"
                   value={formData.timeline.start}
                   onChange={handleChange}
                   required
+                  pattern="\d{4}-\d{2}"
+                  title="Format: YYYY-MM (e.g. 2023-01)"
                   className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
-              <div>
-                <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>
+              <div>                <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (YYYY-MM format or leave empty for ongoing)</label>
                 <input
-                  type="month"
+                  type="text"
                   id="timeline.end"
                   name="timeline.end"
+                  placeholder="YYYY-MM"
                   value={formData.timeline.end || ''}
                   onChange={handleChange}
+                  pattern="\d{4}-\d{2}"
+                  title="Format: YYYY-MM (e.g. 2023-01)"
                   className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>

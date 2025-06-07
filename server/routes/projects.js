@@ -14,9 +14,9 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Error in GET /api/projects:', error.message);
     console.error(error.stack);
-    res.status(500).json({ 
-      error: 'Server Error', 
-      message: error.message 
+    res.status(500).json({
+      error: 'Server Error',
+      message: error.message
     });
   }
 });
@@ -40,11 +40,11 @@ router.get('/featured', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const project = await Project.findById(req.params.id);
-    
+
     if (!project) {
       return res.status(404).json({ msg: 'Project not found' });
     }
-    
+
     res.json(project);
   } catch (error) {
     console.error(error.message);
@@ -127,7 +127,7 @@ router.put('/:id', [
 
   try {
     const project = await Project.findById(req.params.id);
-    
+
     if (!project) {
       return res.status(404).json({ msg: 'Project not found' });
     }
@@ -153,20 +153,49 @@ router.put('/:id', [
 // @access  Private (Admin only)
 router.delete('/:id', protect, async (req, res) => {
   try {
+    // Log the request for debugging
+    console.log('Delete project request received for ID:', req.params.id);
+
+    // Validate MongoDB ObjectId format
+    if (!req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+      console.error(`Invalid ObjectId format: ${req.params.id}`);
+      return res.status(400).json({ msg: 'Invalid project ID format' });
+    }
+
+    // Find the project first to verify it exists
     const project = await Project.findById(req.params.id);
-    
+
     if (!project) {
+      console.log(`Project not found with ID: ${req.params.id}`);
       return res.status(404).json({ msg: 'Project not found' });
     }
 
-    await Project.findByIdAndRemove(req.params.id);
-    res.json({ msg: 'Project removed' });
-  } catch (error) {
-    console.error(error.message);
-    if (error.kind === 'ObjectId') {
-      return res.status(404).json({ msg: 'Project not found' });
+    // Log project info before deletion for debugging
+    console.log(`Found project to delete: ${project.title}`);
+
+    // Use findOneAndDelete for better error handling
+    const deletedProject = await Project.findOneAndDelete({ _id: req.params.id });
+
+    if (!deletedProject) {
+      console.error(`Failed to delete project with ID: ${req.params.id}`);
+      return res.status(500).json({ msg: 'Failed to delete project' });
     }
-    res.status(500).send('Server Error');
+
+    console.log(`Project successfully deleted: ${deletedProject.title}`);
+    res.json({ msg: 'Project removed', id: req.params.id });
+  } catch (error) {
+    console.error('Error deleting project:', error.message);
+    console.error('Error stack:', error.stack);
+
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Project not found - invalid ID format' });
+    }
+
+    // Provide more detailed error response
+    res.status(500).json({
+      msg: 'Server error while deleting project',
+      error: error.message
+    });
   }
 });
 

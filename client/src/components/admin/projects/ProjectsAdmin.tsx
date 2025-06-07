@@ -345,7 +345,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         </div>
       )}      {/* Project Overview */}
       {!loading && (
-        <div className="p-5 mb-6 bg-background/50 rounded-lg border border-border/40 shadow-sm">
+        <div className="p-5 mb-8 bg-background/50 rounded-lg border border-border/40 shadow-sm">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
             <div className="mb-4 sm:mb-0">
               <div className="flex items-center mb-1">
@@ -384,7 +384,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
             </div>
           </div>
           {projects.length > 0 && (
-            <div className="mt-4 pt-3 border-t border-border/30">
+            <div className="mt-4 pt-4 border-t border-border/30">
               <h4 className="text-xs font-medium mb-2">Common Technologies</h4>
               <div className="flex flex-wrap gap-1">
                 {Array.from(

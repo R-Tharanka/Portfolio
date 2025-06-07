@@ -212,18 +212,18 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  };  const handleDelete = async (projectId: string) => {
+  }; const handleDelete = async (projectId: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
     }
-    
+
     // Validate project ID
     if (!projectId || projectId === 'undefined') {
       setError('Cannot delete project: Invalid project ID');
       return;
     }
-    
+
     if (!window.confirm('Are you sure you want to delete this project?')) {
       return;
     }
@@ -235,20 +235,20 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       // Make sure we're using a clean string version of the ID
       const cleanProjectId = String(projectId).trim();
       console.log(`Clean project ID for deletion: ${cleanProjectId}`);
-      
+
       // First try with the specialized service
       console.log('Using specialized project service for deletion');
       const response = await deleteProjectFixed(cleanProjectId, token);
-      
+
       console.log('Delete project response:', response);
-      
+
       if (response.error) {
         console.error('Error from specialized service:', response.error);
-        
+
         // Fallback to original method if specialized service fails
         console.log('Falling back to standard delete method');
         const fallbackResponse = await deleteProject(cleanProjectId, token);
-        
+
         if (fallbackResponse.error) {
           setError(fallbackResponse.error);
         } else {
@@ -267,14 +267,14 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
       setLoading(false);
     }
   };
-  
+
   // Helper function to update projects list after successful deletion
   const updateProjectsList = (deletedProjectId: string) => {
     setProjects(prev => prev.filter(project => {
       const itemId = project.id || (project as any)._id;
       return String(itemId) !== String(deletedProjectId);
     }));
-    
+
     // Show success message
     setError(null);
     window.alert('Project deleted successfully');

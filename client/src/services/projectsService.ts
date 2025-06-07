@@ -81,7 +81,7 @@ export const deleteProjectFixed = async (
         }
 
         console.log(`▶️ Using dedicated service to delete project ${cleanProjectId}`);
-        
+
         const response = await projectsApi.delete(`/projects/${cleanProjectId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -91,7 +91,7 @@ export const deleteProjectFixed = async (
         return { data: response.data };
     } catch (error: any) {
         console.error('Error deleting project with fixed service:', error);
-        
+
         // Provide more specific error message based on error status
         let errorMsg = 'Failed to delete project';
         if (error.response?.status === 500) {
@@ -101,7 +101,7 @@ export const deleteProjectFixed = async (
         } else if (error.response?.status === 401) {
             errorMsg = 'Authentication error. Please log in again.';
         }
-        
+
         return {
             data: { msg: '' },
             error: error.response?.data?.msg || errorMsg
@@ -146,7 +146,7 @@ export const updateProjectFixed = async (
 
         console.log(`▶️ Using dedicated service to update project ${cleanProjectId}`);
         console.log('Project data being sent:', projectData);
-        
+
         const response = await projectsApi.put(`/projects/${cleanProjectId}`, projectData, {
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -162,7 +162,7 @@ export const updateProjectFixed = async (
         return { data: projectWithId };
     } catch (error: any) {
         console.error('Error updating project with fixed service:', error);
-        
+
         // Provide more specific error message based on error status
         let errorMsg = 'Failed to update project';
         if (error.response?.status === 500) {
@@ -172,7 +172,7 @@ export const updateProjectFixed = async (
         } else if (error.response?.status === 401) {
             errorMsg = 'Authentication error. Please log in again.';
         }
-        
+
         return {
             data: {} as Project,
             error: error.response?.data?.msg || errorMsg

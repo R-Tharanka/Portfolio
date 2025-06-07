@@ -14,10 +14,9 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-
   // Add state for the delete confirmation popup
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [projectToDelete, setProjectToDelete] = useState<string | null>(null);
+  const [projectToDelete, setProjectToDelete] = useState<{id: string, title: string} | null>(null);
 
   const [formData, setFormData] = useState<Omit<Project, 'id'>>({
     title: '',
@@ -234,8 +233,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     } finally {
       setLoading(false);
     }
-  };  // Initiates the delete confirmation process 
-  const initiateDelete = (projectId: string) => {
+  };  // Initiates the delete confirmation process   const initiateDelete = (projectId: string, projectTitle: string) => {
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
@@ -248,12 +246,13 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
     }
 
     // Set the project to delete and show the confirmation dialog
-    setProjectToDelete(projectId);
+    setProjectToDelete({ id: projectId, title: projectTitle });
     setShowDeleteConfirm(true);
   };
 
   // Handle the actual deletion after confirmation
-  const handleDelete = async (projectId: string) => {
+  const handleDelete = async (projectToDelete: {id: string, title: string}) => {
+    const projectId = projectToDelete.id;
     if (!token) {
       setError('Authentication token is missing. Please log in again.');
       return;
@@ -511,7 +510,7 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
                         >
                           <Pencil size={16} />
                         </button>                        <button
-                          onClick={() => initiateDelete(projectId)}
+                          onClick={() => initiateDelete(projectId, project.title)}
                           className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
                           title="Delete"
                         >
@@ -542,14 +541,20 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
               );
             })
           )}        </div>
-      )}
-
-      {/* Delete Confirmation Dialog */}
-      {showDeleteConfirm && (
+      )}      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && projectToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full">
             <h3 className="text-lg font-bold mb-4">Confirm Deletion</h3>
-            <p className="mb-6">Are you sure you want to delete this project? This action cannot be undone.</p>
+            <p className="mb-2">
+              Are you sure you want to delete the following project?
+            </p>
+            <p className="text-primary font-medium text-lg mb-4">
+              "{projectToDelete.title}"
+            </p>
+            <p className="text-red-500 text-sm mb-6">
+              This action cannot be undone.
+            </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
@@ -559,11 +564,9 @@ const ProjectsAdmin: React.FC<ProjectsAdminProps> = ({ token }) => {
               </button>
               <button
                 onClick={() => {
-                  if (projectToDelete) {
-                    handleDelete(projectToDelete);
-                    setShowDeleteConfirm(false);
-                    setProjectToDelete(null);
-                  }
+                  handleDelete(projectToDelete);
+                  setShowDeleteConfirm(false);
+                  setProjectToDelete(null);
                 }}
                 className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
               >

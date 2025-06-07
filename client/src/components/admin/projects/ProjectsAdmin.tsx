@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Project } from '../../../types';
 import { getProjects, createProject, updateProject, deleteProject } from '../../../services/api';
 import { deleteProjectFixed } from '../../../services/projectsService';
-import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Maximum description length before truncation (approximately 4 lines)
+const MAX_ADMIN_DESCRIPTION_LENGTH = 240;
 
 interface ProjectsAdminProps {
   token: string | null;
@@ -15,9 +18,24 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
-  // Add state for the delete confirmation popup
+  // Add states for the delete confirmation popup and expanded descriptions
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: string, title: string, description: string } | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+
+  // Helper function to truncate text
+  const truncateText = (text: string, maxLength: number) => {
+    if (text.length <= maxLength) return text;
+    return text.slice(0, maxLength).trim() + '...';
+  };
+
+  // Toggle description expansion for a specific project
+  const toggleDescription = (projectId: string) => {
+    setExpandedDescriptions(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
+  };
 
   const [formData, setFormData] = useState<Omit<Project, 'id'>>({
     title: '',
@@ -593,7 +611,18 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                       </div>
                     </div>
 
-                    <p className="text-sm text-foreground/70 mt-1 mb-2">{project.description}</p>
+                    <p className="text-sm text-foreground/70 mt-1 mb-2">
+                      {expandedDescriptions[projectId]
+                        ? project.description
+                        : truncateText(project.description, MAX_ADMIN_DESCRIPTION_LENGTH)}
+                    </p>
+
+                    <button
+                      onClick={() => toggleDescription(projectId)}
+                      className="text-primary text-xs font-medium"
+                    >
+                      {expandedDescriptions[projectId] ? 'Show less' : 'Show more'}
+                    </button>
 
                     <div className="flex flex-wrap gap-1 mb-2">
                       {project.technologies.map((tech, i) => (

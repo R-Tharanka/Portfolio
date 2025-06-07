@@ -164,9 +164,12 @@ const ProjectsSection: React.FC = () => {
 
                     <div className="p-6">
                       <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-
                       <div className="mb-4">
-                        <p className="text-foreground/70">
+                        <p className="text-foreground/70 line-clamp-4" style={{
+                          maxHeight: expandedDescriptions[project.id] ? 'none' : '6rem',
+                          overflow: 'hidden',
+                          position: 'relative'
+                        }}>
                           {expandedDescriptions[project.id]
                             ? project.description
                             : truncateText(project.description, MAX_DESCRIPTION_LENGTH)

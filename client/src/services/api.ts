@@ -403,12 +403,28 @@ export const deleteProject = async (projectId: string, token: string): Promise<A
         error: 'Invalid project ID. Please try again or refresh the page.'
       };
     }
-
+    
+    // Enhanced validation for MongoDB ObjectId format
+    if (!isValidObjectId(projectId)) {
+      console.error(`Project ID is not a valid MongoDB ObjectId format: ${projectId}`);
+      return {
+        data: { msg: '' },
+        error: 'Invalid project ID format. Please try again or refresh the page.'
+      };
+    }
+    
     console.log(`Deleting project with ID: ${projectId}`);
-
-    const response = await api.delete(`/projects/${projectId}`, {
+    console.log('Full URL for deletion request:', `${api.defaults.baseURL}/projects/${projectId}`);
+    
+    // Ensure projectId is properly encoded if it contains special characters
+    const encodedProjectId = encodeURIComponent(projectId.trim());
+    console.log(`Using encoded project ID for deletion: ${encodedProjectId}`);
+    
+    const response = await api.delete(`/projects/${encodedProjectId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
+    
+    console.log('Project deletion successful, response:', response.data);
     return { data: response.data };
   } catch (error: any) {
     console.error('Error deleting project:', error);
@@ -419,10 +435,20 @@ export const deleteProject = async (projectId: string, token: string): Promise<A
       serverError: error.response?.data?.error,
       url: error.config?.url
     });
-
+    
+    // Provide more specific error message based on error status
+    let errorMsg = 'Failed to delete project';
+    if (error.response?.status === 500) {
+      errorMsg = 'Server error occurred while deleting project. Please try again later.';
+    } else if (error.response?.status === 404) {
+      errorMsg = 'Project not found or already deleted.';
+    } else if (error.response?.status === 401) {
+      errorMsg = 'Authentication error. Please log in again.';
+    }
+    
     return {
       data: { msg: '' },
-      error: error.response?.data?.msg || 'Failed to delete project'
+      error: error.response?.data?.msg || errorMsg
     };
   }
 };

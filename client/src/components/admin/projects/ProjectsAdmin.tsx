@@ -2,11 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { Project } from '../../../types';
 import { getProjects, createProject, updateProject, deleteProject } from '../../../services/api';
 import { deleteProjectFixed } from '../../../services/projectsService';
-import { Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp, ExternalLink,
+  Github, Calendar, LayoutGrid, List, ArrowUpDown, BarChart2,
+  Code, Tag, Clock, PieChart
+} from 'lucide-react';
 import toast from 'react-hot-toast';
 
 // Maximum description length before truncation (approximately 4 lines)
 const MAX_ADMIN_DESCRIPTION_LENGTH = 300;
+
+// Helper function for progress bar widths
+const getWidthClass = (percentage: number): string => {
+  if (percentage <= 0) return 'w-0';
+  if (percentage <= 5) return 'w-[5%]';
+  if (percentage <= 10) return 'w-[10%]';
+  if (percentage <= 20) return 'w-[20%]';
+  if (percentage <= 30) return 'w-[30%]';
+  if (percentage <= 40) return 'w-[40%]';
+  if (percentage <= 50) return 'w-[50%]';
+  if (percentage <= 60) return 'w-[60%]';
+  if (percentage <= 70) return 'w-[70%]';
+  if (percentage <= 80) return 'w-[80%]';
+  if (percentage <= 90) return 'w-[90%]';
+  return 'w-full';
+};
 
 interface ProjectsAdminProps {
   token: string | null;
@@ -22,6 +42,10 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState<{ id: string, title: string, description: string } | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  // Add state for view mode
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  // Add state for sorting
+  const [sortBy, setSortBy] = useState<string>('newest');
 
   // Helper function to truncate text
   const truncateText = (text: string, maxLength: number) => {
@@ -346,6 +370,66 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     });
   };
 
+  // Get sorted projects
+  const getSortedProjects = () => {
+    if (sortBy === 'newest') {
+      return [...projects].sort((a, b) => {
+        return new Date(b.timeline.start).getTime() - new Date(a.timeline.start).getTime();
+      });
+    } else if (sortBy === 'oldest') {
+      return [...projects].sort((a, b) => {
+        return new Date(a.timeline.start).getTime() - new Date(b.timeline.start).getTime();
+      });
+    } else if (sortBy === 'a-z') {
+      return [...projects].sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === 'z-a') {
+      return [...projects].sort((a, b) => b.title.localeCompare(a.title));
+    }
+    return projects;
+  };
+
+  // Function to get most used technologies
+  const getMostUsedTechnologies = () => {
+    const techCount: Record<string, number> = {};
+
+    projects.forEach(project => {
+      project.technologies.forEach(tech => {
+        techCount[tech] = (techCount[tech] || 0) + 1;
+      });
+    });
+
+    return Object.entries(techCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([tech, count]) => ({ tech, count }));
+  };
+
+  // Function to get most used tags
+  const getMostUsedTags = () => {
+    const tagCount: Record<string, number> = {};
+
+    projects.forEach(project => {
+      project.tags.forEach(tag => {
+        tagCount[tag] = (tagCount[tag] || 0) + 1;
+      });
+    });
+
+    return Object.entries(tagCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([tag, count]) => ({ tag, count }));
+  };
+
+  // Function to format date string
+  const formatDate = (dateString: string): string => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' });
+  };
+
+  const sortedProjects = getSortedProjects();
+  const mostUsedTechnologies = getMostUsedTechnologies();
+  const mostUsedTags = getMostUsedTags();
+
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">
       <div className="flex justify-between items-center mb-6">
@@ -363,67 +447,210 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         </div>
       )}      {/* Project Overview */}
       {!loading && (
-        <div className="p-5 mb-8 bg-background/50 rounded-lg border border-border/40 shadow-sm">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-            <div className="mb-4 sm:mb-0">
-              <div className="flex items-center mb-1">
-                <h3 className="text-md font-semibold">Project Overview</h3>
-                {projects.length > 0 && (
-                  <span className="ml-2 px-2 py-0.5 bg-primary text-white text-xs rounded-full">
-                    {projects.length}
-                  </span>
-                )}
-              </div>
-              <p className="text-sm text-foreground/70">
-                You have <span className="font-medium text-primary">{projects.length}</span> {projects.length === 1 ? 'project' : 'projects'} in your portfolio.
-              </p>
-              <p className="text-xs text-foreground/60 mt-1">
-                {projects.filter(p => !p.timeline.end).length} ongoing {projects.filter(p => !p.timeline.end).length === 1 ? 'project' : 'projects'} •
-                Last updated: {projects.length > 0 ? new Date().toLocaleDateString() : 'N/A'}
-              </p>
-            </div>
-            <div className="mt-2 sm:mt-0 grid grid-cols-2 gap-2 w-full sm:w-auto">
-              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
-                <span className="font-medium mr-1">{projects.filter(p => p.technologies?.length).length}</span>
-                <span>with technologies</span>
-              </div>
-              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
-                <span className="font-medium mr-1">{projects.filter(p => p.demoLink).length}</span>
-                <span>with demo links</span>
-              </div>
-              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
-                <span className="font-medium mr-1">{projects.filter(p => p.repoLink).length}</span>
-                <span>with repo links</span>
-              </div>
-              <div className="px-3 py-1 bg-primary/10 rounded-md text-xs flex items-center justify-between sm:justify-start">
-                <span className="font-medium mr-1">{projects.filter(p => Array.isArray(p.tags) && p.tags.length > 0).length}</span>
-                <span>with tags</span>
-              </div>
-            </div>
-          </div>
-          {projects.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-border/30">
-              <h4 className="text-xs font-medium mb-2">Common Technologies</h4>
-              <div className="flex flex-wrap gap-1">
-                {Array.from(
-                  new Set(
-                    projects.flatMap(p => p.technologies || [])
-                  )
-                )
-                  .slice(0, 8)
-                  .map((tech, i) => (
-                    <span key={i} className="px-2 py-0.5 bg-background text-xs rounded-full border border-border/40">
-                      {tech}
+        <div className="mb-8">
+          <div className="bg-background/50 rounded-lg border border-border/40 shadow-sm">
+            {/* Top section with stats */}
+            <div className="p-6 border-b border-border/30">
+              <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-4">
+                <div>
+                  <div className="flex items-center mb-2">
+                    <h3 className="text-lg font-semibold">Portfolio Projects</h3>
+                    {projects.length > 0 && (
+                      <span className="ml-2 px-2 py-0.5 bg-primary text-white text-xs rounded-full">
+                        {projects.length}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center">
+                    <p className="text-sm text-foreground/70">
+                      <span className="font-medium text-primary">{projects.length}</span> total projects •
+                      <span className="ml-1 font-medium text-green-500">{projects.filter(p => !p.timeline.end).length}</span> ongoing
+                    </p>
+                  </div>
+                </div>
+                {/* View mode and sort controls */}
+                <div className="flex flex-col sm:flex-row gap-3 mt-4 lg:mt-0">
+                  <div className="flex rounded-md overflow-hidden border border-border/60">
+                    <button
+                      onClick={() => setViewMode('list')}
+                      className={`px-3 py-1.5 text-xs flex items-center justify-center ${viewMode === 'list'
+                          ? 'bg-primary text-white'
+                          : 'bg-card hover:bg-card/80'
+                        }`}
+                      aria-label="List view"
+                    >
+                      <List size={14} className="mr-1" />
+                      List
+                    </button>
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={`px-3 py-1.5 text-xs flex items-center justify-center ${viewMode === 'grid'
+                          ? 'bg-primary text-white'
+                          : 'bg-card hover:bg-card/80'
+                        }`}
+                      aria-label="Grid view"
+                    >
+                      <LayoutGrid size={14} className="mr-1" />
+                      Grid
+                    </button>
+                  </div>
+                  <select
+                    value={sortBy}
+                    onChange={e => setSortBy(e.target.value)}
+                    className="px-3 py-1.5 text-xs bg-card border border-border/60 rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    aria-label="Sort projects by"
+                  >
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="a-z">A-Z</option>
+                    <option value="z-a">Z-A</option>
+                  </select>
+                </div>
+              </div>              {/* Project stats cards */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+                <div className="p-5 rounded-lg bg-card border border-border/40 hover:shadow-md transition-shadow relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-foreground/70">Total Projects</span>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-primary/10 text-primary">
+                      <BarChart2 size={16} />
+                    </div>
+                  </div>
+                  <p className="mt-2 text-3xl font-bold text-foreground">{projects.length}</p>
+                  <div className="mt-3 text-xs text-foreground/60 flex items-center">
+                    <Clock size={12} className="mr-1" />
+                    {projects.length > 0 ? new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : 'N/A'}
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-lg bg-card border border-border/40 hover:shadow-md transition-shadow relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-foreground/70">Demo Links</span>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-500/10 text-blue-500">
+                      <ExternalLink size={15} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline">
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {projects.filter(p => p.demoLink).length}
+                    </p>
+                    <span className="text-sm ml-1 text-foreground/60">of {projects.length}</span>
+                  </div>
+                  <div className="flex items-center mt-3">
+                    <div className="flex-1">
+                      <div className="w-full h-2 bg-background rounded-full overflow-hidden">
+                        <div
+                          className={`bg-blue-500 h-full rounded-full ${getWidthClass(projects.length ? (projects.filter(p => p.demoLink).length / projects.length) * 100 : 0)}`}
+                        ></div>
+                      </div>
+                    </div>
+                    <span className="ml-2 text-xs font-medium text-foreground/70">
+                      {Math.round(projects.length ? (projects.filter(p => p.demoLink).length / projects.length) * 100 : 0)}%
                     </span>
-                  ))}
-                {projects.flatMap(p => p.technologies || []).filter((v, i, a) => a.indexOf(v) === i).length > 8 && (
-                  <span className="px-2 py-0.5 bg-background text-xs rounded-full border border-border/40">
-                    +{projects.flatMap(p => p.technologies || []).filter((v, i, a) => a.indexOf(v) === i).length - 8} more
-                  </span>
-                )}
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-lg bg-card border border-border/40 hover:shadow-md transition-shadow relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-foreground/70">Repo Links</span>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-purple-500/10 text-purple-500">
+                      <Github size={15} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline">
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {projects.filter(p => p.repoLink).length}
+                    </p>
+                    <span className="text-sm ml-1 text-foreground/60">of {projects.length}</span>
+                  </div>
+                  <div className="flex items-center mt-3">
+                    <div className="flex-1">
+                      <div className="w-full h-2 bg-background rounded-full overflow-hidden">
+                        <div
+                          className={`bg-purple-500 h-full rounded-full ${getWidthClass(projects.length ? (projects.filter(p => p.repoLink).length / projects.length) * 100 : 0)}`}
+                        ></div>
+                      </div>
+                    </div>
+                    <span className="ml-2 text-xs font-medium text-foreground/70">
+                      {Math.round(projects.length ? (projects.filter(p => p.repoLink).length / projects.length) * 100 : 0)}%
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-5 rounded-lg bg-card border border-border/40 hover:shadow-md transition-shadow relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-green-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-foreground/70">Ongoing Projects</span>
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-green-500/10 text-green-500">
+                      <Calendar size={15} />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline">
+                    <p className="mt-2 text-3xl font-bold text-foreground">
+                      {projects.filter(p => !p.timeline.end).length}
+                    </p>
+                    <span className="text-sm ml-1 text-foreground/60">of {projects.length}</span>
+                  </div>
+                  <div className="flex items-center mt-3">
+                    <div className="flex-1">
+                      <div className="w-full h-2 bg-background rounded-full overflow-hidden">
+                        <div
+                          className={`bg-green-500 h-full rounded-full ${getWidthClass(projects.length ? (projects.filter(p => !p.timeline.end).length / projects.length) * 100 : 0)}`}
+                        ></div>
+                      </div>
+                    </div>
+                    <span className="ml-2 text-xs font-medium text-foreground/70">
+                      {Math.round(projects.length ? (projects.filter(p => !p.timeline.end).length / projects.length) * 100 : 0)}%
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+            </div>            {/* Technology and tag visualization */}
+            {projects.length > 0 && (
+              <div className="grid md:grid-cols-2 gap-6 p-6">
+                {/* Technology breakdown */}
+                <div>
+                  <div className="flex items-center mb-4">
+                    <Code size={16} className="text-blue-500 mr-2" />
+                    <h4 className="text-sm font-medium">Top Technologies</h4>
+                  </div>
+                  <div className="space-y-2">                    {getMostUsedTechnologies().map(({ tech, count }) => (
+                    <div key={tech} className="flex items-center">
+                      <div className="w-24 truncate text-xs">{tech}</div>
+                      <div className="flex-1 h-2.5 bg-background rounded-full overflow-hidden mx-2">
+                        <div
+                          className={`h-full bg-blue-500 rounded-full ${getWidthClass((count / projects.length) * 100)}`}
+                        ></div>
+                      </div>
+                      <div className="text-xs font-medium w-6 text-right">{count}</div>
+                    </div>
+                  ))}
+                  </div>
+                </div>
+
+                {/* Tag breakdown */}
+                <div>
+                  <div className="flex items-center mb-4">
+                    <Tag size={16} className="text-primary mr-2" />
+                    <h4 className="text-sm font-medium">Top Tags</h4>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {getMostUsedTags().map(({ tag, count }) => (
+                      <div
+                        key={tag}
+                        className="px-2 py-1 bg-background rounded-md border border-border/40 flex items-center gap-1.5"
+                      >
+                        <span className="text-xs font-medium">{tag}</span>
+                        <span className="text-xs px-1.5 py-0.5 bg-primary/10 rounded-full text-primary">{count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -460,18 +687,19 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
               />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">              <div>
-              <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
-              <input
-                type="month"
-                id="timeline.start"
-                name="timeline.start"
-                value={formData.timeline.start}
-                onChange={handleChange}
-                required
-                className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
-              />
-            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label htmlFor="timeline.start" className="block text-sm font-medium mb-1">Start Date</label>
+                <input
+                  type="month"
+                  id="timeline.start"
+                  name="timeline.start"
+                  value={formData.timeline.start}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
               <div>
                 <label htmlFor="timeline.end" className="block text-sm font-medium mb-1">End Date (leave empty for ongoing)</label>
                 <input
@@ -566,101 +794,284 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
             </div>
           </form>
         </div>
-      )}
-
-      {/* Projects list */}
+      )}      {/* Projects list */}
       {loading && !projects.length ? (
         <div className="flex justify-center py-8">
           <Loader2 className="animate-spin h-8 w-8 text-primary" />
         </div>
       ) : (
-        <div className="space-y-6">
+        <div>
           {projects.length === 0 ? (
-            <p className="text-center py-8 text-foreground/70">No projects found. Add your first project!</p>
+            <div className="text-center py-12 bg-card rounded-lg border border-border/50">
+              <div className="mb-4 text-foreground/40">
+                <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium mb-2">No projects found</h3>
+              <p className="text-foreground/70">Add your first project to showcase your skills and experience.</p>
+              <button
+                onClick={() => setIsFormOpen(true)}
+                className="mt-4 flex items-center gap-1 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors mx-auto"
+              >
+                <Plus size={16} />
+                Add Project
+              </button>
+            </div>
           ) : (
-            projects.map(project => {
-              // Ensure we have an ID to use as a key, falling back to index if needed
-              const projectId = project.id || (project as any)._id || `project-${Math.random()}`;
+            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' : 'space-y-6'}>
+              {sortedProjects.map(project => {
+                // Ensure we have an ID to use as a key, falling back to index if needed
+                const projectId = project.id || (project as any)._id || `project-${Math.random()}`;
 
-              return (
-                <div key={projectId} className="flex flex-col md:flex-row gap-4 border border-border/50 rounded-lg overflow-hidden">
-                  <div className="md:w-1/4 h-48 md:h-auto">
-                    <img
-                      src={project.imageUrl}
-                      alt={project.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="p-4 flex-1">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-lg font-bold">{project.title}</h3>
-                      <div className="flex gap-2">
+                return viewMode === 'grid' ? (
+                  // Grid view
+                  <div
+                    key={projectId}
+                    className="bg-card rounded-lg border border-border/50 overflow-hidden hover:shadow-md transition-shadow"
+                  >
+                    <div className="relative h-48">
+                      <img
+                        src={project.imageUrl}
+                        alt={project.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute top-0 right-0 p-2 flex gap-1">
                         <button
                           onClick={() => openEditForm(project)}
-                          className="p-1 text-foreground/70 hover:text-primary transition-colors"
-                          title="Edit"
+                          className="p-1.5 bg-black/60 hover:bg-primary text-white rounded-full transition-colors"
+                          title="Edit project"
                         >
-                          <Pencil size={16} />
-                        </button>                        <button
+                          <Pencil size={14} />
+                        </button>
+                        <button
                           onClick={() => initiateDelete(String(projectId), project.title, project.description)}
-                          className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
-                          title="Delete"
+                          className="p-1.5 bg-black/60 hover:bg-red-500 text-white rounded-full transition-colors"
+                          title="Delete project"
                         >
-                          <Trash2 size={16} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
-                    </div>                    <div className="mt-1 mb-2">
-                      <p className="text-sm text-foreground/70" style={{
-                        maxHeight: expandedDescriptions[projectId] ? 'none' : '5rem',
-                        overflow: 'hidden',
-                        position: 'relative'
-                      }}>
-                        {expandedDescriptions[projectId]
-                          ? project.description
-                          : truncateText(project.description, MAX_ADMIN_DESCRIPTION_LENGTH)}
-                      </p>
-
-                      {project.description.length > MAX_ADMIN_DESCRIPTION_LENGTH && (
-                        <button
-                          onClick={() => toggleDescription(projectId)}
-                          className="flex items-center gap-1 mt-1 text-xs text-primary font-medium hover:underline"
-                        >
-                          {expandedDescriptions[projectId] ? (
-                            <>
-                              Show less
-                              <ChevronUp size={14} />
-                            </>
-                          ) : (
-                            <>
-                              Show more
-                              <ChevronDown size={14} />
-                            </>
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                        <div className="flex flex-wrap gap-1">
+                          {project.tags.slice(0, 3).map((tag, i) => (
+                            <span key={i} className="px-1.5 py-0.5 bg-primary/90 text-white text-xs rounded-full">
+                              {tag}
+                            </span>
+                          ))}
+                          {project.tags.length > 3 && (
+                            <span className="px-1.5 py-0.5 bg-foreground/30 text-white text-xs rounded-full">
+                              +{project.tags.length - 3}
+                            </span>
                           )}
-                        </button>
-                      )}
+                        </div>
+                      </div>
                     </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-bold mb-2 truncate">{project.title}</h3>
+                      <div className="mb-3 h-12">
+                        <p className="text-sm text-foreground/70 line-clamp-2">
+                          {truncateText(project.description, MAX_ADMIN_DESCRIPTION_LENGTH)}
+                        </p>
+                      </div>
 
-                    <div className="flex flex-wrap gap-1 mb-2">
-                      {project.technologies.map((tech, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-background text-xs rounded-full">
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
+                      <div className="flex items-center text-xs text-foreground/60 mb-3">
+                        <Calendar size={14} className="mr-1.5" />
+                        {project.timeline.start ? (
+                          <>
+                            {new Date(project.timeline.start).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                            {' - '}
+                            {project.timeline.end
+                              ? new Date(project.timeline.end).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+                              : 'Present'
+                            }
+                          </>
+                        ) : 'No date'}
+                      </div>
 
-                    <div className="flex gap-2 mt-2">
-                      {project.tags.map((tag, i) => (
-                        <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
-                          {tag}
-                        </span>
-                      ))}
+                      <div className="flex flex-wrap gap-1 mb-2">
+                        {project.technologies.slice(0, 4).map((tech, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-background text-xs rounded-full">
+                            {tech}
+                          </span>
+                        ))}
+                        {project.technologies.length > 4 && (
+                          <span className="px-2 py-0.5 bg-background text-xs rounded-full">
+                            +{project.technologies.length - 4}
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="flex gap-3 mt-3 pt-3 border-t border-border/50">
+                        {project.repoLink && (
+                          <a
+                            href={project.repoLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs flex items-center text-foreground/70 hover:text-primary"
+                          >
+                            <Github size={14} className="mr-1" />
+                            Repository
+                          </a>
+                        )}
+                        {project.demoLink && (
+                          <a
+                            href={project.demoLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs flex items-center text-foreground/70 hover:text-primary"
+                          >
+                            <ExternalLink size={14} className="mr-1" />
+                            Live Demo
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          )}        </div>
-      )}      {/* Delete Confirmation Dialog */}
+                ) : (
+                  // List view
+                  <div
+                    key={projectId}
+                    className="flex flex-col md:flex-row gap-4 border border-border/50 rounded-lg overflow-hidden hover:border-primary/30 hover:shadow-md transition-all"
+                  >
+                    <div className="md:w-1/4 h-48 md:h-auto relative group">
+                      <img
+                        src={project.imageUrl}
+                        alt={project.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="hidden group-hover:flex absolute top-0 right-0 p-2 gap-1">
+                        <button
+                          onClick={() => openEditForm(project)}
+                          className="p-1.5 bg-black/60 hover:bg-primary text-white rounded-full transition-colors"
+                          title="Edit project"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => initiateDelete(String(projectId), project.title, project.description)}
+                          className="p-1.5 bg-black/60 hover:bg-red-500 text-white rounded-full transition-colors"
+                          title="Delete project"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="p-5 flex-1">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-lg font-bold">{project.title}</h3>
+                        <div className="md:hidden flex gap-2">
+                          <button
+                            onClick={() => openEditForm(project)}
+                            className="p-1 text-foreground/70 hover:text-primary transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            onClick={() => initiateDelete(String(projectId), project.title, project.description)}
+                            className="p-1 text-foreground/70 hover:text-red-500 transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center text-xs text-foreground/60 mt-1 mb-2">
+                        <Calendar size={14} className="mr-1.5" />
+                        {project.timeline.start ? (
+                          <>
+                            {new Date(project.timeline.start).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                            {' - '}
+                            {project.timeline.end
+                              ? new Date(project.timeline.end).toLocaleDateString('en-US', { year: 'numeric', month: 'short' })
+                              : 'Present'
+                            }
+                          </>
+                        ) : 'No date'}
+                      </div>
+
+                      <div className="mt-1 mb-3">
+                        <div className="text-sm text-foreground/70 max-w-none">
+                          {expandedDescriptions[projectId]
+                            ? project.description
+                            : (
+                              <>
+                                {truncateText(project.description, MAX_ADMIN_DESCRIPTION_LENGTH)}
+                              </>
+                            )
+                          }
+                        </div>
+
+                        {project.description.length > MAX_ADMIN_DESCRIPTION_LENGTH && (
+                          <button
+                            onClick={() => toggleDescription(projectId)}
+                            className="flex items-center gap-1 mt-1.5 text-xs text-primary font-medium hover:underline"
+                          >
+                            {expandedDescriptions[projectId] ? (
+                              <>
+                                Show less
+                                <ChevronUp size={14} />
+                              </>
+                            ) : (
+                              <>
+                                Show more
+                                <ChevronDown size={14} />
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap gap-1.5 mb-3">
+                        {project.technologies.map((tech, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-background text-xs rounded-full border border-border/40">
+                            {tech}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex flex-wrap gap-2">
+                        {project.tags.map((tag, i) => (
+                          <span key={i} className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex gap-4 mt-3 pt-3 border-t border-border/20">
+                        {project.repoLink && (
+                          <a
+                            href={project.repoLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm flex items-center text-foreground/70 hover:text-primary"
+                          >
+                            <Github size={16} className="mr-1.5" />
+                            Repository
+                          </a>
+                        )}
+                        {project.demoLink && (
+                          <a
+                            href={project.demoLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm flex items-center text-foreground/70 hover:text-primary"
+                          >
+                            <ExternalLink size={16} className="mr-1.5" />
+                            Live Demo
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}{/* Delete Confirmation Dialog */}
       {showDeleteConfirm && projectToDelete && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card p-6 rounded-lg shadow-xl max-w-md w-full">

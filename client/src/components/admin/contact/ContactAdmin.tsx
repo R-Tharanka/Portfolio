@@ -353,44 +353,41 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
   const readCount = totalMessages - unreadCount;
 
   return (
-    <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-bold">Contact Messages</h2>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            <span className="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">{unreadCount} Unread</span>
-            <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">{readCount} Read</span>
-          </div>
+    <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">      <div className="flex justify-between items-center mb-6">
+      <h2 className="text-xl font-bold">Contact Messages</h2>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">{unreadCount} Unread</span>
+          <span className="text-xs px-2 py-1 bg-foreground/10 text-foreground/70 rounded-full">{readCount} Read</span>
         </div>
       </div>
+    </div>
 
       {error && (
         <div className="p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm">
           {error}
         </div>
-      )}
-
-      {selectedMessageIds.length > 0 && (
+      )}      {selectedMessageIds.length > 0 && (
         <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex flex-wrap items-center gap-2 text-sm">
           <span>{selectedMessageIds.length} messages selected</span>
           <div className="ml-auto flex gap-2">
             <button
               onClick={() => handleBulkReadStatus(true)}
-              className="px-3 py-1 rounded bg-green-500 text-white text-xs font-medium hover:bg-green-600 transition-colors"
+              className="px-3 py-1 rounded bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors"
               disabled={isBulkActionLoading}
             >
               Mark Read
             </button>
             <button
               onClick={() => handleBulkReadStatus(false)}
-              className="px-3 py-1 rounded bg-yellow-500 text-white text-xs font-medium hover:bg-yellow-600 transition-colors"
+              className="px-3 py-1 rounded bg-primary/80 text-white text-xs font-medium hover:bg-primary/70 transition-colors"
               disabled={isBulkActionLoading}
             >
               Mark Unread
             </button>
             <button
               onClick={handleBulkDelete}
-              className="px-3 py-1 rounded bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition-colors"
+              className="px-3 py-1 rounded bg-foreground/80 text-white text-xs font-medium hover:bg-foreground/70 transition-colors"
               disabled={isBulkActionLoading}
             >
               Delete
@@ -455,8 +452,8 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                   <div
                     key={message._id}
                     className={`p-4 rounded-lg border transition-all flex flex-col gap-2 ${selectedMessage?._id === message._id
-                        ? 'bg-primary/10 border-primary'
-                        : 'bg-background border-border'
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-background border-border'
                       }`}
                   >
                     <div className="flex items-start gap-2">
@@ -488,12 +485,12 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                           </div>
                         </div>
                         <div className="flex gap-2 text-xs mt-2">
-                          <span className={`px-3 py-1 rounded-full font-semibold ${message.read ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                          <span className={`px-3 py-1 rounded-full font-semibold ${message.read ? 'bg-foreground/10 text-foreground/70' : 'bg-primary/10 text-primary'}`}>
                             {message.read ? 'Read' : 'Unread'}
                           </span>
                           <button
                             onClick={(e) => { e.stopPropagation(); toggleReadStatus(message); }}
-                            className="ml-auto px-3 py-1 rounded-full bg-primary text-white text-xs font-semibold hover:bg-primary/90 transition-colors"
+                            className="ml-auto px-3 py-1 rounded-full bg-primary/90 text-white text-xs font-semibold hover:bg-primary transition-colors"
                             aria-label={message.read ? 'Mark as unread' : 'Mark as read'}
                           >
                             {message.read ? 'Mark as Unread' : 'Mark as Read'}
@@ -525,10 +522,9 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                       <Trash2 className="h-5 w-5 text-red-500" />
                     </button>
                   </div>
-                </div>
-                <div className="mb-2">
+                </div>                <div className="mb-2">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-3 py-1 rounded-full font-semibold text-xs ${selectedMessage.read ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                    <span className={`px-3 py-1 rounded-full font-semibold text-xs ${selectedMessage.read ? 'bg-foreground/10 text-foreground/70' : 'bg-primary/10 text-primary'}`}>
                       {selectedMessage.read ? 'Read' : 'Unread'}
                     </span>
                     <span className="text-xs text-foreground/70">
@@ -541,15 +537,15 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setIsDialogOpen(true)}
-                    className="flex-1 px-4 py-2 rounded-md bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-colors flex items-center justify-center gap-2"
+                    className="flex-1 px-4 py-2 rounded-md bg-foreground/80 text-white text-sm font-semibold hover:bg-foreground/70 transition-colors flex items-center justify-center gap-2"
                   >
                     <Trash2 className="h-4 w-4" /> Delete Message
                   </button>
                   <button
                     onClick={() => toggleReadStatus(selectedMessage)}
                     className={`flex-1 px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${selectedMessage.read
-                        ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                        : 'bg-green-500 hover:bg-green-600 text-white'
+                        ? 'bg-primary/80 hover:bg-primary/70 text-white'
+                        : 'bg-primary hover:bg-primary/90 text-white'
                       }`}
                   >
                     {selectedMessage.read

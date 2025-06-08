@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getContactMessages, deleteContactMessage, markMessageAsRead, toggleMessageReadStatus } from '../../../services/api';
-import { Loader2, Trash2, X, Circle, CheckCircle2 } from 'lucide-react';
+import { Loader2, Trash2, X, Circle, CheckCircle2, Bell, BellOff } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+// Import notification sound
+import notificationSound from './messageNotification.mp3';
 
 // Simple Dialog component for delete confirmation
 const DeleteConfirmationDialog = ({
@@ -83,6 +86,9 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedMessageIds, setSelectedMessageIds] = useState<string[]>([]); // New state for bulk actions
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false); // New loading state for bulk actions
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true); // State to toggle notifications
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [previousUnreadCount, setPreviousUnreadCount] = useState(0); // Keep track of previous unread count
 
   // Fetch contact messages
   useEffect(() => {
@@ -145,7 +151,8 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
       if (response.error) {
         setError(response.error);
         toast.error(`Failed to delete: ${response.error}`);
-      } else {        // Remove message from list
+      } else {
+        // Remove message from list
         setMessages(prev => prev.filter(message => message._id !== selectedMessage._id));
         toast.success('Message deleted successfully!');
       }
@@ -352,22 +359,79 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
   const unreadCount = messages.filter(m => !m.read).length;
   const readCount = totalMessages - unreadCount;
 
+  // Play notification sound when new unread messages arrive
+  useEffect(() => {
+    // Only play notification if:
+    // 1. There are more unread messages than before
+    // 2. Notifications are enabled
+    // 3. We have an audio reference
+    if (unreadCount > previousUnreadCount && notificationsEnabled && audioRef.current) {
+      // Play notification sound
+      audioRef.current.play().catch(err =>
+        console.error('Error playing notification sound:', err)
+      );
+
+      // Show a toast notification for new messages
+      if (unreadCount - previousUnreadCount === 1) {
+        toast.info('You have a new unread message', {
+          icon: <Bell className="h-5 w-5 text-primary" />
+        });
+      } else if (unreadCount - previousUnreadCount > 1) {
+        toast.info(`You have ${unreadCount - previousUnreadCount} new unread messages`, {
+          icon: <Bell className="h-5 w-5 text-primary" />
+        });
+      }
+    }
+
+    // Update the previous count for next comparison
+    setPreviousUnreadCount(unreadCount);
+  }, [unreadCount, previousUnreadCount, notificationsEnabled]);
+
   return (
-    <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">      <div className="flex justify-between items-center mb-6">
-      <h2 className="text-xl font-bold">Contact Messages</h2>
-      <div className="flex items-center gap-4">
-        <div className="flex items-center gap-2">
-          <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">{unreadCount} Unread</span>
-          <span className="text-xs px-2 py-1 bg-foreground/10 text-foreground/70 rounded-full">{readCount} Read</span>
+    <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-bold">Contact Messages</h2>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setNotificationsEnabled(prev => !prev)}
+              className="p-1 rounded-full hover:bg-background transition-colors"
+              title={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
+            >
+              {notificationsEnabled ?
+                <Bell className="h-4 w-4 text-primary" /> :
+                <BellOff className="h-4 w-4 text-foreground/50" />
+              }
+            </button>
+            <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">{unreadCount} Unread</span>
+            <span className="text-xs px-2 py-1 bg-foreground/10 text-foreground/70 rounded-full">{readCount} Read</span>
+          </div>
         </div>
       </div>
-    </div>
 
       {error && (
         <div className="p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm">
           {error}
         </div>
-      )}      {selectedMessageIds.length > 0 && (
+      )}
+
+      {unreadCount > 0 && notificationsEnabled && (
+        <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between text-sm">
+          <div className="flex items-center gap-2">
+            <Bell className="h-5 w-5 text-primary" />
+            <span>You have {unreadCount} unread {unreadCount === 1 ? 'message' : 'messages'}</span>
+          </div>
+          <button
+            onClick={() => handleBulkReadStatus(true)}
+            className="px-3 py-1 rounded bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors"
+            disabled={isBulkActionLoading}
+          >
+            Mark All as Read
+          </button>
+        </div>
+      )}
+
+      {selectedMessageIds.length > 0 && (
         <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex flex-wrap items-center gap-2 text-sm">
           <span>{selectedMessageIds.length} messages selected</span>
           <div className="ml-auto flex gap-2">
@@ -522,7 +586,8 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                       <Trash2 className="h-5 w-5 text-red-500" />
                     </button>
                   </div>
-                </div>                <div className="mb-2">
+                </div>
+                <div className="mb-2">
                   <div className="flex items-center gap-2 mb-2">
                     <span className={`px-3 py-1 rounded-full font-semibold text-xs ${selectedMessage.read ? 'bg-foreground/10 text-foreground/70' : 'bg-primary/10 text-primary'}`}>
                       {selectedMessage.read ? 'Read' : 'Unread'}
@@ -544,8 +609,8 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                   <button
                     onClick={() => toggleReadStatus(selectedMessage)}
                     className={`flex-1 px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${selectedMessage.read
-                        ? 'bg-primary/80 hover:bg-primary/70 text-white'
-                        : 'bg-primary hover:bg-primary/90 text-white'
+                      ? 'bg-primary/80 hover:bg-primary/70 text-white'
+                      : 'bg-primary hover:bg-primary/90 text-white'
                       }`}
                   >
                     {selectedMessage.read
@@ -573,6 +638,9 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
       />
 
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
+
+      {/* Notification sound */}
+      <audio ref={audioRef} src={notificationSound} preload="auto" />
     </div>
   );
 };

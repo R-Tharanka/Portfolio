@@ -588,6 +588,37 @@ export const getContactMessages = async (token: string): Promise<ApiResponse<any
   }
 };
 
+export const markMessageAsRead = async (messageId: string, token: string): Promise<ApiResponse<any>> => {
+  try {
+    // The backend already handles marking a message as read when accessed by ID
+    const response = await api.get(`/contact/${messageId}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return { data: response.data };
+  } catch (error: any) {
+    console.error('Error marking message as read:', error);
+    return {
+      data: {},
+      error: error.response?.data?.msg || 'Failed to mark message as read'
+    };
+  }
+};
+
+export const toggleMessageReadStatus = async (messageId: string, isRead: boolean, token: string): Promise<ApiResponse<any>> => {
+  try {
+    const response = await api.put(`/contact/${messageId}/status`, { read: isRead }, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    return { data: response.data };
+  } catch (error: any) {
+    console.error(`Error toggling message read status to ${isRead}:`, error);
+    return {
+      data: {},
+      error: error.response?.data?.msg || `Failed to mark message as ${isRead ? 'read' : 'unread'}`
+    };
+  }
+};
+
 export const deleteContactMessage = async (messageId: string, token: string): Promise<ApiResponse<{ msg: string }>> => {
   try {
     const response = await api.delete(`/contact/${messageId}`, {

@@ -32,6 +32,6 @@ Copyright (c) 2025 [Ruchira Tharanka]. All rights reserved.
 
 Feel free to reach out if you have questions or feedback!
 
-- Email: your.email@example.com
+- Email: ruchiratharanka1@gmail.com
 - LinkedIn: [ruchira-tharanka-b020992a6](https://linkedin.com/in/ruchira-tharanka-b020992a6)
 - GitHub: [R-Tharanka](https://github.com/R-Tharanka)

@@ -445,7 +445,8 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         <div className="p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm">
           {error}
         </div>
-      )}      {/* Project Overview */}
+      )}
+      {/* Project Overview */}
       {!loading && (
         <div className="mb-8">
           <div className="bg-background/50 rounded-lg border border-border/40 shadow-sm">
@@ -474,8 +475,8 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                     <button
                       onClick={() => setViewMode('list')}
                       className={`px-3 py-1.5 text-xs flex items-center justify-center ${viewMode === 'list'
-                          ? 'bg-primary text-white'
-                          : 'bg-card hover:bg-card/80'
+                        ? 'bg-primary text-white'
+                        : 'bg-card hover:bg-card/80'
                         }`}
                       aria-label="List view"
                     >
@@ -485,8 +486,8 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                     <button
                       onClick={() => setViewMode('grid')}
                       className={`px-3 py-1.5 text-xs flex items-center justify-center ${viewMode === 'grid'
-                          ? 'bg-primary text-white'
-                          : 'bg-card hover:bg-card/80'
+                        ? 'bg-primary text-white'
+                        : 'bg-card hover:bg-card/80'
                         }`}
                       aria-label="Grid view"
                     >
@@ -607,7 +608,8 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                   </div>
                 </div>
               </div>
-            </div>            {/* Technology and tag visualization */}
+            </div>
+            {/* Technology and tag visualization */}
             {projects.length > 0 && (
               <div className="grid md:grid-cols-2 gap-6 p-6">
                 {/* Technology breakdown */}
@@ -616,17 +618,18 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                     <Code size={16} className="text-blue-500 mr-2" />
                     <h4 className="text-sm font-medium">Top Technologies</h4>
                   </div>
-                  <div className="space-y-2">                    {getMostUsedTechnologies().map(({ tech, count }) => (
-                    <div key={tech} className="flex items-center">
-                      <div className="w-24 truncate text-xs">{tech}</div>
-                      <div className="flex-1 h-2.5 bg-background rounded-full overflow-hidden mx-2">
-                        <div
-                          className={`h-full bg-blue-500 rounded-full ${getWidthClass((count / projects.length) * 100)}`}
-                        ></div>
+                  <div className="space-y-2">
+                    {getMostUsedTechnologies().map(({ tech, count }) => (
+                      <div key={tech} className="flex items-center">
+                        <div className="w-24 truncate text-xs">{tech}</div>
+                        <div className="flex-1 h-2.5 bg-background rounded-full overflow-hidden mx-2">
+                          <div
+                            className={`h-full bg-blue-500 rounded-full ${getWidthClass((count / projects.length) * 100)}`}
+                          ></div>
+                        </div>
+                        <div className="text-xs font-medium w-6 text-right">{count}</div>
                       </div>
-                      <div className="text-xs font-medium w-6 text-right">{count}</div>
-                    </div>
-                  ))}
+                    ))}
                   </div>
                 </div>
 

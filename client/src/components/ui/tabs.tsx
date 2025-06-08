@@ -87,7 +87,6 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
       setActiveTab(value);
     }
   };
-
   return (
     <button
       className={`px-3 py-1.5 text-sm font-medium transition-all flex-grow ${isActive
@@ -95,6 +94,7 @@ export const TabsTrigger: React.FC<TabsTriggerProps> = ({
           : "text-foreground/60 hover:text-foreground/80"
         } rounded-md ${className}`}
       onClick={handleClick}
+      data-value={value}
     >
       {children}
     </button>

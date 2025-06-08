@@ -64,6 +64,7 @@ const DeleteConfirmationDialog = ({
 
 interface ContactAdminProps {
   token: string | null;
+  onMessagesUpdate?: () => void; // Callback to notify parent when messages are updated
 }
 
 interface ContactMessage {

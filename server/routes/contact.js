@@ -21,7 +21,7 @@ router.post('/', [
   contactLimiter,
   [
     check('name', 'Name is required').not().isEmpty().trim(),
-    check('email', 'Please include a valid email').isEmail().normalizeEmail(),    check('title', 'Subject/title is required').not().isEmpty().trim(),
+    check('email', 'Please include a valid email').isEmail().normalizeEmail(), check('title', 'Subject/title is required').not().isEmpty().trim(),
     check('message', 'Message is required').not().isEmpty().trim(),
     check('recaptchaToken', 'CAPTCHA verification failed').not().isEmpty()
   ]
@@ -32,16 +32,16 @@ router.post('/', [
   }
   try {
     const { name, email, title, message, recaptchaToken } = req.body;
-      // Verify reCAPTCHA token with Google reCAPTCHA API
+    // Verify reCAPTCHA token with Google reCAPTCHA API
     const recaptchaSecretKey = process.env.RECAPTCHA_SECRET_KEY;
     if (!recaptchaSecretKey) {
       return res.status(500).json({ msg: 'Server configuration error: reCAPTCHA secret key not found' });
     }
-    
+
     try {
       const verifyURL = `https://www.google.com/recaptcha/api/siteverify?secret=${recaptchaSecretKey}&response=${recaptchaToken}`;
       const recaptchaResponse = await axios.post(verifyURL);
-      
+
       if (!recaptchaResponse.data.success) {
         return res.status(400).json({ msg: 'CAPTCHA verification failed' });
       }
@@ -59,9 +59,9 @@ router.post('/', [
     });
 
     await contact.save();
-    
+
     // TODO: Send email notification to admin (optional)
-    
+
     res.json({ success: true, msg: 'Message sent successfully!' });
   } catch (error) {
     console.error('Contact form error:', error.message);
@@ -88,17 +88,47 @@ router.get('/', protect, async (req, res) => {
 router.get('/:id', protect, async (req, res) => {
   try {
     const message = await Contact.findById(req.params.id);
-    
+
     if (!message) {
       return res.status(404).json({ msg: 'Message not found' });
     }
-    
+
     // Mark message as read if it's not already
     if (!message.read) {
       message.read = true;
       await message.save();
     }
-    
+
+    res.json(message);
+  } catch (error) {
+    console.error(error.message);
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ msg: 'Message not found' });
+    }
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   PUT /api/contact/:id/status
+// @desc    Toggle read status of a message
+// @access  Private (Admin only)
+router.put('/:id/status', protect, async (req, res) => {
+  try {
+    const { read } = req.body;
+
+    if (typeof read !== 'boolean') {
+      return res.status(400).json({ msg: 'Read status must be a boolean value' });
+    }
+
+    const message = await Contact.findById(req.params.id);
+
+    if (!message) {
+      return res.status(404).json({ msg: 'Message not found' });
+    }
+
+    message.read = read;
+    await message.save();
+
     res.json(message);
   } catch (error) {
     console.error(error.message);

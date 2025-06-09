@@ -5,7 +5,7 @@ import React from 'react';
 
 // Import notification sound path
 // Import directly using the import statement instead of relative path
-import notificationSound from './messageNotification.mp3';
+import notificationSound from './../../../assets/mp3/messageNotification.mp3';
 
 // Singleton notification service class
 class NotificationService {

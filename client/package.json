@@ -12,6 +12,7 @@
   "dependencies": {
     "@types/react-google-recaptcha": "^2.1.9",
     "axios": "^1.6.7",
+    "cors": "^2.8.5",
     "framer-motion": "^11.1.12",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",

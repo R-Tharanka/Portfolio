@@ -7,11 +7,8 @@ const projectsApi = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     timeout: 10000,
     headers: {
-        'Content-Type': 'application/json',
-        // Prevent caching
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'Content-Type': 'application/json'
+        // Removed cache headers that were causing CORS issues
     },
     // Add timestamp to prevent browser caching
     params: {

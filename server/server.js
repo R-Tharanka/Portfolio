@@ -31,25 +31,26 @@ app.use(globalLimiter); // Rate limiting
 
 // Regular Middleware
 // Configure CORS to accept requests from your frontend domain
-app.use(cors({  origin: function(origin, callback) {
+app.use(cors({
+  origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, etc)
     if (!origin) return callback(null, true);
-    
+
     // Always allow primary frontend domain from environment variable
     const primaryDomain = process.env.CORS_ORIGIN;
     if (origin === primaryDomain) {
       return callback(null, true);
     }
-    
+
     // Parse allowed origins from environment variable
     const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';
     const allowedOrigins = allowedOriginsStr.split(',').filter(Boolean);
-    
+
     // Fallback to development origin if no origins are specified
-    const originsToCheck = allowedOrigins.length > 0 
+    const originsToCheck = allowedOrigins.length > 0
       ? allowedOrigins
       : [process.env.CORS_ORIGIN];
-    
+
     if (originsToCheck.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
     } else {
@@ -57,10 +58,9 @@ app.use(cors({  origin: function(origin, callback) {
       console.log(`CORS rejected origin: ${origin}`);
       callback(new Error('CORS not allowed'), false);
     }
-  },
-  credentials: true,
+  }, credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control']
 }));
 app.use(express.json({ limit: '10kb' }));  // Limit JSON body size
 
@@ -71,7 +71,7 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     };
-    
+
     console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI, mongoOptions);
     console.log('Connected to MongoDB successfully');
@@ -92,9 +92,9 @@ app.get('/', (req, res) => {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   // Check if MongoDB is connected
-  const dbStatus = mongoose.connection.readyState === 1 ? 
+  const dbStatus = mongoose.connection.readyState === 1 ?
     'Connected' : 'Disconnected';
-  
+
   res.json({
     status: 'OK',
     timestamp: new Date().toISOString(),

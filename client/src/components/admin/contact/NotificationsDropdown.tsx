@@ -3,6 +3,9 @@ import { Bell, BellOff, X, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
+// Import notification service for sound alerts
+import notificationService from './NotificationService';
+
 // Interface for contact messages
 export interface NotificationMessage {
   _id: string;
@@ -27,8 +30,9 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   markAllAsRead,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(
+    () => notificationService.isNotificationsEnabled() // Initialize from NotificationService
+  ); const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Handle click outside to close dropdown
@@ -43,14 +47,22 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, []);
+  }, []);  // Use notification service to check for new messages and play sound
+  useEffect(() => {
+    console.log('NotificationsDropdown detected unread count change:', unreadCount);
 
+    // This line is critical for notification sounds across the app
+    // The service will track previous values and play sounds when needed
+    notificationService.notifyNewMessages(unreadCount);
+  }, [unreadCount]);
   const toggleNotifications = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setNotificationsEnabled(prev => !prev);
+    // Use the notification service to toggle and get the new state
+    const newState = notificationService.toggleNotifications();
+    setNotificationsEnabled(newState);
     toast.info(
-      notificationsEnabled ? 'Notifications disabled' : 'Notifications enabled',
-      { icon: notificationsEnabled ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5 text-primary" /> }
+      newState ? 'Notifications enabled' : 'Notifications disabled',
+      { icon: newState ? <Bell className="h-5 w-5 text-primary" /> : <BellOff className="h-5 w-5" /> }
     );
   };
   const handleMessageClick = async (messageId: string) => {
@@ -196,6 +208,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
           </div>
         </div>
       )}
+      {/* We don't need a local audio element since we use the centralized notification service */}
     </div>
   );
 };

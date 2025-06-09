@@ -80,7 +80,8 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false); const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedMessageIds, setSelectedMessageIds] = useState<string[]>([]); // New state for bulk actions
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false); // New loading state for bulk actions
 
@@ -342,16 +343,73 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
     }
   };
 
+  // UI component for bulk actions toolbar - can be reused in other places
+  const BulkActionTools: React.FC<{
+    selectedIds: string[];
+    onMarkAsRead: () => Promise<void>;
+    onMarkAsUnread: () => Promise<void>;
+    onDelete: () => Promise<void>;
+    isLoading: boolean;
+  }> = ({ selectedIds, onMarkAsRead, onMarkAsUnread, onDelete, isLoading }) => {
+    return (
+      <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex flex-wrap items-center gap-2 text-sm">
+        <span className="font-medium">
+          {selectedIds.length} {selectedIds.length === 1 ? 'message' : 'messages'} selected
+        </span>
+        <div className="ml-auto flex flex-wrap gap-2">
+          <button
+            onClick={onMarkAsRead}
+            disabled={isLoading}
+            className="px-3 py-1 bg-blue-500 text-white rounded flex items-center text-xs gap-1 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span className="w-2 h-2 bg-white rounded-full opacity-60"></span>
+            Mark as Read
+          </button>
+          <button
+            onClick={onMarkAsUnread}
+            disabled={isLoading}
+            className="px-3 py-1 bg-blue-500 text-white rounded flex items-center text-xs gap-1 hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <span className="w-2 h-2 bg-white rounded-full opacity-100"></span>
+            Mark as Unread
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={isLoading}
+            className="px-3 py-1 bg-red-500 text-white rounded flex items-center text-xs gap-1 hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M3 6h18"></path>
+              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+            </svg>
+            Delete Selected
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   // Get filtered messages based on current filter
   const filteredMessages = messages.filter(message => {
     if (filter === 'all') return true;
     return filter === 'read' ? message.read : !message.read;
   });
+
   // Calculate message statistics
   const totalMessages = messages.length;
   const unreadCount = messages.filter(m => !m.read).length;
   const readCount = totalMessages - unreadCount;
-  // Mark all as read functionality now handled through bulk actions
 
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">
@@ -371,38 +429,13 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
       )}
 
       {selectedMessageIds.length > 0 && (
-        <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex flex-wrap items-center gap-2 text-sm">
-          <span>{selectedMessageIds.length} messages selected</span>
-          <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => handleBulkReadStatus(true)}
-              className="px-3 py-1 rounded bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors"
-              disabled={isBulkActionLoading}
-            >
-              Mark Read
-            </button>
-            <button
-              onClick={() => handleBulkReadStatus(false)}
-              className="px-3 py-1 rounded bg-primary/80 text-white text-xs font-medium hover:bg-primary/70 transition-colors"
-              disabled={isBulkActionLoading}
-            >
-              Mark Unread
-            </button>
-            <button
-              onClick={handleBulkDelete}
-              className="px-3 py-1 rounded bg-foreground/80 text-white text-xs font-medium hover:bg-foreground/70 transition-colors"
-              disabled={isBulkActionLoading}
-            >
-              Delete
-            </button>
-            <button
-              onClick={() => setSelectedMessageIds([])}
-              className="px-3 py-1 rounded bg-background text-foreground text-xs font-medium border border-border hover:bg-background/80 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
+        <BulkActionTools
+          selectedIds={selectedMessageIds}
+          onMarkAsRead={() => handleBulkReadStatus(true)}
+          onMarkAsUnread={() => handleBulkReadStatus(false)}
+          onDelete={handleBulkDelete}
+          isLoading={isBulkActionLoading}
+        />
       )}
 
       {loading ? (

@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getContactMessages, deleteContactMessage, markMessageAsRead, toggleMessageReadStatus } from '../../../services/api';
-import { Loader2, Trash2, X, Circle, CheckCircle2, Bell, BellOff } from 'lucide-react';
+import { Loader2, Trash2, X, Circle, CheckCircle2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Import notification sound
-import notificationSound from './messageNotification.mp3';
+// Import ContactNotifications component
+import ContactNotifications from './ContactNotifications';
 
 // Simple Dialog component for delete confirmation
 const DeleteConfirmationDialog = ({
@@ -83,13 +83,9 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<ContactMessage | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
+  const [isDialogOpen, setIsDialogOpen] = useState(false); const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all');
   const [selectedMessageIds, setSelectedMessageIds] = useState<string[]>([]); // New state for bulk actions
   const [isBulkActionLoading, setIsBulkActionLoading] = useState(false); // New loading state for bulk actions
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true); // State to toggle notifications
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [previousUnreadCount, setPreviousUnreadCount] = useState(0); // Keep track of previous unread count
 
   // Fetch contact messages
   useEffect(() => {
@@ -354,39 +350,14 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
     if (filter === 'all') return true;
     return filter === 'read' ? message.read : !message.read;
   });
-
   // Calculate message statistics
   const totalMessages = messages.length;
   const unreadCount = messages.filter(m => !m.read).length;
   const readCount = totalMessages - unreadCount;
 
-  // Play notification sound when new unread messages arrive
-  useEffect(() => {
-    // Only play notification if:
-    // 1. There are more unread messages than before
-    // 2. Notifications are enabled
-    // 3. We have an audio reference
-    if (unreadCount > previousUnreadCount && notificationsEnabled && audioRef.current) {
-      // Play notification sound
-      audioRef.current.play().catch(err =>
-        console.error('Error playing notification sound:', err)
-      );
-
-      // Show a toast notification for new messages
-      if (unreadCount - previousUnreadCount === 1) {
-        toast.info('You have a new unread message', {
-          icon: <Bell className="h-5 w-5 text-primary" />
-        });
-      } else if (unreadCount - previousUnreadCount > 1) {
-        toast.info(`You have ${unreadCount - previousUnreadCount} new unread messages`, {
-          icon: <Bell className="h-5 w-5 text-primary" />
-        });
-      }
-    }
-
-    // Update the previous count for next comparison
-    setPreviousUnreadCount(unreadCount);
-  }, [unreadCount, previousUnreadCount, notificationsEnabled]);
+  const handleMarkAllAsRead = async () => {
+    await handleBulkReadStatus(true);
+  };
 
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">
@@ -394,41 +365,20 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
         <h2 className="text-xl font-bold">Contact Messages</h2>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setNotificationsEnabled(prev => !prev)}
-              className="p-1 rounded-full hover:bg-background transition-colors"
-              title={notificationsEnabled ? 'Disable notifications' : 'Enable notifications'}
-            >
-              {notificationsEnabled ?
-                <Bell className="h-4 w-4 text-primary" /> :
-                <BellOff className="h-4 w-4 text-foreground/50" />
-              }
-            </button>
+            {/* ContactNotifications component handles notification toggle */}
+            <ContactNotifications
+              unreadCount={unreadCount}
+              onMarkAllRead={handleMarkAllAsRead}
+              isLoading={isBulkActionLoading}
+            />
             <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">{unreadCount} Unread</span>
             <span className="text-xs px-2 py-1 bg-foreground/10 text-foreground/70 rounded-full">{readCount} Read</span>
           </div>
         </div>
       </div>
-
       {error && (
         <div className="p-3 mb-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-500 text-sm">
           {error}
-        </div>
-      )}
-
-      {unreadCount > 0 && notificationsEnabled && (
-        <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <Bell className="h-5 w-5 text-primary" />
-            <span>You have {unreadCount} unread {unreadCount === 1 ? 'message' : 'messages'}</span>
-          </div>
-          <button
-            onClick={() => handleBulkReadStatus(true)}
-            className="px-3 py-1 rounded bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors"
-            disabled={isBulkActionLoading}
-          >
-            Mark All as Read
-          </button>
         </div>
       )}
 
@@ -637,11 +587,7 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
         onConfirm={confirmDelete}
         message={selectedMessage}
       />
-
       <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} closeOnClick pauseOnHover draggable />
-
-      {/* Notification sound */}
-      <audio ref={audioRef} src={notificationSound} preload="auto" />
     </div>
   );
 };

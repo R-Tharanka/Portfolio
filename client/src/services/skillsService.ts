@@ -7,13 +7,26 @@ const skillsApi = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
     timeout: 10000,
     headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        // Prevent caching
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+    },
+    // Add timestamp to prevent browser caching
+    params: {
+        _t: Date.now()
     }
 });
 
 // Debug interceptor
 skillsApi.interceptors.request.use(
     (config) => {
+        // Add timestamp parameter to prevent caching
+        config.params = {
+            ...config.params,
+            _t: Date.now()
+        };
         console.log('⚡ SKILL SERVICE REQUEST ⚡');
         console.log(`Method: ${config.method?.toUpperCase()}`);
         console.log(`URL: ${config.baseURL}${config.url}`);

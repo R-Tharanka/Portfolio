@@ -31,10 +31,15 @@ app.use(globalLimiter); // Rate limiting
 
 // Regular Middleware
 // Configure CORS to accept requests from your frontend domain
-app.use(cors({
-  origin: function(origin, callback) {
+app.use(cors({  origin: function(origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, etc)
     if (!origin) return callback(null, true);
+    
+    // Always allow primary frontend domain from environment variable
+    const primaryDomain = process.env.CORS_ORIGIN;
+    if (origin === primaryDomain) {
+      return callback(null, true);
+    }
     
     // Parse allowed origins from environment variable
     const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';

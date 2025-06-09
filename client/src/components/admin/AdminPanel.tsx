@@ -21,11 +21,11 @@ const AdminPanel: React.FC = () => {
   const toggleAccountSettings = () => {
     setActiveTab(prev => prev === "account" ? "skills" : "account");
   };
-  
+
   // Fetch unread messages for notifications
   const fetchUnreadMessages = async () => {
     if (!token) return;
-    
+
     setIsLoadingMessages(true);
     try {
       const response = await getContactMessages(token);
@@ -39,16 +39,16 @@ const AdminPanel: React.FC = () => {
       setIsLoadingMessages(false);
     }
   };
-  
+
   // Mark a single message as read
   const handleMarkMessageAsRead = async (messageId: string) => {
     if (!token) return;
-    
+
     try {
       const response = await markMessageAsRead(messageId, token);
       if (!response.error) {
         setUnreadMessages(prev => prev.filter(msg => msg._id !== messageId));
-        
+
         // If we're on the messages tab, force refetch to update UI
         if (activeTab === "contact") {
           setActiveTab("contact");
@@ -58,20 +58,20 @@ const AdminPanel: React.FC = () => {
       console.error('Error marking message as read:', error);
     }
   };
-  
+
   // Mark all messages as read
   const handleMarkAllAsRead = async () => {
     if (!token || unreadMessages.length === 0) return;
-    
+
     try {
       // Create array of promises for each message status update
-      const updatePromises = unreadMessages.map(msg => 
+      const updatePromises = unreadMessages.map(msg =>
         toggleMessageReadStatus(msg._id, true, token)
       );
-      
+
       await Promise.all(updatePromises);
       setUnreadMessages([]);
-      
+
       // If we're on the messages tab, force refetch to update UI
       if (activeTab === "contact") {
         setActiveTab("contact");
@@ -123,7 +123,7 @@ const AdminPanel: React.FC = () => {
 
         // Fetch unread messages initially
         fetchUnreadMessages();
-        
+
         // Clean up timers if component unmounts
         return () => {
           clearTimeout(logoutTimer);
@@ -148,16 +148,16 @@ const AdminPanel: React.FC = () => {
       window.removeEventListener('auth:tokenExpired', handleTokenExpired);
     };
   }, []);
-  
+
   // Periodically fetch unread messages (every 30 seconds)
   useEffect(() => {
     if (!token) return;
-    
+
     // Set up polling for new messages
     const messageCheckInterval = setInterval(() => {
       fetchUnreadMessages();
     }, 30000); // Check every 30 seconds
-    
+
     return () => {
       clearInterval(messageCheckInterval);
     };
@@ -191,18 +191,20 @@ const AdminPanel: React.FC = () => {
   }
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <SEO title="Admin Dashboard" description="Portfolio Admin Panel for content management" />      <div className="flex items-center justify-between mb-8">
+      <SEO title="Admin Dashboard" description="Portfolio Admin Panel for content management" />
+      <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <div className="flex items-center space-x-3">          {/* Notifications Dropdown */}
+        <div className="flex items-center space-x-3">
+          {/* Notifications Dropdown */}
           <div className="flex items-center justify-center p-1.5 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors shadow-sm">
-            <NotificationsDropdown 
+            <NotificationsDropdown
               unreadMessages={unreadMessages}
               unreadCount={unreadMessages.length}
               markAsRead={handleMarkMessageAsRead}
               markAllAsRead={handleMarkAllAsRead}
             />
           </div>
-          
+
           <button
             onClick={toggleAccountSettings}
             className={`p-2 ${activeTab === "account"
@@ -212,7 +214,7 @@ const AdminPanel: React.FC = () => {
             title="Account Settings"
             aria-label="Account Settings"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -227,7 +229,8 @@ const AdminPanel: React.FC = () => {
             Logout
           </button>
         </div>
-      </div>      <Tabs defaultValue={activeTab} className="w-full">
+      </div>
+      <Tabs defaultValue={activeTab} className="w-full">
         <TabsList className="grid grid-cols-2 sm:grid-cols-4 mb-8">
           <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>

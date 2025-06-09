@@ -58,7 +58,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
       audioRef.current.play().catch(err =>
         console.error('Error playing notification sound:', err)
       );
-      
+
       // Show a toast notification for new messages
       if (unreadCount - previousUnreadCount === 1) {
         toast.info('You have a new unread message', {
@@ -70,7 +70,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
         });
       }
     }
-    
+
     // Update the previous count for next comparison
     setPreviousUnreadCount(unreadCount);
   }, [unreadCount, previousUnreadCount, notificationsEnabled]);
@@ -79,7 +79,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
     e.stopPropagation();
     setNotificationsEnabled(prev => !prev);
     toast.info(
-      notificationsEnabled ? 'Notifications disabled' : 'Notifications enabled', 
+      notificationsEnabled ? 'Notifications disabled' : 'Notifications enabled',
       { icon: notificationsEnabled ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5 text-primary" /> }
     );
   };
@@ -102,10 +102,10 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 24) {
-      return diffInHours === 0 
-        ? 'Just now' 
+      return diffInHours === 0
+        ? 'Just now'
         : `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
     } else {
       const days = Math.floor(diffInHours / 24);
@@ -121,18 +121,18 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
         aria-label={`${unreadCount} unread messages`}
         title={`${unreadCount} unread messages`}
       >        {notificationsEnabled ? (
-          <Bell className="h-5 w-5 text-white" />
-        ) : (
-          <BellOff className="h-5 w-5 text-white/70" />
-        )}
-        
+        <Bell className="h-5 w-5 text-white" />
+      ) : (
+        <BellOff className="h-5 w-5 text-white/70" />
+      )}
+
         {unreadCount > 0 && (
           <span className="absolute top-0 right-0 flex items-center justify-center h-5 w-5 text-xs bg-red-500 text-white rounded-full transform translate-x-1/3 -translate-y-1/3">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
       </button>
-        {/* Dropdown panel */}
+      {/* Dropdown panel */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-y-auto bg-card rounded-lg shadow-lg border border-border/30 z-50">
           {/* Header */}
@@ -162,7 +162,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
               </button>
             </div>
           </div>
-          
+
           {/* Notification List */}
           <div>
             {unreadMessages.length === 0 ? (
@@ -171,8 +171,9 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                 <p>No unread messages</p>
               </div>
             ) : (
-              <>                {unreadMessages.slice(0, 5).map(message => (
-                  <div 
+              <>
+                {unreadMessages.slice(0, 5).map(message => (
+                  <div
                     key={message._id}
                     className="p-3 border-b border-border/30 hover:bg-background/30 transition-colors cursor-pointer"
                     onClick={() => handleMessageClick(message._id)}
@@ -188,13 +189,13 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                     <p className="text-xs text-foreground/60 line-clamp-2">{message.message}</p>
                   </div>
                 ))}
-                
+
                 {unreadMessages.length > 5 && (
                   <div className="px-3 py-2 text-center text-xs text-foreground/60">
                     {unreadMessages.length - 5} more notifications
                   </div>
                 )}
-                  {/* Footer Actions */}
+                {/* Footer Actions */}
                 <div className="p-3 border-t border-border/30 flex justify-between items-center bg-primary/5">
                   <button
                     onClick={() => {
@@ -205,7 +206,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                   >
                     Mark all as read
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       // Navigate to the contact tab
@@ -225,7 +226,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Hidden audio element for notification sound */}
       <audio ref={audioRef} src={notificationSound} preload="auto" />
     </div>

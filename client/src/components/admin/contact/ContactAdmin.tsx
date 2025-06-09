@@ -4,9 +4,6 @@ import { Loader2, Trash2, X, Circle, CheckCircle2 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-// Import ContactNotifications component
-import ContactNotifications from './ContactNotifications';
-
 // Simple Dialog component for delete confirmation
 const DeleteConfirmationDialog = ({
   isOpen,
@@ -354,10 +351,7 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
   const totalMessages = messages.length;
   const unreadCount = messages.filter(m => !m.read).length;
   const readCount = totalMessages - unreadCount;
-
-  const handleMarkAllAsRead = async () => {
-    await handleBulkReadStatus(true);
-  };
+  // Mark all as read functionality now handled through bulk actions
 
   return (
     <div className="bg-card rounded-lg shadow-md p-6 border border-border/50">
@@ -365,12 +359,6 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
         <h2 className="text-xl font-bold">Contact Messages</h2>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            {/* ContactNotifications component handles notification toggle */}
-            <ContactNotifications
-              unreadCount={unreadCount}
-              onMarkAllRead={handleMarkAllAsRead}
-              isLoading={isBulkActionLoading}
-            />
             <span className="text-xs px-2 py-1 bg-primary/10 text-primary rounded-full">{unreadCount} Unread</span>
             <span className="text-xs px-2 py-1 bg-foreground/10 text-foreground/70 rounded-full">{readCount} Read</span>
           </div>

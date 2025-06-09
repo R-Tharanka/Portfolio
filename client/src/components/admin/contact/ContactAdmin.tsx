@@ -488,8 +488,8 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                   <div
                     key={message._id}
                     className={`p-4 rounded-lg border transition-all flex flex-col gap-2 ${selectedMessage?._id === message._id
-                        ? 'bg-primary/10 border-primary'
-                        : 'bg-background border-border'
+                      ? 'bg-primary/10 border-primary'
+                      : 'bg-background border-border'
                       }`}
                   >
                     <div className="flex items-start gap-2">
@@ -581,8 +581,8 @@ const ContactAdmin: React.FC<ContactAdminProps> = ({ token }) => {
                   <button
                     onClick={() => toggleReadStatus(selectedMessage)}
                     className={`flex-1 px-4 py-2 rounded-md text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${selectedMessage.read
-                        ? 'bg-primary/80 hover:bg-primary/70 text-white'
-                        : 'bg-primary hover:bg-primary/90 text-white'
+                      ? 'bg-primary/80 hover:bg-primary/70 text-white'
+                      : 'bg-primary hover:bg-primary/90 text-white'
                       }`}
                   >
                     {selectedMessage.read

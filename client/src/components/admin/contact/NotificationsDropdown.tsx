@@ -32,7 +32,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(
     () => notificationService.isNotificationsEnabled() // Initialize from NotificationService
-  );  const dropdownRef = useRef<HTMLDivElement>(null);
+  ); const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
   // Handle click outside to close dropdown
@@ -50,7 +50,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
   }, []);  // Use notification service to check for new messages and play sound
   useEffect(() => {
     console.log('NotificationsDropdown detected unread count change:', unreadCount);
-    
+
     // This line is critical for notification sounds across the app
     // The service will track previous values and play sounds when needed
     notificationService.notifyNewMessages(unreadCount);
@@ -205,7 +205,8 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
                 </div>
               </>
             )}
-          </div>      </div>
+          </div>
+        </div>
       )}
       {/* We don't need a local audio element since we use the centralized notification service */}
     </div>

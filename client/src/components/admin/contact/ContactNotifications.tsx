@@ -24,18 +24,19 @@ const ContactNotifications: React.FC<ContactNotificationsProps> = ({
     unreadCount,
     onMarkAllRead,
     isLoading
-}) => {    const [notificationsEnabled, setNotificationsEnabled] = useState(
+}) => {
+    const [notificationsEnabled, setNotificationsEnabled] = useState(
         () => notificationService.isNotificationsEnabled() // Initialize from NotificationService
     );
-      // Use notification service to handle notifications
+    // Use notification service to handle notifications
     useEffect(() => {
         console.log('ContactNotifications detected unread count change:', unreadCount);
-        
+
         // Use the centralized notification service to handle notifications
         // This component shouldn't need to play sounds directly as it uses the service
         notificationService.notifyNewMessages(unreadCount);
     }, [unreadCount]);
-    
+
     // Toggle notifications on/off
     const toggleNotifications = () => {
         const newState = notificationService.toggleNotifications();
@@ -58,7 +59,8 @@ const ContactNotifications: React.FC<ContactNotificationsProps> = ({
                     <Bell className="h-4 w-4 text-primary" /> :
                     <BellOff className="h-4 w-4 text-foreground/50" />
                 }
-            </button>            {/* Notification banner for unread messages */}
+            </button>
+            {/* Notification banner for unread messages */}
             {unreadCount > 0 && notificationsEnabled && (
                 <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">

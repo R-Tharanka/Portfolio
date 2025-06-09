@@ -177,7 +177,7 @@ const AdminPanel: React.FC = () => {
       setToken(null);
       setIsAuthenticated(false);
     }, remainingTime * 1000);
-    
+
     // Fetch unread messages immediately after login
     setTimeout(() => {
       fetchUnreadMessages();

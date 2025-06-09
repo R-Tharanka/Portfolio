@@ -8,24 +8,25 @@ import React from 'react';
 import notificationSound from './messageNotification.mp3';
 
 // Singleton notification service class
-class NotificationService {  private static instance: NotificationService;
+class NotificationService {
+  private static instance: NotificationService;
   private audio: HTMLAudioElement | null = null;
   private notificationsEnabled: boolean = true;
   private previousUnreadCount: number = 0;
   private isFirstCheck: boolean = true;
-  private isInitialLoad: boolean = true;private constructor() {
+  private isInitialLoad: boolean = true; private constructor() {
     // Create audio element when in browser environment
     if (typeof window !== 'undefined') {
       console.log('Initializing NotificationService...');
       this.audio = new Audio(notificationSound);
       this.audio.preload = 'auto';
       this.audio.volume = 0.7; // Slightly lower default volume
-      
+
       // Attach event handlers to log audio element behavior
       this.audio.onplay = () => console.log('Notification sound started playing');
       this.audio.onended = () => console.log('Notification sound finished playing');
       this.audio.onerror = (e) => console.error('Audio error:', e);
-      
+
       // Try to load notification preferences from localStorage
       const savedPref = localStorage.getItem('notificationsEnabled');
       if (savedPref !== null) {
@@ -42,12 +43,12 @@ class NotificationService {  private static instance: NotificationService;
     return NotificationService.instance;
   }  // Play notification sound and show toast
   public notifyNewMessages(currentUnreadCount: number): void {
-    console.log('Notification service checking messages:', { 
-      current: currentUnreadCount, 
-      previous: this.previousUnreadCount, 
-      isFirstCheck: this.isFirstCheck 
+    console.log('Notification service checking messages:', {
+      current: currentUnreadCount,
+      previous: this.previousUnreadCount,
+      isFirstCheck: this.isFirstCheck
     });
-    
+
     // Skip playing sound on initial load, but still track counts
     if (this.isFirstCheck) {
       console.log('First check, setting initial count:', currentUnreadCount);
@@ -55,27 +56,27 @@ class NotificationService {  private static instance: NotificationService;
       this.isFirstCheck = false;
       return;
     }
-    
+
     // Only play notification if:
     // 1. There are more unread messages than before
     // 2. Notifications are enabled
     // 3. We have an audio reference
     if (
-      currentUnreadCount > this.previousUnreadCount && 
-      this.notificationsEnabled && 
+      currentUnreadCount > this.previousUnreadCount &&
+      this.notificationsEnabled &&
       this.audio
     ) {
       console.log('Playing notification sound for new messages:', currentUnreadCount);
-      
+
       // Play notification sound - force a replay by resetting currentTime
       try {
         // Ensure audio is reset and ready to play
         this.audio.pause();
         this.audio.currentTime = 0;
-        
+
         // Create a promise to play the sound with a timeout
         const playPromise = this.audio.play();
-        
+
         if (playPromise !== undefined) {
           playPromise
             .then(() => console.log('Notification sound playing successfully'))
@@ -83,11 +84,11 @@ class NotificationService {  private static instance: NotificationService;
               console.error('Error playing notification sound:', err);
               // If autoplay was prevented, try again with user interaction
               console.log('Attempting to work around autoplay restrictions...');
-              
+
               // Try a different approach - create a new Audio instance
               const backupAudio = new Audio(notificationSound);
               backupAudio.volume = 0.7;
-              backupAudio.play().catch(err2 => 
+              backupAudio.play().catch(err2 =>
                 console.error('Backup audio playback also failed:', err2)
               );
             });
@@ -116,12 +117,12 @@ class NotificationService {  private static instance: NotificationService;
   // Toggle notifications on/off
   public toggleNotifications(): boolean {
     this.notificationsEnabled = !this.notificationsEnabled;
-    
+
     // Save preference to localStorage
     if (typeof window !== 'undefined') {
       localStorage.setItem('notificationsEnabled', this.notificationsEnabled.toString());
     }
-    
+
     return this.notificationsEnabled;
   }
 

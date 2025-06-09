@@ -235,14 +235,7 @@ const AdminPanel: React.FC = () => {
           <TabsTrigger value="skills">Skills</TabsTrigger>
           <TabsTrigger value="projects">Projects</TabsTrigger>
           <TabsTrigger value="education">Education</TabsTrigger>
-          <TabsTrigger value="contact" className="relative">
-            Messages
-            {unreadMessages.length > 0 && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center h-4 w-4 text-xs bg-red-500 text-white rounded-full">
-                {unreadMessages.length > 9 ? '9+' : unreadMessages.length}
-              </span>
-            )}
-          </TabsTrigger>
+          <TabsTrigger value="contact">Messages</TabsTrigger>
         </TabsList>
 
         <TabsContent value="skills">

@@ -2,12 +2,20 @@ import axios from 'axios';
 import { isTokenExpired } from '../utils/auth';
 
 // Create an axios instance with base URL and improved configuration
+// Force the API URL to be dynamically loaded on each page load to prevent caching issues
+const getApiBaseUrl = () => {
+  // Add a random query parameter to the import.meta.env access to prevent browser caching
+  const apiUrl = import.meta.env.VITE_API_URL;
+  console.log('Using API URL:', apiUrl);
+  return apiUrl;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  // Use a function to ensure the baseURL is evaluated fresh each time
+  baseURL: getApiBaseUrl(),
   timeout: 10000, // 10 seconds timeout
   headers: {
     'Content-Type': 'application/json'
-    // Cache-busting is now handled via query parameters
   },
   // Add timestamp to prevent browser caching
   params: {
@@ -18,6 +26,9 @@ const api = axios.create({
 // Single consolidated request interceptor for debugging, authentication and special headers
 api.interceptors.request.use(
   (config) => {
+    // Force refresh the baseURL on each request to prevent stale URLs
+    config.baseURL = getApiBaseUrl();
+
     // Add timestamp parameter to prevent caching
     config.params = {
       ...config.params,

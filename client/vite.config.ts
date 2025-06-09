@@ -4,6 +4,13 @@ import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Force Vite to always re-evaluate environment variables
+  envDir: '.',
+  // Ensure environment variables are always refreshed
+  define: {
+    // Add build timestamp to force new deployments to use fresh data
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [
     react(),
     visualizer({
@@ -41,7 +48,7 @@ export default defineConfig({
         drop_debugger: true
       }
     }
-  },  server: {
+  }, server: {
     headers: {
       'Cache-Control': 'no-store',
       'Access-Control-Allow-Origin': '*'

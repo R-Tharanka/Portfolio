@@ -2,13 +2,20 @@ import axios from 'axios';
 import { Project } from '../types';
 import { ApiResponse } from './api';
 
+// Function to ensure we always get the fresh API URL
+const getApiBaseUrl = () => {
+    // Get fresh API URL and log it for debugging
+    const apiUrl = import.meta.env.VITE_API_URL;
+    console.log('Projects service using API URL:', apiUrl);
+    return apiUrl;
+};
+
 // Create a dedicated service just for projects to avoid conflicts
 const projectsApi = axios.create({
-    baseURL: import.meta.env.VITE_API_URL,
+    baseURL: getApiBaseUrl(),
     timeout: 10000,
     headers: {
         'Content-Type': 'application/json'
-        // Removed cache headers that were causing CORS issues
     },
     // Add timestamp to prevent browser caching
     params: {

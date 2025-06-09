@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Bell, BellOff, X, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import notificationSound from './messageNotification.mp3';
 
 // Interface for contact messages
 export interface NotificationMessage {
@@ -29,9 +28,7 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [previousUnreadCount, setPreviousUnreadCount] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const audioRef = useRef<HTMLAudioElement>(null);
   const navigate = useNavigate();
 
   // Handle click outside to close dropdown
@@ -47,33 +44,6 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-
-  // Play notification sound when new unread messages arrive
-  useEffect(() => {
-    // Only play notification if:
-    // 1. There are more unread messages than before
-    // 2. Notifications are enabled
-    if (unreadCount > previousUnreadCount && notificationsEnabled && audioRef.current) {
-      // Play notification sound
-      audioRef.current.play().catch(err =>
-        console.error('Error playing notification sound:', err)
-      );
-
-      // Show a toast notification for new messages
-      if (unreadCount - previousUnreadCount === 1) {
-        toast.info('You have a new unread message', {
-          icon: <Bell className="h-5 w-5 text-primary" />
-        });
-      } else if (unreadCount - previousUnreadCount > 1) {
-        toast.info(`You have ${unreadCount - previousUnreadCount} new unread messages`, {
-          icon: <Bell className="h-5 w-5 text-primary" />
-        });
-      }
-    }
-
-    // Update the previous count for next comparison
-    setPreviousUnreadCount(unreadCount);
-  }, [unreadCount, previousUnreadCount, notificationsEnabled]);
 
   const toggleNotifications = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -226,9 +196,6 @@ const NotificationsDropdown: React.FC<NotificationsDropdownProps> = ({
           </div>
         </div>
       )}
-
-      {/* Hidden audio element for notification sound */}
-      <audio ref={audioRef} src={notificationSound} preload="auto" />
     </div>
   );
 };

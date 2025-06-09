@@ -34,7 +34,7 @@ app.use(globalLimiter); // Rate limiting
 // Apply custom CORS headers middleware
 app.use(corsHeadersMiddleware);
 // Configure CORS to accept requests from your frontend domain
-// Using a simpler origin configuration with our known domains
+// Using a simpler origin configuration with our known domains 
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, etc)
@@ -43,16 +43,23 @@ const corsOptions = {
     // Parse allowed origins from environment variables
     const primaryDomain = process.env.CORS_ORIGIN || '';
     const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';
+
+    // Create a comprehensive list of allowed origins
     const allowedOrigins = [
       primaryDomain,
-      ...allowedOriginsStr.split(',').filter(Boolean)
+      ...allowedOriginsStr.split(',').filter(Boolean),
+      // Add any known variations that might be cached from previous deployments
+      'https://ruchira-portfolio.vercel.app',
+      'https://www.ruchira-portfolio.vercel.app'
     ].filter(Boolean);
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    // For development environments, be more lenient
+    if (process.env.NODE_ENV === 'development' || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       // For development/debugging - log rejected origins
       console.log(`CORS rejected origin: ${origin}`);
+      console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
       callback(new Error(`CORS not allowed for origin: ${origin}`), false);
     }
   },

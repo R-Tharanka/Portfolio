@@ -6,13 +6,27 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 10000, // 10 seconds timeout
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    // Prevent caching
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  },
+  // Add timestamp to prevent browser caching
+  params: {
+    _t: Date.now()
   }
 });
 
 // Single consolidated request interceptor for debugging, authentication and special headers
 api.interceptors.request.use(
   (config) => {
+    // Add timestamp parameter to prevent caching
+    config.params = { 
+      ...config.params,
+      _t: Date.now() 
+    };
+    
     // Debug logging for all requests
     console.log('========== API REQUEST START ==========');
     console.log(`URL: ${config.baseURL}${config.url}`);

@@ -19,6 +19,9 @@ export default defineConfig({
     // Add asset hashing for better cache control
     assetsInlineLimit: 4096, // 4kb - files smaller than this will be inlined as base64
     assetsDir: 'assets',
+    // Disable browser caching of generated assets
+    chunkSizeWarningLimit: 1000,
+    cssCodeSplit: true,
     rollupOptions: {
       output: {
         manualChunks: {
@@ -27,6 +30,9 @@ export default defineConfig({
         },
         // Ensure assets have content-based hashes in their filenames
         assetFileNames: 'assets/[name]-[hash].[ext]',
+        // Add cache busting for JS files
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
       }
     },
     terserOptions: {

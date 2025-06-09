@@ -6,11 +6,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   timeout: 10000, // 10 seconds timeout
   headers: {
-    'Content-Type': 'application/json',
-    // Prevent caching
-    'Cache-Control': 'no-cache, no-store, must-revalidate',
-    'Pragma': 'no-cache',
-    'Expires': '0'
+    'Content-Type': 'application/json'
+    // Cache-busting is now handled via query parameters
   },
   // Add timestamp to prevent browser caching
   params: {
@@ -22,11 +19,11 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     // Add timestamp parameter to prevent caching
-    config.params = { 
+    config.params = {
       ...config.params,
-      _t: Date.now() 
+      _t: Date.now()
     };
-    
+
     // Debug logging for all requests
     console.log('========== API REQUEST START ==========');
     console.log(`URL: ${config.baseURL}${config.url}`);

@@ -37,9 +37,14 @@ export default defineConfig({
     },
     terserOptions: {
       compress: {
-        drop_console: true,
+        drop_console: false, // Keep console logs for debugging
         drop_debugger: true
       }
+    }
+  },  server: {
+    headers: {
+      'Cache-Control': 'no-store',
+      'Access-Control-Allow-Origin': '*'
     }
   },
   optimizeDeps: {

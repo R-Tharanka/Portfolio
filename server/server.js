@@ -15,6 +15,7 @@ const authRoutes = require('./routes/auth');
 
 // Import middleware
 const { globalLimiter, notFound, errorHandler } = require('./middleware/errorHandler');
+const corsHeadersMiddleware = require('./middleware/corsHeaders');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -30,39 +31,54 @@ app.use(mongoSanitize()); // Sanitize data to prevent NoSQL injection
 app.use(globalLimiter); // Rate limiting
 
 // Regular Middleware
+// Apply custom CORS headers middleware
+app.use(corsHeadersMiddleware);
 // Configure CORS to accept requests from your frontend domain
-app.use(cors({
+// Using a simpler origin configuration with our known domains
+const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, etc)
     if (!origin) return callback(null, true);
 
-    // Always allow primary frontend domain from environment variable
-    const primaryDomain = process.env.CORS_ORIGIN;
-    if (origin === primaryDomain) {
-      return callback(null, true);
-    }
-
-    // Parse allowed origins from environment variable
+    // Parse allowed origins from environment variables
+    const primaryDomain = process.env.CORS_ORIGIN || '';
     const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';
-    const allowedOrigins = allowedOriginsStr.split(',').filter(Boolean);
+    const allowedOrigins = [
+      primaryDomain,
+      ...allowedOriginsStr.split(',').filter(Boolean)
+    ].filter(Boolean);
 
-    // Fallback to development origin if no origins are specified
-    const originsToCheck = allowedOrigins.length > 0
-      ? allowedOrigins
-      : [process.env.CORS_ORIGIN];
-
-    if (originsToCheck.indexOf(origin) !== -1 || !origin) {
+    if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
       // For development/debugging - log rejected origins
       console.log(`CORS rejected origin: ${origin}`);
-      callback(new Error('CORS not allowed'), false);
+      callback(new Error(`CORS not allowed for origin: ${origin}`), false);
     }
-  }, credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma', 'Expires']
-}));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'Cache-Control',
+    'Pragma',
+    'Expires'
+  ],
+  exposedHeaders: ['Content-Length', 'ETag'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
+  maxAge: 86400 // Cache preflight for 24 hours
+};
+
+app.use(cors(corsOptions));
 app.use(express.json({ limit: '10kb' }));  // Limit JSON body size
+
+// Handle OPTIONS preflight requests explicitly 
+app.options('*', cors(corsOptions));
 
 // Connect to MongoDB with improved options and retry logic
 const connectDB = async () => {
@@ -71,7 +87,6 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
       socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
     };
-
     console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI, mongoOptions);
     console.log('Connected to MongoDB successfully');

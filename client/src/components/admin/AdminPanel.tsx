@@ -196,7 +196,7 @@ const AdminPanel: React.FC = () => {
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center space-x-3">
           {/* Notifications Dropdown */}
-          <div className="flex items-center justify-center p-1.5 bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors shadow-sm">
+          <div className="flex items-center justify-center bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors shadow-sm">
             <NotificationsDropdown
               unreadMessages={unreadMessages}
               unreadCount={unreadMessages.length}

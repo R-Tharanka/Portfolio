@@ -1,10 +1,10 @@
 // ContactNotifications.tsx - A reusable component for handling notifications for the Contact Admin
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell, BellOff } from 'lucide-react';
 import { toast } from 'react-toastify';
 
-// Import notification sound
-import notificationSound from './messageNotification.mp3';
+// Import centralized notification service
+import notificationService from './NotificationService';
 
 interface ContactNotificationsProps {
     unreadCount: number;
@@ -24,45 +24,25 @@ const ContactNotifications: React.FC<ContactNotificationsProps> = ({
     unreadCount,
     onMarkAllRead,
     isLoading
-}) => {
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-    const [previousUnreadCount, setPreviousUnreadCount] = useState(0);
-    const audioRef = useRef<HTMLAudioElement | null>(null);
-
-    // Play notification sound when new unread messages arrive
+}) => {    const [notificationsEnabled, setNotificationsEnabled] = useState(
+        () => notificationService.isNotificationsEnabled() // Initialize from NotificationService
+    );
+      // Use notification service to handle notifications
     useEffect(() => {
-        // Only play notification if:
-        // 1. There are more unread messages than before
-        // 2. Notifications are enabled
-        // 3. We have an audio reference
-        if (unreadCount > previousUnreadCount && notificationsEnabled && audioRef.current) {
-            // Play notification sound
-            audioRef.current.play().catch(err =>
-                console.error('Error playing notification sound:', err)
-            );
-
-            // Show a toast notification for new messages
-            if (unreadCount - previousUnreadCount === 1) {
-                toast.info('You have a new unread message', {
-                    icon: <Bell className="h-5 w-5 text-primary" />
-                });
-            } else if (unreadCount - previousUnreadCount > 1) {
-                toast.info(`You have ${unreadCount - previousUnreadCount} new unread messages`, {
-                    icon: <Bell className="h-5 w-5 text-primary" />
-                });
-            }
-        }
-
-        // Update the previous count for next comparison
-        setPreviousUnreadCount(unreadCount);
-    }, [unreadCount, previousUnreadCount, notificationsEnabled]);
-
+        console.log('ContactNotifications detected unread count change:', unreadCount);
+        
+        // Use the centralized notification service to handle notifications
+        // This component shouldn't need to play sounds directly as it uses the service
+        notificationService.notifyNewMessages(unreadCount);
+    }, [unreadCount]);
+    
     // Toggle notifications on/off
     const toggleNotifications = () => {
-        setNotificationsEnabled(prev => !prev);
+        const newState = notificationService.toggleNotifications();
+        setNotificationsEnabled(newState);
         toast.info(
-            notificationsEnabled ? 'Notifications disabled' : 'Notifications enabled',
-            { icon: notificationsEnabled ? <BellOff className="h-5 w-5" /> : <Bell className="h-5 w-5 text-primary" /> }
+            newState ? 'Notifications enabled' : 'Notifications disabled',
+            { icon: newState ? <Bell className="h-5 w-5 text-primary" /> : <BellOff className="h-5 w-5" /> }
         );
     };
 
@@ -78,9 +58,7 @@ const ContactNotifications: React.FC<ContactNotificationsProps> = ({
                     <Bell className="h-4 w-4 text-primary" /> :
                     <BellOff className="h-4 w-4 text-foreground/50" />
                 }
-            </button>
-
-            {/* Notification banner for unread messages */}
+            </button>            {/* Notification banner for unread messages */}
             {unreadCount > 0 && notificationsEnabled && (
                 <div className="p-3 mb-4 bg-primary/10 border border-primary/30 rounded-lg flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
@@ -96,9 +74,7 @@ const ContactNotifications: React.FC<ContactNotificationsProps> = ({
                     </button>
                 </div>
             )}
-
-            {/* Hidden audio element for playing notification sound */}
-            <audio ref={audioRef} src={notificationSound} preload="auto" />
+            {/* No need for local audio element since we use the centralized notification service */}
         </>
     );
 };

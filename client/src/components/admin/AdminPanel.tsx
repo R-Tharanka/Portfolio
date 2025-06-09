@@ -148,21 +148,19 @@ const AdminPanel: React.FC = () => {
       window.removeEventListener('auth:tokenExpired', handleTokenExpired);
     };
   }, []);
-
-  // Periodically fetch unread messages (every 30 seconds)
+  // Periodically fetch unread messages more frequently
   useEffect(() => {
     if (!token) return;
 
     // Set up polling for new messages
     const messageCheckInterval = setInterval(() => {
       fetchUnreadMessages();
-    }, 30000); // Check every 30 seconds
+    }, 10000); // Check every 10 seconds for more responsive notifications
 
     return () => {
       clearInterval(messageCheckInterval);
     };
   }, [token]);
-
   const handleLogin = (authToken: string) => {
     localStorage.setItem('adminToken', authToken);
     setToken(authToken);
@@ -179,6 +177,11 @@ const AdminPanel: React.FC = () => {
       setToken(null);
       setIsAuthenticated(false);
     }, remainingTime * 1000);
+    
+    // Fetch unread messages immediately after login
+    setTimeout(() => {
+      fetchUnreadMessages();
+    }, 500);
   };
   const handleLogout = () => {
     localStorage.removeItem('adminToken');

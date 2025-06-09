@@ -12,13 +12,13 @@ export interface Skill {
   icon: string;
 }
 
-export type SkillCategory = 
-  | 'Frontend' 
-  | 'Backend' 
-  | 'Database' 
-  | 'DevOps' 
-  | 'Languages' 
-  | 'Design' 
+export type SkillCategory =
+  | 'Frontend'
+  | 'Backend'
+  | 'Database'
+  | 'DevOps'
+  | 'Languages'
+  | 'Design'
   | 'Other';
 
 // Project Type

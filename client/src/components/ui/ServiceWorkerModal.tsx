@@ -114,7 +114,11 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
                             position: 'fixed',
                             left: '50%',
                             top: '50%',
-                            transform: 'translate(-50%, -50%)',
+                            transform: 'translate(-50%, -50%) !important',
+                            WebkitTransform: 'translate(-50%, -50%) !important',
+                            msTransform: 'translate(-50%, -50%) !important',
+                            MozTransform: 'translate(-50%, -50%) !important',
+                            OTransform: 'translate(-50%, -50%) !important',
                             margin: '0 auto'
                         }}
                     >

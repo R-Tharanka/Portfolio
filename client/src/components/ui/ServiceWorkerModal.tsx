@@ -107,18 +107,18 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
             onClick={handleClose}
           />
-            {/* Modal */}
-          <motion.div
+            {/* Modal */}          <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", bounce: 0.3 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full max-w-md mx-auto"
+            className="fixed z-50 w-full max-w-md"
             style={{ 
               position: 'fixed',
               left: '50%',
               top: '50%',
-              transform: 'translate(-50%, -50%)'
+              transform: 'translate(-50%, -50%)',
+              margin: '0 auto'
             }}
           >
             <div className="bg-card rounded-lg shadow-xl border border-border overflow-hidden">

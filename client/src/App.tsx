@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
+import { ServiceWorkerProvider } from './context/ServiceWorkerContext';
 import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
 import Analytics from './components/common/Analytics';
@@ -39,17 +40,19 @@ function App() {
   return (
     <HelmetProvider>
       <ThemeProvider>
-        <Toaster position="top-center" />
-        <Analytics />
-        <div className="relative">
-          <DevelopmentBanner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<MainPage />} />
-              <Route path="/admin" element={<AdminPanel />} />
-            </Routes>
-          </BrowserRouter>
-        </div>
+        <ServiceWorkerProvider>
+          <Toaster position="top-center" />
+          <Analytics />
+          <div className="relative">
+            <DevelopmentBanner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<MainPage />} />
+                <Route path="/admin" element={<AdminPanel />} />
+              </Routes>
+            </BrowserRouter>
+          </div>
+        </ServiceWorkerProvider>
       </ThemeProvider>
     </HelmetProvider>
   );

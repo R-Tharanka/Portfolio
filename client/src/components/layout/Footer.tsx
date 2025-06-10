@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-scroll';
-import { ArrowUp, Code, Shield } from 'lucide-react';
+import { ArrowUp, Code, Shield, Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
+import '../../utils/serviceWorkerCleanup'; // Import the file that declares the global function
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -20,16 +21,16 @@ const Footer: React.FC = () => {
         <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-primary blur-3xl"></div>
         <div className="absolute bottom-10 right-10 w-64 h-64 rounded-full bg-secondary blur-3xl"></div>
       </div>
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex flex-col md:flex-row justify-between gap-10">
           {/* Left side: Tech stack with badges */}
-          <div className="md:w-1/2">
+          <div className="md:w-1/3">
             <div className="flex items-center mb-6 gap-2">
               <Code size={20} className="text-primary" />
               <h3 className="text-lg font-bold">Built With</h3>
             </div>
-            
+
             <div className="flex flex-wrap gap-2 mb-8">
               {techBadges.map((badge, index) => (
                 <motion.span
@@ -43,6 +44,24 @@ const Footer: React.FC = () => {
                   {badge.name}
                 </motion.span>
               ))}
+            </div>
+          </div>
+          {/* Middle: Utilities */}
+          <div className="md:w-1/3">
+            <div className="flex items-center mb-6 gap-2">
+              <Settings size={20} className="text-primary" />
+              <h3 className="text-lg font-bold">Utilities</h3>
+            </div>
+            <div className="flex flex-col space-y-2">
+              <a href="/cleanup" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
+                Clear Cache & Service Workers
+              </a>
+              <button
+                onClick={() => window.cleanupServiceWorker && window.cleanupServiceWorker()}
+                className="text-left text-foreground/70 hover:text-primary transition-colors text-sm hover:underline cursor-pointer"
+              >
+                Fix CORS & Connection Issues
+              </button>
             </div>
           </div>
 
@@ -66,7 +85,7 @@ const Footer: React.FC = () => {
           </div>
         </div>
 
-        <motion.div 
+        <motion.div
           className="mt-10 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -75,7 +94,7 @@ const Footer: React.FC = () => {
           <p className="text-sm text-foreground/70">
             © {currentYear} <span className="font-medium text-foreground">Ruchira Tharanka</span>. All rights reserved.
           </p>
-          
+
           <div className="mt-4 md:mt-0">
             <Link
               to="hero"

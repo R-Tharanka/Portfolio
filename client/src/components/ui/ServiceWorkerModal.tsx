@@ -115,7 +115,8 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
                             left: '50%',
                             top: '50%',
                             transform: 'translate(-50%, -50%)',
-                            margin: '0 auto'
+                            margin: '0 auto',
+                            WebkitTransform: 'translate(-50%, -50%)'
                         }}
                     >
                         <div className="bg-card rounded-lg shadow-xl border border-border overflow-hidden">

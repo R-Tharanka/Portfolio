@@ -36,12 +36,12 @@ api.interceptors.request.use(
     };
 
     // Debug logging for all requests
-    console.log('========== API REQUEST START ==========');
-    console.log(`URL: ${config.baseURL}${config.url}`);
-    console.log(`Method: ${config.method?.toUpperCase()}`);
-    console.log('Headers:', config.headers);
-    console.log('Request Data:', config.data);
-    console.log('========== API REQUEST END ==========');    // Skills update debug log
+    // console.log('========== API REQUEST START ==========');
+    // console.log(`URL: ${config.baseURL}${config.url}`);
+    // console.log(`Method: ${config.method?.toUpperCase()}`);
+    // console.log('Headers:', config.headers);
+    // console.log('Request Data:', config.data);
+    // console.log('========== API REQUEST END ==========');    // Skills update debug log
     if (config.url?.startsWith('/skills/') && config.method === 'put') {
       console.log('🔄 Skill update request detected');
     }

@@ -17,8 +17,8 @@ interface ToastConfig {
 // Extend Window interface for TypeScript
 declare global {
   interface Window {
-    cleanupServiceWorker: (options?: {
-      showToast?: boolean;
+    cleanupServiceWorker: (options?: { 
+      showToast?: boolean; 
       redirectToHome?: boolean;
       noAutoRefresh?: boolean;
     }) => Promise<ToastConfig | null>;
@@ -35,12 +35,12 @@ const Footer: React.FC = () => {
     action: undefined as { label: string; onClick: () => void } | undefined
   });
   const [showTooltip, setShowTooltip] = useState(false);
-
+  
   // Use a ref to track if the component is mounted
   const isMounted = useRef(true);
   // Refs to store timeouts
   const timers = useRef<NodeJS.Timeout[]>([]);
-
+  
   // Use the global service worker context
   const { updateModalStatus, setShowRefreshButtons, showConfirmationModal } = useServiceWorker();
 
@@ -52,7 +52,7 @@ const Footer: React.FC = () => {
       timers.current = [];
     };
   }, []);
-
+  
   // This function will be called if the user confirms they want to proceed
   const handleConfirmedCleanup = useCallback(async () => {
     // Update modal status to show progress
@@ -77,19 +77,19 @@ const Footer: React.FC = () => {
       // Update status as the process progresses
       const timer1 = setTimeout(() => {
         if (!isMounted.current) return;
-
+        
         updateModalStatus({
           message: 'Finding service worker registrations...',
           type: 'loading',
           details: ['Initializing cleanup process...', 'Searching for active service workers...']
         });
       }, 500);
-
+      
       timers.current.push(timer1);
 
       const timer2 = setTimeout(() => {
         if (!isMounted.current) return;
-
+        
         updateModalStatus({
           message: 'Clearing browser caches...',
           type: 'loading',
@@ -100,9 +100,9 @@ const Footer: React.FC = () => {
           ]
         });
       }, 1200);
-
+      
       timers.current.push(timer2);
-
+      
       // Call the actual cleanup function with no automatic refresh/redirect
       const result = await window.cleanupServiceWorker({
         showToast: false, // Don't show toast since we're showing modal
@@ -135,8 +135,8 @@ const Footer: React.FC = () => {
           message: result.message || 'Error cleaning up service worker',
           type: 'error',
           details: [
-            'An error occurred during cleanup',
-            result.message || 'Unknown error',
+            'An error occurred during cleanup', 
+            result.message || 'Unknown error', 
             'You may try again or refresh the page manually'
           ]
         });
@@ -145,7 +145,7 @@ const Footer: React.FC = () => {
           message: result.message || 'Service worker cleanup completed with warnings',
           type: 'warning',
           details: [
-            'Service worker cleanup completed with warnings',
+            'Service worker cleanup completed with warnings', 
             'Please refresh the page to complete the process'
           ]
         });
@@ -156,7 +156,7 @@ const Footer: React.FC = () => {
     } catch (error) {
       // Only update state if component is still mounted
       if (!isMounted.current) return;
-
+      
       console.error('Error in cleanup:', error);
       updateModalStatus({
         message: 'Error during cleanup process',
@@ -172,8 +172,8 @@ const Footer: React.FC = () => {
     { name: 'TypeScript', color: 'bg-blue-500' },
     { name: 'Tailwind CSS', color: 'bg-sky-500' },
     { name: 'Framer Motion', color: 'bg-purple-500' }
-  ];
-
+  ]; 
+  
   return (
     <>
       {/* Legacy toast for backward compatibility */}
@@ -216,7 +216,7 @@ const Footer: React.FC = () => {
                 ))}
               </div>
             </div>
-
+            
             {/* Middle: Utilities */}
             <div className="md:w-1/3">
               <div className="flex items-center mb-6 gap-2">

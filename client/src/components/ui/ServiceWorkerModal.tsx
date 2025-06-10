@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, RefreshCw, CheckCircle, AlertCircle, Loader2, ArrowLeft, Trash2 } from 'lucide-react';
 
@@ -24,18 +24,13 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
     onHomeRefresh,
     showRefreshButtons,
     onConfirm
-}) => {
-    // Track animation state
-    const [isAnimating, setIsAnimating] = useState(false);
-
-    // Close handler with animation
-    const handleClose = () => {
-        setIsAnimating(true);
+}) => {    // Close handler with animation - using useCallback for better performance
+    const handleClose = useCallback(() => {
+        // Just use a simple timeout instead of animation state
         setTimeout(() => {
-            setIsAnimating(false);
             onClose();
         }, 300);
-    };
+    }, [onClose]);
 
     // Prevent scrolling when modal is open
     useEffect(() => {

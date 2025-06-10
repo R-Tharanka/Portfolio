@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, ReactNode } from 'react';
+import React, { createContext, useState, useContext, ReactNode, useCallback } from 'react';
 import ServiceWorkerModal from '../components/ui/ServiceWorkerModal';
 
 interface ModalStatus {
@@ -12,14 +12,11 @@ interface ServiceWorkerContextType {
     hideModal: () => void;
     updateModalStatus: (status: ModalStatus) => void;
     setShowRefreshButtons: (show: boolean) => void;
-}
-
-interface ServiceWorkerContextType {
-    showModal: (status: ModalStatus) => void;
-    hideModal: () => void;
-    updateModalStatus: (status: ModalStatus) => void;
-    setShowRefreshButtons: (show: boolean) => void;
-    onConfirmCleanup: () => void;
+    showConfirmationModal: (options: {
+        message: string;
+        details: string[];
+        onConfirm: () => void;
+    }) => void;
 }
 
 const ServiceWorkerContext = createContext<ServiceWorkerContextType | undefined>(undefined);
@@ -44,65 +41,90 @@ export const ServiceWorkerProvider: React.FC<ServiceWorkerProviderProps> = ({ ch
         details: []
     });
     const [showRefreshButtons, setShowRefreshButtons] = useState(false);
-    const [onConfirm, setOnConfirm] = useState<(() => void) | null>(null);
+    const [confirmCallback, setConfirmCallback] = useState<(() => void) | null>(null);
+
+    // Use useCallback for all handlers to prevent unnecessary re-renders
 
     // Handlers for the modal
-    const handleRefresh = () => {
+    const handleRefresh = useCallback(() => {
         // Force a clean reload
         window.location.reload();
-    };
+    }, []);
 
-    const handleHomeRefresh = () => {
+    const handleHomeRefresh = useCallback(() => {
         // Redirect to home page with cache busting
         const timestamp = Date.now();
         window.location.href = `/?_t=${timestamp}`;
-    };
+    }, []);
+
+    // Method for cleanup confirmation - using useCallback to ensure stable reference
+    const onConfirmCleanup = useCallback(() => {
+        if (confirmCallback) {
+            const callback = confirmCallback;
+            setConfirmCallback(null); // Clear callback first to prevent potential issues
+            callback(); // Then execute the callback
+        }
+    }, [confirmCallback]);
 
     // Context methods
-    const showModal = (initialStatus: ModalStatus) => {
+    const showModal = useCallback((initialStatus: ModalStatus) => {
         setStatus(initialStatus);
         setIsOpen(true);
-    };
+    }, []);
 
-    const hideModal = () => {
+    const hideModal = useCallback(() => {
         setIsOpen(false);
-    };
+        // Clear any confirmation callback when hiding modal
+        setConfirmCallback(null);
+    }, []);
 
-    const updateModalStatus = (newStatus: ModalStatus) => {
+    const updateModalStatus = useCallback((newStatus: ModalStatus) => {
         setStatus(newStatus);
-    };    // Method for cleanup confirmation
-    const onConfirmCleanup = () => {
-        if (onConfirm) {
-            onConfirm();
-            setOnConfirm(null); // Clear the confirmation callback after use
-        }
-    };
+    }, []);
+    // Method to show confirmation modal with callback
+    const showConfirmationModal = useCallback((options: {
+        message: string;
+        details: string[];
+        onConfirm: () => void;
+    }) => {
+        setConfirmCallback(() => options.onConfirm);
+        setStatus({
+            message: options.message,
+            type: 'warning',
+            details: options.details
+        });
+        setShowRefreshButtons(true);
+        setIsOpen(true);
+    }, []);
 
-    // Method to set up confirmation
-    const setupConfirmation = (callback: () => void) => {
-        setOnConfirm(() => callback);
-    };
+    // Create memoized context value to prevent unnecessary re-renders
+    const contextValue = React.useMemo(() => ({
+        showModal,
+        hideModal,
+        updateModalStatus,
+        setShowRefreshButtons,
+        showConfirmationModal
+    }), [
+        showModal,
+        hideModal,
+        updateModalStatus,
+        setShowRefreshButtons,
+        showConfirmationModal
+    ]);
 
     return (
-        <ServiceWorkerContext.Provider
-            value={{
-                showModal,
-                hideModal,
-                updateModalStatus,
-                setShowRefreshButtons,
-                onConfirmCleanup
-            }}
-        >
+        <ServiceWorkerContext.Provider value={contextValue}>
             {children}
 
-            {/* Service Worker Modal - Rendered at the root level for proper positioning */}            <ServiceWorkerModal
+            {/* Service Worker Modal - Rendered at the root level for proper positioning */}
+            <ServiceWorkerModal
                 isOpen={isOpen}
                 onClose={hideModal}
                 status={status}
                 onRefresh={handleRefresh}
                 onHomeRefresh={handleHomeRefresh}
                 showRefreshButtons={showRefreshButtons}
-                onConfirm={onConfirmCleanup}
+                onConfirm={confirmCallback ? onConfirmCleanup : undefined}
             />
         </ServiceWorkerContext.Provider>
     );

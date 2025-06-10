@@ -108,31 +108,82 @@ export const forceRefresh = (redirectUrl?: string) => {
     window.location.href = targetUrl.toString();
 };
 
-// Add type declaration for our global function
+// Type declarations are now inside the below interface
+
+// Define interface for the toast configuration
+interface ToastConfig {
+    show: boolean;
+    message: string;
+    type: 'success' | 'error' | 'warning' | 'info';
+    action?: {
+        label: string;
+        onClick: () => void;
+    };
+}
+
+// Define interface for global toast state
 declare global {
     interface Window {
-        cleanupServiceWorker: () => Promise<void>;
+        cleanupServiceWorker: (options?: { showToast?: boolean, redirectToHome?: boolean }) => Promise<ToastConfig | null>;
+        _serviceWorkerToastState?: ToastConfig;
+        _showServiceWorkerToast?: (config: ToastConfig) => void;
+        _hideServiceWorkerToast?: () => void;
     }
 }
 
-// Expose a global function to allow debugging from console
-window.cleanupServiceWorker = async () => {
+// Expose a global function to allow debugging from console or UI usage
+window.cleanupServiceWorker = async (options = { showToast: true, redirectToHome: false }) => {
     const result = await unregisterServiceWorkers();
+    let toastConfig: ToastConfig | null = null;
 
     if (result.success) {
+        let message = '';
         if (result.hadWorkers) {
-            alert(`${result.workersUnregistered} service worker(s) unregistered. The page will now reload.`);
+            message = `${result.workersUnregistered} service worker(s) unregistered. Caches cleared.`;
         } else {
-            alert('No active service workers found. Caches cleared. The page will now reload.');
+            message = 'Cache and service workers cleaned up successfully.';
+        }
+
+        toastConfig = {
+            show: true,
+            message,
+            type: 'success',
+            action: {
+                label: 'Refresh Now',
+                onClick: () => forceRefresh(options.redirectToHome ? '/' : undefined)
+            }
+        };
+
+        // Auto-refresh after a short delay if toast isn't being shown
+        if (!options.showToast) {
+            setTimeout(() => {
+                forceRefresh(options.redirectToHome ? '/' : undefined);
+            }, 500);
         }
     } else if (result.notSupported) {
-        alert('Service workers are not supported in this browser.');
-        return;
+        toastConfig = {
+            show: true,
+            message: 'Service workers are not supported in this browser.',
+            type: 'warning'
+        };
     } else {
-        alert(`Error unregistering service workers: ${result.error || 'Unknown error'}`);
+        toastConfig = {
+            show: true,
+            message: `Error: ${result.error || 'Unknown error during cleanup'}`,
+            type: 'error',
+            action: {
+                label: 'Try Again',
+                onClick: () => window.cleanupServiceWorker(options)
+            }
+        };
     }
-
-    forceRefresh(); // Will refresh the current page
+    
+    // If configured to show toast and the toast handler exists, show it
+    if (options.showToast && toastConfig && window._showServiceWorkerToast) {
+        window._showServiceWorkerToast(toastConfig);
+    }
+    
+    return toastConfig;
 };
 
 // Helper function to check if the app is experiencing service worker issues

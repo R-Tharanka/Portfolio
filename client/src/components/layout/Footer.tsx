@@ -1,11 +1,54 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-scroll';
-import { ArrowUp, Code, Shield, Settings } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ArrowUp, Code, Shield, Settings, RefreshCw, HelpCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import '../../utils/serviceWorkerCleanup'; // Import the file that declares the global function
+import Toast from '../ui/Toast';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
+  const [showToast, setShowToast] = useState(false);
+  const [toastConfig, setToastConfig] = useState({
+    message: '',
+    type: 'info' as 'success' | 'error' | 'warning' | 'info',
+    action: undefined as { label: string; onClick: () => void } | undefined
+  });
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  // Expose toast handlers for service worker cleanup
+  React.useEffect(() => {
+    window._showServiceWorkerToast = (config) => {
+      setToastConfig({
+        message: config.message,
+        type: config.type,
+        action: config.action
+      });
+      setShowToast(true);
+    };
+
+    window._hideServiceWorkerToast = () => {
+      setShowToast(false);
+    };
+
+    return () => {
+      window._showServiceWorkerToast = undefined;
+      window._hideServiceWorkerToast = undefined;
+    };
+  }, []);  const handleCleanup = async () => {
+    // Set up a loading state to provide immediate feedback
+    setToastConfig({
+      message: 'Cleaning up service workers and cache...',
+      type: 'info',
+      action: undefined
+    });
+    setShowToast(true);
+    
+    // Call the cleanup function with automatic redirection to home
+    await window.cleanupServiceWorker({
+      showToast: true,
+      redirectToHome: true
+    });
+  };
 
   const techBadges = [
     { name: 'MERN Stack', color: 'bg-gradient-to-r from-primary to-secondary' },
@@ -13,9 +56,16 @@ const Footer: React.FC = () => {
     { name: 'Tailwind CSS', color: 'bg-sky-500' },
     { name: 'Framer Motion', color: 'bg-purple-500' }
   ];
-
   return (
     <footer className="bg-card text-card-foreground py-12 border-t border-border relative overflow-hidden">
+      {showToast && (
+        <Toast
+          message={toastConfig.message}
+          type={toastConfig.type}
+          action={toastConfig.action}
+          onClose={() => setShowToast(false)}
+        />
+      )}
       {/* Background design elements */}
       <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
         <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-primary blur-3xl"></div>
@@ -53,15 +103,39 @@ const Footer: React.FC = () => {
               <h3 className="text-lg font-bold">Utilities</h3>
             </div>
             <div className="flex flex-col space-y-2">
-              <a href="/cleanup" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
-                Clear Cache & Service Workers
-              </a>
-              <button
-                onClick={() => window.cleanupServiceWorker && window.cleanupServiceWorker()}
-                className="text-left text-foreground/70 hover:text-primary transition-colors text-sm hover:underline cursor-pointer"
-              >
-                Fix CORS & Connection Issues
-              </button>
+              <div className="relative">
+                <button
+                  onClick={handleCleanup}
+                  onMouseEnter={() => setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                  className="text-left flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors text-sm hover:underline cursor-pointer group"
+                >
+                  <RefreshCw size={14} className="opacity-70 group-hover:opacity-100" />
+                  Fix Connection Issues & Refresh Cache
+                  <HelpCircle size={12} className="opacity-50 group-hover:opacity-80" />
+                </button>
+
+                <AnimatePresence>
+                  {showTooltip && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 top-full mt-2 p-3 bg-card border border-border rounded-md shadow-lg z-50 w-64"
+                    >
+                      <p className="text-xs text-foreground/80 mb-2">
+                        This tool helps fix common issues:
+                      </p>
+                      <ul className="text-xs list-disc pl-4 text-foreground/70 space-y-1">
+                        <li>CORS errors when refreshing</li>
+                        <li>Outdated cached content</li>
+                        <li>API connection problems</li>
+                        <li>Service worker conflicts</li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 

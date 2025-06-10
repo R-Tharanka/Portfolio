@@ -162,9 +162,12 @@ window.cleanupServiceWorker = async (options = {
             }
         };        // Only auto-refresh if explicitly NOT prevented (respect the noAutoRefresh flag)
         if (!options.showToast && options.noAutoRefresh !== true) {
+            console.log("Auto-refreshing page after service worker cleanup");
             setTimeout(() => {
                 forceRefresh(options.redirectToHome ? '/' : undefined);
             }, 500);
+        } else if (options.noAutoRefresh === true) {
+            console.log("Auto-refresh prevented, leaving refresh control to UI");
         }
         
         // If noAutoRefresh is true, we leave it to the UI to handle refreshing

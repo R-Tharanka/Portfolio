@@ -124,7 +124,11 @@ interface ToastConfig {
 // Define interface for global toast state
 declare global {
     interface Window {
-        cleanupServiceWorker: (options?: { showToast?: boolean, redirectToHome?: boolean }) => Promise<ToastConfig | null>;
+        cleanupServiceWorker: (options?: { 
+            showToast?: boolean, 
+            redirectToHome?: boolean,
+            noAutoRefresh?: boolean 
+        }) => Promise<ToastConfig | null>;
         _serviceWorkerToastState?: ToastConfig;
         _showServiceWorkerToast?: (config: ToastConfig) => void;
         _hideServiceWorkerToast?: () => void;
@@ -132,7 +136,11 @@ declare global {
 }
 
 // Expose a global function to allow debugging from console or UI usage
-window.cleanupServiceWorker = async (options = { showToast: true, redirectToHome: false }) => {
+window.cleanupServiceWorker = async (options = { 
+    showToast: true, 
+    redirectToHome: false, 
+    noAutoRefresh: false 
+}) => {
     const result = await unregisterServiceWorkers();
     let toastConfig: ToastConfig | null = null;
 
@@ -152,14 +160,14 @@ window.cleanupServiceWorker = async (options = { showToast: true, redirectToHome
                 label: 'Refresh Now',
                 onClick: () => forceRefresh(options.redirectToHome ? '/' : undefined)
             }
-        };
-
-        // Auto-refresh after a short delay if toast isn't being shown
-        if (!options.showToast) {
+        };        // Only auto-refresh if explicitly NOT prevented (respect the noAutoRefresh flag)
+        if (!options.showToast && options.noAutoRefresh !== true) {
             setTimeout(() => {
                 forceRefresh(options.redirectToHome ? '/' : undefined);
             }, 500);
         }
+        
+        // If noAutoRefresh is true, we leave it to the UI to handle refreshing
     } else if (result.notSupported) {
         toastConfig = {
             show: true,

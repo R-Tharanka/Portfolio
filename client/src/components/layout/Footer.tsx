@@ -7,63 +7,41 @@ import { useServiceWorker } from '../../context/ServiceWorkerContext';
 import Toast from '../ui/Toast';
 
 const Footer: React.FC = () => {
-  const currentYear = new Date().getFullYear();  const [showToast, setShowToast] = useState(false);
+  const currentYear = new Date().getFullYear(); const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     message: '',
     type: 'info' as 'success' | 'error' | 'warning' | 'info',
     action: undefined as { label: string; onClick: () => void } | undefined
   });
   const [showTooltip, setShowTooltip] = useState(false);
-  
   // Use the global service worker context
-  const { showModal, updateModalStatus, setShowRefreshButtons } = useServiceWorker();
-  // Expose toast handlers for service worker cleanup
+  const { showModal, updateModalStatus, setShowRefreshButtons, onConfirmCleanup } = useServiceWorker();
+
+  // Setup the confirmation process
   React.useEffect(() => {
-    window._showServiceWorkerToast = (config) => {
-      // For backward compatibility, still update toast
-      setToastConfig({
-        message: config.message,
-        type: config.type,
-        action: config.action
-      });
-      setShowToast(true);
+    // Make the handleConfirmedCleanup accessible to the ServiceWorkerContext
+    const originalConfirmCleanup = onConfirmCleanup;
 
-      // Update modal status based on toast config
-      updateModalStatus({
-        message: config.message,
-        type: config.type === 'success' ? 'success' :
-          config.type === 'error' ? 'error' :
-            config.type === 'warning' ? 'warning' : 'loading',
-        details: [config.message]
-      });
-
-      // For success or error states, show refresh buttons
-      if (config.type === 'success' || config.type === 'error' || config.type === 'warning') {
-        setShowRefreshButtons(true);
-      }
-    };
-
-    window._hideServiceWorkerToast = () => {
-      setShowToast(false);
-      // We don't auto-close the modal, since it has its own close button
-    };
+    // Override the context's onConfirmCleanup with our local function
+    const serviceWorkerContext = useServiceWorker() as any;
+    serviceWorkerContext.onConfirmCleanup = handleConfirmedCleanup;
 
     return () => {
-      window._showServiceWorkerToast = undefined;
-      window._hideServiceWorkerToast = undefined;
+      // Restore the original function when component unmounts
+      serviceWorkerContext.onConfirmCleanup = originalConfirmCleanup;
     };
-  }, [updateModalStatus, setShowRefreshButtons]);
+  }, [onConfirmCleanup]);
 
-  const handleCleanup = async () => {
-    // Initial modal state
-    const initialStatus = {
+  // This function will be called if the user confirms they want to proceed
+  const handleConfirmedCleanup = async () => {
+    // Update modal status to show progress
+    updateModalStatus({
       message: 'Checking service workers...',
       type: 'loading' as const,
       details: ['Initializing cleanup process...']
-    };
-    
-    // Show the modal with initial status
-    showModal(initialStatus);
+    });
+
+    // Hide the action buttons during processing
     setShowRefreshButtons(false);
 
     try {
@@ -74,7 +52,7 @@ const Footer: React.FC = () => {
         action: undefined
       });
       setShowToast(true);
-      
+
       // Update status as the process progresses
       setTimeout(() => {
         updateModalStatus({
@@ -89,17 +67,16 @@ const Footer: React.FC = () => {
           message: 'Clearing browser caches...',
           type: 'loading',
           details: [
-            'Initializing cleanup process...', 
-            'Searching for active service workers...', 
+            'Initializing cleanup process...',
+            'Searching for active service workers...',
             'Removing cached API responses...'
           ]
         });
-      }, 1200);
-
-      // Call the actual cleanup function with home redirection
+      }, 1200);      // Call the actual cleanup function with no automatic refresh/redirect
       const result = await window.cleanupServiceWorker({
         showToast: false, // Don't show toast since we're showing modal
-        redirectToHome: false // We'll handle redirection in the modal
+        redirectToHome: false, // Don't redirect automatically
+        noAutoRefresh: true // New option to prevent auto-refresh
       });
 
       // Update the modal with the result
@@ -111,20 +88,21 @@ const Footer: React.FC = () => {
             'Successfully unregistered all service workers',
             'Cleared browser caches',
             'Removed stored API URLs',
-            'Ready to reload with fresh data'
+            'Ready to reload with fresh data',
+            'Please use one of the buttons below to refresh the page'
           ]
         });
       } else if (result?.type === 'error') {
         updateModalStatus({
           message: result.message,
           type: 'error',
-          details: ['An error occurred during cleanup', result.message]
+          details: ['An error occurred during cleanup', result.message, 'You may try again or refresh the page manually']
         });
       } else if (result?.type === 'warning') {
         updateModalStatus({
           message: result.message,
           type: 'warning',
-          details: ['Service worker cleanup completed with warnings']
+          details: ['Service worker cleanup completed with warnings', 'Please refresh the page to complete the process']
         });
       }
 
@@ -146,7 +124,7 @@ const Footer: React.FC = () => {
     { name: 'TypeScript', color: 'bg-blue-500' },
     { name: 'Tailwind CSS', color: 'bg-sky-500' },
     { name: 'Framer Motion', color: 'bg-purple-500' }
-  ];  return (
+  ]; return (
     <>
       {/* Legacy toast for backward compatibility */}
       {showToast && (
@@ -197,7 +175,24 @@ const Footer: React.FC = () => {
               <div className="flex flex-col space-y-2">
                 <div className="relative">
                   <button
-                    onClick={handleCleanup}
+                    onClick={() => {
+                      // Show confirmation dialog when user clicks on "Fix Connection Issues"
+                      const confirmationStatus = {
+                        message: 'Fix Connection Issues & Refresh Cache',
+                        type: 'warning' as const,
+                        details: [
+                          'This tool will attempt to fix the following issues:',
+                          '• Problems with API connections',
+                          '• Outdated or corrupted cache data',
+                          '• Service worker conflicts',
+                          '• CORS errors when refreshing pages',
+                          'Click "Proceed with Cleanup" to continue or "Cancel" to exit'
+                        ]
+                      };
+                      // Show the confirmation modal with proceed/cancel buttons
+                      showModal(confirmationStatus);
+                      setShowRefreshButtons(true);
+                    }}
                     onMouseEnter={() => setShowTooltip(true)}
                     onMouseLeave={() => setShowTooltip(false)}
                     className="text-left flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors text-sm hover:underline cursor-pointer group"
@@ -278,7 +273,8 @@ const Footer: React.FC = () => {
                   <ArrowUp size={12} />
                 </motion.div>
               </Link>
-            </div>          </motion.div>
+            </div>
+          </motion.div>
         </div>
       </footer>
     </>

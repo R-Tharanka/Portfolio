@@ -53,10 +53,14 @@ const ServiceWorkerCleanup: React.FC = () => {
 
         runCleanup();
     }, []);
-
     const handleRefresh = () => {
-        // Force a clean reload
+        // Force a clean reload of the current page
         forceRefresh();
+    };
+
+    const handleHomeRefresh = () => {
+        // Force a clean reload that goes to the home page
+        forceRefresh('/');
     };
 
     const getStatusIcon = () => {
@@ -97,26 +101,46 @@ const ServiceWorkerCleanup: React.FC = () => {
                             </ul>
                         </div>
                     )}
-                </div>
+                </div>                {needsRefresh && (
+                    <div className="flex flex-col space-y-3">
+                        <button
+                            onClick={handleRefresh}
+                            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-white transition-colors hover:bg-primary/90"
+                        >
+                            <RefreshCw className="h-4 w-4" />
+                            <span>Reload Current Page with Fresh Data</span>
+                        </button>
+                        <button
+                            onClick={handleHomeRefresh}
+                            className="flex w-full items-center justify-center gap-2 rounded-md bg-background border border-border px-4 py-3 text-foreground transition-colors hover:bg-card/80"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            <span>Return to Home Page</span>
+                        </button>
 
-                {needsRefresh && (
-                    <button
-                        onClick={handleRefresh}
-                        className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-white transition-colors hover:bg-primary/90"
-                    >
-                        <RefreshCw className="h-4 w-4" />
-                        <span>Reload Page with Fresh Data</span>
-                    </button>
+                        <p className="mt-2 text-xs text-center text-foreground/70">
+                            After clicking "Reload" you'll be directed to the page you came from with fresh data.
+                        </p>
+                    </div>
                 )}
 
                 {isComplete && !needsRefresh && (
-                    <button
-                        onClick={() => window.history.back()}
-                        className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-white transition-colors hover:bg-primary/90"
-                    >
-                        <ArrowLeft className="h-4 w-4" />
-                        <span>Return to Previous Page</span>
-                    </button>
+                    <div className="flex flex-col space-y-3">
+                        <button
+                            onClick={() => window.history.back()}
+                            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-white transition-colors hover:bg-primary/90"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            <span>Return to Previous Page</span>
+                        </button>
+                        <button
+                            onClick={handleHomeRefresh}
+                            className="flex w-full items-center justify-center gap-2 rounded-md bg-background border border-border px-4 py-3 text-foreground transition-colors hover:bg-card/80"
+                        >
+                            <ArrowLeft className="h-4 w-4" />
+                            <span>Return to Home Page</span>
+                        </button>
+                    </div>
                 )}
             </div>
         </div>

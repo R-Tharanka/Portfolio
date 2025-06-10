@@ -74,20 +74,20 @@ export const unregisterServiceWorkers = async () => {
 };
 
 // Function to force a clean reload bypassing cache
-export const forceRefresh = () => {
+export const forceRefresh = (redirectUrl?: string) => {
     console.log('Forcing page refresh...');
 
     // Add a timestamp to bust cache
     const timestamp = Date.now();
 
-    // Preserve existing query parameters if any
-    const url = new URL(window.location.href);
+    // Determine target URL (either current URL or a specific redirect URL)
+    const targetUrl = redirectUrl ? new URL(redirectUrl, window.location.origin) : new URL(window.location.href);
 
     // Remove any existing timestamp parameter
-    url.searchParams.delete('_t');
+    targetUrl.searchParams.delete('_t');
 
     // Add fresh timestamp parameter
-    url.searchParams.set('_t', timestamp.toString());
+    targetUrl.searchParams.set('_t', timestamp.toString());
 
     // Set cache control headers if possible (via fetch)
     try {
@@ -105,7 +105,7 @@ export const forceRefresh = () => {
     }
 
     // Reload with cache busting
-    window.location.href = url.toString();
+    window.location.href = targetUrl.toString();
 };
 
 // Add type declaration for our global function
@@ -132,7 +132,7 @@ window.cleanupServiceWorker = async () => {
         alert(`Error unregistering service workers: ${result.error || 'Unknown error'}`);
     }
 
-    forceRefresh();
+    forceRefresh(); // Will refresh the current page
 };
 
 // Helper function to check if the app is experiencing service worker issues

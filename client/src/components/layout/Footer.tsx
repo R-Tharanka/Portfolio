@@ -4,6 +4,7 @@ import { ArrowUp, Code, Shield, Settings, RefreshCw, HelpCircle } from 'lucide-r
 import { motion, AnimatePresence } from 'framer-motion';
 import '../../utils/serviceWorkerCleanup'; // Import the file that declares the global function
 import Toast from '../ui/Toast';
+import ServiceWorkerModal from '../ui/ServiceWorkerModal';
 
 const Footer: React.FC = () => {
   const currentYear = new Date().getFullYear();
@@ -15,39 +16,127 @@ const Footer: React.FC = () => {
   });
   const [showTooltip, setShowTooltip] = useState(false);
 
+  // Modal state
+  const [showModal, setShowModal] = useState(false);
+  const [modalStatus, setModalStatus] = useState<{
+    message: string;
+    type: 'loading' | 'success' | 'error' | 'warning';
+    details: string[];
+  }>({
+    message: 'Initializing cleanup...',
+    type: 'loading',
+    details: []
+  });
+  const [showRefreshButtons, setShowRefreshButtons] = useState(false);
+
   // Expose toast handlers for service worker cleanup
+  // Now also manages the modal status
   React.useEffect(() => {
     window._showServiceWorkerToast = (config) => {
+      // For backward compatibility, still update toast
       setToastConfig({
         message: config.message,
         type: config.type,
         action: config.action
       });
-      setShowToast(true);
+
+      // Update modal status based on toast config
+      setModalStatus(prev => ({
+        message: config.message,
+        type: config.type === 'success' ? 'success' :
+          config.type === 'error' ? 'error' :
+            config.type === 'warning' ? 'warning' : 'loading',
+        details: [...prev.details, config.message]
+      }));
+
+      // For success or error states, show refresh buttons
+      if (config.type === 'success' || config.type === 'error' || config.type === 'warning') {
+        setShowRefreshButtons(true);
+      }
     };
 
     window._hideServiceWorkerToast = () => {
       setShowToast(false);
+      // We don't auto-close the modal, since it has its own close button
     };
 
     return () => {
       window._showServiceWorkerToast = undefined;
       window._hideServiceWorkerToast = undefined;
     };
-  }, []);  const handleCleanup = async () => {
-    // Set up a loading state to provide immediate feedback
-    setToastConfig({
-      message: 'Cleaning up service workers and cache...',
-      type: 'info',
-      action: undefined
+  }, []);
+
+  const handleCleanup = async () => {
+    // Initial modal state
+    setModalStatus({
+      message: 'Checking service workers...',
+      type: 'loading',
+      details: ['Initializing cleanup process...']
     });
-    setShowToast(true);
-    
-    // Call the cleanup function with automatic redirection to home
-    await window.cleanupServiceWorker({
-      showToast: true,
-      redirectToHome: true
-    });
+    setShowModal(true);
+    setShowRefreshButtons(false);
+
+    try {
+      // Update status as we go
+      setTimeout(() => {
+        setModalStatus(prev => ({
+          ...prev,
+          message: 'Finding service worker registrations...',
+          details: [...prev.details, 'Searching for active service workers...']
+        }));
+      }, 500);
+
+      setTimeout(() => {
+        setModalStatus(prev => ({
+          ...prev,
+          message: 'Clearing browser caches...',
+          details: [...prev.details, 'Removing cached API responses...']
+        }));
+      }, 1200);
+
+      // Call the actual cleanup function with home redirection
+      const result = await window.cleanupServiceWorker({
+        showToast: false, // Don't show toast since we're showing modal
+        redirectToHome: false // We'll handle redirection in the modal
+      });
+
+      // Update the modal with the result
+      if (result?.type === 'success') {
+        setModalStatus({
+          message: result.message,
+          type: 'success',
+          details: [
+            'Successfully unregistered all service workers',
+            'Cleared browser caches',
+            'Removed stored API URLs',
+            'Ready to reload with fresh data'
+          ]
+        });
+      } else if (result?.type === 'error') {
+        setModalStatus({
+          message: result.message,
+          type: 'error',
+          details: ['An error occurred during cleanup', result.message]
+        });
+      } else if (result?.type === 'warning') {
+        setModalStatus({
+          message: result.message,
+          type: 'warning',
+          details: ['Service worker cleanup completed with warnings']
+        });
+      }
+
+      // Show refresh buttons regardless of result
+      setShowRefreshButtons(true);
+    } catch (error) {
+      console.error('Error in cleanup:', error);
+      setModalStatus({
+        message: 'Error during cleanup process',
+        type: 'error',
+        details: ['An unexpected error occurred', error instanceof Error ? error.message : 'Unknown error']
+      });
+      setShowRefreshButtons(true);
+    }
   };
 
   const techBadges = [
@@ -55,9 +144,31 @@ const Footer: React.FC = () => {
     { name: 'TypeScript', color: 'bg-blue-500' },
     { name: 'Tailwind CSS', color: 'bg-sky-500' },
     { name: 'Framer Motion', color: 'bg-purple-500' }
-  ];
+  ];  // Handlers for the service worker modal
+  const handleRefresh = () => {
+    // Force a clean reload
+    window.location.reload();
+  };
+
+  const handleHomeRefresh = () => {
+    // Redirect to home page with cache busting
+    const timestamp = Date.now();
+    window.location.href = `/?_t=${timestamp}`;
+  };
+
   return (
     <footer className="bg-card text-card-foreground py-12 border-t border-border relative overflow-hidden">
+      {/* Service Worker cleanup modal */}
+      <ServiceWorkerModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        status={modalStatus}
+        onRefresh={handleRefresh}
+        onHomeRefresh={handleHomeRefresh}
+        showRefreshButtons={showRefreshButtons}
+      />
+
+      {/* Legacy toast for backward compatibility */}
       {showToast && (
         <Toast
           message={toastConfig.message}

@@ -101,7 +101,8 @@ const ServiceWorkerCleanup: React.FC = () => {
                             </ul>
                         </div>
                     )}
-                </div>                {needsRefresh && (
+                </div>
+                {needsRefresh && (
                     <div className="flex flex-col space-y-3">
                         <button
                             onClick={handleRefresh}

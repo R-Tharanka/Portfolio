@@ -13,6 +13,7 @@ import ProjectsSection from './components/sections/ProjectsSection';
 import EducationSection from './components/sections/EducationSection';
 import ContactSection from './components/sections/ContactSection';
 import AdminPanel from './components/admin/AdminPanel';
+import ServiceWorkerCleanup from './components/utility/ServiceWorkerCleanup';
 import SEO from './components/common/SEO';
 import DevelopmentBanner from './components/ui/DevelopmentBanner';
 
@@ -47,6 +48,7 @@ function App() {
             <Routes>
               <Route path="/" element={<MainPage />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="/cleanup" element={<ServiceWorkerCleanup />} />
             </Routes>
           </BrowserRouter>
         </div>

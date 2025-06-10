@@ -1,22 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-scroll';
-import { ArrowUp, Code, Shield, Settings, RefreshCw, HelpCircle } from 'lucide-react';
+import { ArrowUp, Code, Shield, Settings, RefreshCw, HelpCircle, WifiOff } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../../utils/serviceWorkerCleanup'; // Import the file that declares the global function
 import { useServiceWorker } from '../../context/ServiceWorkerContext';
 import Toast from '../ui/Toast';
 
 const Footer: React.FC = () => {
-  const currentYear = new Date().getFullYear();  const [showToast, setShowToast] = useState(false);
+  const currentYear = new Date().getFullYear(); const [showToast, setShowToast] = useState(false);
   const [toastConfig, setToastConfig] = useState({
     message: '',
     type: 'info' as 'success' | 'error' | 'warning' | 'info',
     action: undefined as { label: string; onClick: () => void } | undefined
-  });
-  const [showTooltip, setShowTooltip] = useState(false);
-  
+  }); const [showTooltip, setShowTooltip] = useState(false);
+  const [networkErrors, setNetworkErrors] = useState(0);
+  const [isNetworkIssue, setIsNetworkIssue] = useState(false);
+
   // Use the global service worker context
-  const { showModal, updateModalStatus, setShowRefreshButtons } = useServiceWorker();
+  const { showModal, updateModalStatus, setShowRefreshButtons, performDiagnostics, serviceWorkerStatus } = useServiceWorker();
+
+  // Monitor network errors
+  useEffect(() => {
+    // Get any stored network error count
+    const storedErrorCount = localStorage.getItem('network-errors');
+    if (storedErrorCount) {
+      const errorCount = parseInt(storedErrorCount, 10);
+      setNetworkErrors(errorCount);
+      setIsNetworkIssue(errorCount > 3);
+    }
+  }, []);
   // Expose toast handlers for service worker cleanup
   React.useEffect(() => {
     window._showServiceWorkerToast = (config) => {
@@ -53,20 +65,23 @@ const Footer: React.FC = () => {
       window._hideServiceWorkerToast = undefined;
     };
   }, [updateModalStatus, setShowRefreshButtons]);
-
   const handleCleanup = async () => {
     // Initial modal state
     const initialStatus = {
       message: 'Checking service workers...',
       type: 'loading' as const,
-      details: ['Initializing cleanup process...']
+      details: ['Initializing cleanup process...'],
+      progress: 5
     };
-    
+
     // Show the modal with initial status
     showModal(initialStatus);
     setShowRefreshButtons(false);
 
     try {
+      // First run diagnostics to check for issues
+      await performDiagnostics();
+
       // Set up a loading state to provide immediate feedback
       setToastConfig({
         message: 'Cleaning up service workers and cache...',
@@ -74,13 +89,14 @@ const Footer: React.FC = () => {
         action: undefined
       });
       setShowToast(true);
-      
-      // Update status as the process progresses
+
+      // Update status as the process progresses with progress updates
       setTimeout(() => {
         updateModalStatus({
           message: 'Finding service worker registrations...',
           type: 'loading',
-          details: ['Initializing cleanup process...', 'Searching for active service workers...']
+          details: ['Initializing cleanup process...', 'Searching for active service workers...'],
+          progress: 15
         });
       }, 500);
 
@@ -89,12 +105,26 @@ const Footer: React.FC = () => {
           message: 'Clearing browser caches...',
           type: 'loading',
           details: [
-            'Initializing cleanup process...', 
-            'Searching for active service workers...', 
+            'Initializing cleanup process...',
+            'Searching for active service workers...',
             'Removing cached API responses...'
-          ]
+          ],
+          progress: 30
         });
-      }, 1200);
+      }, 1200);      // Continue updating progress in the modal
+      setTimeout(() => {
+        updateModalStatus({
+          message: 'Removing old service workers...',
+          type: 'loading',
+          details: [
+            'Initializing cleanup process...',
+            'Searching for active service workers...',
+            'Removing cached API responses...',
+            'Unregistering old service workers...'
+          ],
+          progress: 50
+        });
+      }, 1800);
 
       // Call the actual cleanup function with home redirection
       const result = await window.cleanupServiceWorker({
@@ -112,19 +142,22 @@ const Footer: React.FC = () => {
             'Cleared browser caches',
             'Removed stored API URLs',
             'Ready to reload with fresh data'
-          ]
+          ],
+          progress: 100
         });
       } else if (result?.type === 'error') {
         updateModalStatus({
           message: result.message,
           type: 'error',
-          details: ['An error occurred during cleanup', result.message]
+          details: ['An error occurred during cleanup', result.message],
+          progress: 100
         });
       } else if (result?.type === 'warning') {
         updateModalStatus({
           message: result.message,
           type: 'warning',
-          details: ['Service worker cleanup completed with warnings']
+          details: ['Service worker cleanup completed with warnings'],
+          progress: 100
         });
       }
 
@@ -146,7 +179,7 @@ const Footer: React.FC = () => {
     { name: 'TypeScript', color: 'bg-blue-500' },
     { name: 'Tailwind CSS', color: 'bg-sky-500' },
     { name: 'Framer Motion', color: 'bg-purple-500' }
-  ];  return (
+  ]; return (
     <>
       {/* Legacy toast for backward compatibility */}
       {showToast && (
@@ -194,40 +227,51 @@ const Footer: React.FC = () => {
                 <Settings size={20} className="text-primary" />
                 <h3 className="text-lg font-bold">Utilities</h3>
               </div>
-              <div className="flex flex-col space-y-2">
-                <div className="relative">
-                  <button
-                    onClick={handleCleanup}
-                    onMouseEnter={() => setShowTooltip(true)}
-                    onMouseLeave={() => setShowTooltip(false)}
-                    className="text-left flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors text-sm hover:underline cursor-pointer group"
-                  >
-                    <RefreshCw size={14} className="opacity-70 group-hover:opacity-100" />
-                    Fix Connection Issues & Refresh Cache
-                    <HelpCircle size={12} className="opacity-50 group-hover:opacity-80" />
-                  </button>
+              <div className="flex flex-col space-y-2">                <div className="relative">
+                {/* Network Status Indicator */}
+                {(isNetworkIssue || !navigator.onLine || serviceWorkerStatus.hasIssues) && (
+                  <div className="mb-3 p-2 bg-card-foreground/5 rounded-md border border-amber-500/30 flex items-center gap-2 text-xs">
+                    <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></div>
+                    <span className="text-amber-500">
+                      {!navigator.onLine ? 'You are offline' :
+                        serviceWorkerStatus.hasIssues ? 'Connection issues detected' :
+                          `${networkErrors} network errors detected`}
+                    </span>
+                  </div>
+                )}
 
-                  <AnimatePresence>
-                    {showTooltip && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute left-0 top-full mt-2 p-3 bg-card border border-border rounded-md shadow-lg z-50 w-64"
-                      >
-                        <p className="text-xs text-foreground/80 mb-2">
-                          This tool helps fix common issues:
-                        </p>
-                        <ul className="text-xs list-disc pl-4 text-foreground/70 space-y-1">
-                          <li>CORS errors when refreshing</li>
-                          <li>Outdated cached content</li>
-                          <li>API connection problems</li>
-                          <li>Service worker conflicts</li>
-                        </ul>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
+                <button
+                  onClick={handleCleanup}
+                  onMouseEnter={() => setShowTooltip(true)}
+                  onMouseLeave={() => setShowTooltip(false)}
+                  className="text-left flex items-center gap-2 text-foreground/70 hover:text-primary transition-colors text-sm hover:underline cursor-pointer group"
+                >
+                  <RefreshCw size={14} className="opacity-70 group-hover:opacity-100" />
+                  Fix Connection Issues & Refresh Cache
+                  <HelpCircle size={12} className="opacity-50 group-hover:opacity-80" />
+                </button>
+
+                <AnimatePresence>
+                  {showTooltip && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute left-0 top-full mt-2 p-3 bg-card border border-border rounded-md shadow-lg z-50 w-64"
+                    >
+                      <p className="text-xs text-foreground/80 mb-2">
+                        This tool helps fix common issues:
+                      </p>
+                      <ul className="text-xs list-disc pl-4 text-foreground/70 space-y-1">
+                        <li>CORS errors when refreshing</li>
+                        <li>Outdated cached content</li>
+                        <li>API connection problems</li>
+                        <li>Service worker conflicts</li>
+                      </ul>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
               </div>
             </div>
 

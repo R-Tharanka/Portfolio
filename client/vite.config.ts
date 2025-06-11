@@ -73,7 +73,7 @@ export default defineConfig({
         runtimeCaching: [
           {
             urlPattern: /^\/api\/.*$/i,
-            handler: 'NetworkOnly',   // Always go to network for /api calls
+            handler: 'NetworkFirst',   // Use NetworkFirst instead of NetworkOnly to support networkTimeoutSeconds
             options: {
               cacheName: 'api-cache',
               networkTimeoutSeconds: 10,
@@ -106,7 +106,7 @@ export default defineConfig({
     },
     terserOptions: {
       compress: {
-        drop_console: false,
+        drop_console: true,
         drop_debugger: true
       }
     }

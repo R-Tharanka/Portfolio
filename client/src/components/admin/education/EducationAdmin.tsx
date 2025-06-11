@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Education } from '../../../types';
 import { getEducation, createEducation, updateEducation, deleteEducation } from '../../../services/api';
 import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import logger from '../../../utils/logger';
 
 interface EducationAdminProps {
   token: string | null;
@@ -33,12 +34,12 @@ const EducationAdmin: React.FC<EducationAdminProps> = ({ token }) => {
         if (response.error) {
           setError(response.error);
         } else {
-          console.log('Fetched education items:', response.data);
+          logger.log('Fetched education items:', response.data);
 
           // Verify all items have IDs
           const missingIds = response.data.filter(item => !item.id);
           if (missingIds.length > 0) {
-            console.warn('Some education items are missing IDs:', missingIds);
+            logger.warn('Some education items are missing IDs:', missingIds);
           }
 
           setEducationItems(response.data);

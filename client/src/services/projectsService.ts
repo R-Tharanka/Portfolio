@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { Project } from '../types';
 import { ApiResponse } from './api';
+import logger from '../utils/logger';
 
 // Function to ensure we always get the fresh API URL
 const getApiBaseUrl = () => {
     // Get fresh API URL and log it for debugging
     const apiUrl = import.meta.env.VITE_API_URL;
-    console.log('Projects service using API URL:', apiUrl);
+    logger.log('Projects service using API URL:', apiUrl);
     return apiUrl;
 };
 
@@ -31,11 +32,11 @@ projectsApi.interceptors.request.use(
             ...config.params,
             _t: Date.now()
         };
-        console.log('⚡ PROJECT SERVICE REQUEST ⚡');
-        console.log(`Method: ${config.method?.toUpperCase()}`);
-        console.log(`URL: ${config.baseURL}${config.url}`);
-        console.log('Headers:', config.headers);
-        console.log('Data:', config.data);
+        logger.log('⚡ PROJECT SERVICE REQUEST ⚡');
+        logger.log(`Method: ${config.method?.toUpperCase()}`);
+        logger.log(`URL: ${config.baseURL}${config.url}`);
+        logger.log('Headers:', config.headers);
+        logger.log('Data:', config.data);
         return config;
     },
     (error) => {
@@ -45,15 +46,15 @@ projectsApi.interceptors.request.use(
 
 projectsApi.interceptors.response.use(
     (response) => {
-        console.log('✅ PROJECT SERVICE RESPONSE ✅');
-        console.log('Status:', response.status);
-        console.log('Data:', response.data);
+        logger.log('✅ PROJECT SERVICE RESPONSE ✅');
+        logger.log('Status:', response.status);
+        logger.log('Data:', response.data);
         return response;
     },
     (error) => {
-        console.error('❌ PROJECT SERVICE ERROR ❌');
-        console.error('Error:', error);
-        console.error('Response:', error.response?.data);
+        logger.error('❌ PROJECT SERVICE ERROR ❌');
+        logger.error('Error:', error);
+        logger.error('Response:', error.response?.data);
         return Promise.reject(error);
     }
 );
@@ -97,7 +98,7 @@ export const deleteProjectFixed = async (
             };
         }
 
-        console.log(`▶️ Using dedicated service to delete project ${cleanProjectId}`);
+        logger.log(`▶️ Using dedicated service to delete project ${cleanProjectId}`);
 
         const response = await projectsApi.delete(`/projects/${cleanProjectId}`, {
             headers: {

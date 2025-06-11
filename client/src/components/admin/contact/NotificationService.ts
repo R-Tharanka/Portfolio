@@ -2,6 +2,7 @@
 import { toast } from 'react-toastify';
 import { Bell } from 'lucide-react';
 import React from 'react';
+import logger from '../../../utils/logger';
 
 // Import notification sound path
 // Import directly using the import statement instead of relative path
@@ -17,22 +18,22 @@ class NotificationService {
   private isInitialLoad: boolean = true; private constructor() {
     // Create audio element when in browser environment
     if (typeof window !== 'undefined') {
-      console.log('Initializing NotificationService...');
+      logger.log('Initializing NotificationService...');
       this.audio = new Audio(notificationSound);
       this.audio.preload = 'auto';
       this.audio.volume = 0.7; // Slightly lower default volume
 
       // Attach event handlers to log audio element behavior
-      this.audio.onplay = () => console.log('Notification sound started playing');
-      this.audio.onended = () => console.log('Notification sound finished playing');
-      this.audio.onerror = (e) => console.error('Audio error:', e);
+      this.audio.onplay = () => logger.log('Notification sound started playing');
+      this.audio.onended = () => logger.log('Notification sound finished playing');
+      this.audio.onerror = (e) => logger.error('Audio error:', e);
 
       // Try to load notification preferences from localStorage
       const savedPref = localStorage.getItem('notificationsEnabled');
       if (savedPref !== null) {
         this.notificationsEnabled = savedPref === 'true';
       }
-      console.log('Notifications enabled:', this.notificationsEnabled);
+      logger.log('Notifications enabled:', this.notificationsEnabled);
     }
   }
 
@@ -43,7 +44,7 @@ class NotificationService {
     return NotificationService.instance;
   }  // Play notification sound and show toast
   public notifyNewMessages(currentUnreadCount: number): void {
-    console.log('Notification service checking messages:', {
+    logger.log('Notification service checking messages:', {
       current: currentUnreadCount,
       previous: this.previousUnreadCount,
       isFirstCheck: this.isFirstCheck

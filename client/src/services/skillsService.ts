@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { Skill } from '../types';
 import { ApiResponse } from './api';
+import logger from '../utils/logger';
 
 // Function to ensure we always get the fresh API URL
 const getApiBaseUrl = () => {
     // Get fresh API URL and log it for debugging
     const apiUrl = import.meta.env.VITE_API_URL;
-    console.log('Skills service using API URL:', apiUrl);
+    logger.log('Skills service using API URL:', apiUrl);
     return apiUrl;
 };
 
@@ -31,11 +32,11 @@ skillsApi.interceptors.request.use(
             ...config.params,
             _t: Date.now()
         };
-        console.log('⚡ SKILL SERVICE REQUEST ⚡');
-        console.log(`Method: ${config.method?.toUpperCase()}`);
-        console.log(`URL: ${config.baseURL}${config.url}`);
-        console.log('Headers:', config.headers);
-        console.log('Data:', config.data);
+        logger.log('⚡ SKILL SERVICE REQUEST ⚡');
+        logger.log(`Method: ${config.method?.toUpperCase()}`);
+        logger.log(`URL: ${config.baseURL}${config.url}`);
+        logger.log('Headers:', config.headers);
+        logger.log('Data:', config.data);
         return config;
     },
     (error) => {
@@ -45,9 +46,9 @@ skillsApi.interceptors.request.use(
 
 skillsApi.interceptors.response.use(
     (response) => {
-        console.log('✅ SKILL SERVICE RESPONSE ✅');
-        console.log('Status:', response.status);
-        console.log('Data:', response.data);
+        logger.log('✅ SKILL SERVICE RESPONSE ✅');
+        logger.log('Status:', response.status);
+        logger.log('Data:', response.data);
         return response;
     },
     (error) => {

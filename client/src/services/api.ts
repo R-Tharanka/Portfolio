@@ -1,12 +1,13 @@
 import axios from 'axios';
 import { isTokenExpired } from '../utils/auth';
+import logger from '../utils/logger';
 
 // Create an axios instance with base URL and improved configuration
 // Force the API URL to be dynamically loaded on each page load to prevent caching issues
 const getApiBaseUrl = () => {
   // Add a random query parameter to the import.meta.env access to prevent browser caching
   const apiUrl = import.meta.env.VITE_API_URL;
-  console.log('Using API URL:', apiUrl);
+  logger.log('Using API URL:', apiUrl);
   return apiUrl;
 };
 
@@ -35,15 +36,9 @@ api.interceptors.request.use(
       _t: Date.now()
     };
 
-    // Debug logging for all requests
-    // console.log('========== API REQUEST START ==========');
-    // console.log(`URL: ${config.baseURL}${config.url}`);
-    // console.log(`Method: ${config.method?.toUpperCase()}`);
-    // console.log('Headers:', config.headers);
-    // console.log('Request Data:', config.data);
-    // console.log('========== API REQUEST END ==========');    // Skills update debug log
+    // Skills update debug log
     if (config.url?.startsWith('/skills/') && config.method === 'put') {
-      console.log('🔄 Skill update request detected');
+      logger.log('🔄 Skill update request detected');
     }
 
     // Authentication check
@@ -54,8 +49,8 @@ api.interceptors.request.use(
       // Verify token is not expired
       if (isTokenExpired(token)) {
         // Token expired, reject request and force logout
-        console.warn('Token expired, request blocked');
-        console.log('Token expiration details:', { token });
+        logger.warn('Token expired, request blocked');
+        logger.log('Token expiration details:', { token });
 
         // Clear expired token from localStorage
         localStorage.removeItem('adminToken');
@@ -198,7 +193,7 @@ export const getEducation = async (): Promise<ApiResponse<Education[]>> => {
     const educationWithIds = response.data.map((item: any) => {
       // Make sure we use a consistent ID field, preferring id but falling back to _id
       const id = item.id || item._id;
-      console.log(`Processing education item with raw ID: ${item._id || 'undefined'}, mapped ID: ${id}`);
+      logger.log(`Processing education item with raw ID: ${item._id || 'undefined'}, mapped ID: ${id}`);
 
       return {
         ...item,
@@ -206,7 +201,7 @@ export const getEducation = async (): Promise<ApiResponse<Education[]>> => {
       };
     });
 
-    console.log('Education items with mapped IDs:', educationWithIds);
+    logger.log('Education items with mapped IDs:', educationWithIds);
 
     return { data: educationWithIds };
   } catch (error: any) {
@@ -514,9 +509,8 @@ export const updateEducation = async (educationId: string, educationData: Omit<E
         error: 'Invalid education ID. Please try again or refresh the page.'
       };
     }
-
     // Log what we're sending for debugging
-    console.log(`Updating education ${educationId} with data:`, educationData);
+    logger.log(`Updating education ${educationId} with data:`, educationData);
 
     const response = await api.put(`/education/${educationId}`, educationData, {
       headers: { 'Authorization': `Bearer ${token}` }
@@ -528,7 +522,7 @@ export const updateEducation = async (educationId: string, educationData: Omit<E
       id: response.data.id || response.data._id
     };
 
-    console.log('Successfully updated education, returned data:', educationWithId);
+    logger.log('Successfully updated education, returned data:', educationWithId);
 
     return { data: educationWithId };
   } catch (error: any) {

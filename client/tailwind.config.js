@@ -4,6 +4,13 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      zIndex: {
+        '100': '100',
+        '1000': '1000',
+        '9000': '9000',
+        '9500': '9500',
+        '10000': '10000',
+      },
       colors: {
         primary: {
           DEFAULT: 'rgb(var(--color-primary) / <alpha-value>)',

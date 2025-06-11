@@ -65,14 +65,17 @@ const Footer: React.FC = () => {
     // Hide the action buttons during processing
     setShowRefreshButtons(false);
 
-    try {
-      // Set up a loading state to provide immediate feedback
-      setToastConfig({
-        message: 'Cleaning up service workers and cache...',
-        type: 'info',
-        action: undefined
-      });
-      setShowToast(true);
+    try {      // Show the loading toast with a slight delay to ensure it appears above the modal
+      setTimeout(() => {
+        if (isMounted.current) {
+          setToastConfig({
+            message: 'Cleaning up service workers and cache...',
+            type: 'info',
+            action: undefined
+          });
+          setShowToast(true);
+        }
+      }, 100);
 
       // Update status as the process progresses
       const timer1 = setTimeout(() => {
@@ -178,12 +181,14 @@ const Footer: React.FC = () => {
     <>
       {/* Legacy toast for backward compatibility */}
       {showToast && (
-        <Toast
-          message={toastConfig.message}
-          type={toastConfig.type}
-          action={toastConfig.action}
-          onClose={() => setShowToast(false)}
-        />
+        <div className="z-10000 relative"> {/* Ensure this toast sits at the highest z-index */}
+          <Toast
+            message={toastConfig.message}
+            type={toastConfig.type}
+            action={toastConfig.action}
+            onClose={() => setShowToast(false)}
+          />
+        </div>
       )}
       <footer className="bg-card text-card-foreground py-12 border-t border-border relative overflow-hidden">
         {/* Background design elements */}

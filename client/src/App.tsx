@@ -41,7 +41,18 @@ function App() {
     <HelmetProvider>
       <ThemeProvider>
         <ServiceWorkerProvider>
-          <Toaster position="top-center" />
+          <Toaster
+            position="top-center"
+            toastOptions={{
+              style: {
+                zIndex: 10000, // Ensure toasts appear above all other elements
+                background: 'var(--color-background)',
+                color: 'var(--color-text)',
+                backdropFilter: 'blur(8px)',
+                fontWeight: 500
+              },
+            }}
+          />
           <Analytics />
           <div className="relative">
             <DevelopmentBanner />

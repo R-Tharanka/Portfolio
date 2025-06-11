@@ -188,10 +188,14 @@ window.cleanupServiceWorker = async (options = {
             }
         };
     }
-    
-    // If configured to show toast and the toast handler exists, show it
+      // If configured to show toast and the toast handler exists, show it
     if (options.showToast && toastConfig && window._showServiceWorkerToast) {
-        window._showServiceWorkerToast(toastConfig);
+        // Add a slight delay to ensure proper stacking order with modals
+        setTimeout(() => {
+            if (window._showServiceWorkerToast) {
+                window._showServiceWorkerToast(toastConfig!);
+            }
+        }, 100);
     }
     
     return toastConfig;

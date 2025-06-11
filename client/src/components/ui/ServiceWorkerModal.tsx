@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, RefreshCw, CheckCircle, AlertCircle, Loader2, ArrowLeft, Trash2 } from 'lucide-react';
+import DocumentPortal from './DocumentPortal';
 
 interface ServiceWorkerModalProps {
     isOpen: boolean;
@@ -90,154 +91,153 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
                 </div>
             </div>
         );
-    };
+    }; return (
+        <DocumentPortal rootId="service-worker-modal-portal">
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        {/* Backdrop */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-9000"
+                            onClick={handleClose}
+                        />
 
-    return (
-        <AnimatePresence>
-            {isOpen && (
-                <>
-                    {/* Backdrop */}
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-                        onClick={handleClose}
-                    />
-                    
-                    {/* Modal Container - Fixed position with proper centering */}
-                    <div className="fixed inset-0 z-50 overflow-y-auto">
-                        <div className="flex items-center justify-center min-h-full p-4">
-                            {/* Modal Content with animations */}
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                animate={{ opacity: 1, scale: 1, y: 0 }}
-                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                transition={{ type: "spring", bounce: 0.3 }}
-                                className="relative w-full max-w-md bg-card rounded-lg shadow-xl border border-border overflow-hidden"
-                            >
-                                {/* Header */}
-                                <div className="p-4 border-b border-border flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <Trash2 className="h-5 w-5 text-primary" />
-                                        <h3 className="text-lg font-semibold">Service Worker Cleanup</h3>
-                                    </div>
-                                    <button
-                                        onClick={handleClose}
-                                        className="p-1 hover:bg-muted rounded-full"
-                                        aria-label="Close modal"
-                                    >
-                                        <X className="h-4 w-4" />
-                                    </button>
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-5">
-                                    <div className="flex items-center gap-3 mb-4">
-                                        {getStatusIcon()}
-                                        <div className="flex-1">
-                                            <p className="font-medium">{status.message}</p>
-                                            {getProgressIndicator()}
+                        {/* Modal Container - Fixed position with proper centering */}                    <div className="fixed inset-0 overflow-y-auto z-9500"> {/* Higher than backdrop but lower than toasts */}
+                            <div className="flex items-center justify-center min-h-full p-4">
+                                {/* Modal Content with animations */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                    transition={{ type: "spring", bounce: 0.3 }}
+                                    className="relative w-full max-w-md bg-card rounded-lg shadow-xl border border-border overflow-hidden"
+                                >
+                                    {/* Header */}
+                                    <div className="p-4 border-b border-border flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Trash2 className="h-5 w-5 text-primary" />
+                                            <h3 className="text-lg font-semibold">Service Worker Cleanup</h3>
                                         </div>
+                                        <button
+                                            onClick={handleClose}
+                                            className="p-1 hover:bg-muted rounded-full"
+                                            aria-label="Close modal"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
                                     </div>
 
-                                    {/* Details */}
-                                    {status.details && status.details.length > 0 && (
-                                        <div className="bg-card-foreground/5 p-3 rounded-md my-4">
-                                            <h4 className="text-sm font-medium mb-2">Cleanup Details:</h4>
-                                            <ul className="space-y-1.5">
-                                                {status.details.map((detail, index) => (
-                                                    <li key={index} className="text-sm flex items-start gap-2">
-                                                        <div className="mt-0.5">
-                                                            {status.type === 'loading' ? (
-                                                                <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                                                            ) : status.type === 'success' ? (
-                                                                <div className="h-2 w-2 rounded-full bg-green-500" />
-                                                            ) : (
-                                                                <div className="h-2 w-2 rounded-full bg-amber-500" />
-                                                            )}
-                                                        </div>
-                                                        <span className="flex-1 text-foreground/80">{detail}</span>
-                                                    </li>
-                                                ))}
+                                    {/* Content */}
+                                    <div className="p-5">
+                                        <div className="flex items-center gap-3 mb-4">
+                                            {getStatusIcon()}
+                                            <div className="flex-1">
+                                                <p className="font-medium">{status.message}</p>
+                                                {getProgressIndicator()}
+                                            </div>
+                                        </div>
+
+                                        {/* Details */}
+                                        {status.details && status.details.length > 0 && (
+                                            <div className="bg-card-foreground/5 p-3 rounded-md my-4">
+                                                <h4 className="text-sm font-medium mb-2">Cleanup Details:</h4>
+                                                <ul className="space-y-1.5">
+                                                    {status.details.map((detail, index) => (
+                                                        <li key={index} className="text-sm flex items-start gap-2">
+                                                            <div className="mt-0.5">
+                                                                {status.type === 'loading' ? (
+                                                                    <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+                                                                ) : status.type === 'success' ? (
+                                                                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                                                                ) : (
+                                                                    <div className="h-2 w-2 rounded-full bg-amber-500" />
+                                                                )}
+                                                            </div>
+                                                            <span className="flex-1 text-foreground/80">{detail}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+
+                                        {/* Help text */}
+                                        <div className="mt-5 text-sm text-foreground/70">
+                                            <p>This tool helps resolve the following issues:</p>
+                                            <ul className="list-disc mt-2 pl-5 space-y-1">
+                                                <li>CORS errors when refreshing pages</li>
+                                                <li>Outdated cached content displaying incorrectly</li>
+                                                <li>API connection problems</li>
+                                                <li>Service worker conflicts</li>
                                             </ul>
                                         </div>
-                                    )}
-
-                                    {/* Help text */}
-                                    <div className="mt-5 text-sm text-foreground/70">
-                                        <p>This tool helps resolve the following issues:</p>
-                                        <ul className="list-disc mt-2 pl-5 space-y-1">
-                                            <li>CORS errors when refreshing pages</li>
-                                            <li>Outdated cached content displaying incorrectly</li>
-                                            <li>API connection problems</li>
-                                            <li>Service worker conflicts</li>
-                                        </ul>
                                     </div>
-                                </div>
-                                
-                                {/* Footer with actions */}
-                                {showRefreshButtons && (
-                                    <div className="p-4 bg-card-foreground/5 border-t border-border">
-                                        <div className="flex flex-col gap-3">
-                                            {/* Confirmation state buttons */}
-                                            {status.type === 'warning' && onConfirm && (
-                                                <>
-                                                    {/* Proceed button */}
-                                                    <button
-                                                        onClick={onConfirm}
-                                                        className="flex items-center justify-center gap-2 bg-primary text-white p-2.5 rounded-md hover:bg-primary/90 transition-colors"
-                                                    >
-                                                        <RefreshCw className="h-4 w-4" />
-                                                        <span>Proceed with Cleanup</span>
-                                                    </button>
 
-                                                    {/* Cancel button */}
-                                                    <button
-                                                        onClick={onClose}
-                                                        className="flex items-center justify-center gap-2 bg-background border border-border p-2.5 rounded-md hover:bg-muted transition-colors"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                        <span>Cancel</span>
-                                                    </button>
-                                                </>
-                                            )}
-
-                                            {/* Post-cleanup state buttons */}
-                                            {status.type !== 'warning' && (
-                                                <>
-                                                    {/* Reload current page button */}
-                                                    {onRefresh && (
+                                    {/* Footer with actions */}
+                                    {showRefreshButtons && (
+                                        <div className="p-4 bg-card-foreground/5 border-t border-border">
+                                            <div className="flex flex-col gap-3">
+                                                {/* Confirmation state buttons */}
+                                                {status.type === 'warning' && onConfirm && (
+                                                    <>
+                                                        {/* Proceed button */}
                                                         <button
-                                                            onClick={onRefresh}
+                                                            onClick={onConfirm}
                                                             className="flex items-center justify-center gap-2 bg-primary text-white p-2.5 rounded-md hover:bg-primary/90 transition-colors"
                                                         >
                                                             <RefreshCw className="h-4 w-4" />
-                                                            <span>Reload Current Page</span>
+                                                            <span>Proceed with Cleanup</span>
                                                         </button>
-                                                    )}
 
-                                                    {/* Return to home page button */}
-                                                    {onHomeRefresh && (
+                                                        {/* Cancel button */}
                                                         <button
-                                                            onClick={onHomeRefresh}
+                                                            onClick={onClose}
                                                             className="flex items-center justify-center gap-2 bg-background border border-border p-2.5 rounded-md hover:bg-muted transition-colors"
                                                         >
-                                                            <ArrowLeft className="h-4 w-4" />
-                                                            <span>Return to Home Page</span>
+                                                            <X className="h-4 w-4" />
+                                                            <span>Cancel</span>
                                                         </button>
-                                                    )}
-                                                </>
-                                            )}
+                                                    </>
+                                                )}
+
+                                                {/* Post-cleanup state buttons */}
+                                                {status.type !== 'warning' && (
+                                                    <>
+                                                        {/* Reload current page button */}
+                                                        {onRefresh && (
+                                                            <button
+                                                                onClick={onRefresh}
+                                                                className="flex items-center justify-center gap-2 bg-primary text-white p-2.5 rounded-md hover:bg-primary/90 transition-colors"
+                                                            >
+                                                                <RefreshCw className="h-4 w-4" />
+                                                                <span>Reload Current Page</span>
+                                                            </button>
+                                                        )}
+
+                                                        {/* Return to home page button */}
+                                                        {onHomeRefresh && (
+                                                            <button
+                                                                onClick={onHomeRefresh}
+                                                                className="flex items-center justify-center gap-2 bg-background border border-border p-2.5 rounded-md hover:bg-muted transition-colors"
+                                                            >
+                                                                <ArrowLeft className="h-4 w-4" />
+                                                                <span>Return to Home Page</span>
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </motion.div>
+                                    )}
+                                </motion.div>
+                            </div>
                         </div>
-                    </div>
-                </>
-            )}
-        </AnimatePresence>
+                    </>
+                )}
+            </AnimatePresence>
+        </DocumentPortal>
     );
 };
 

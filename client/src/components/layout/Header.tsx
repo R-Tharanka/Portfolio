@@ -14,7 +14,7 @@ const Header: React.FC = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    
+
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -34,23 +34,25 @@ const Header: React.FC = () => {
 
   return (
     <motion.header
-      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-background/95 backdrop-blur-sm ' : 'bg-transparent'
-      }`}
+      className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-background/95 backdrop-blur-sm ' : 'bg-transparent'
+        }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ type: 'spring', stiffness: 100, damping: 15 }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-4 md:py-6">
-          {/* Logo */}
-          <Link 
-            to="hero" 
-            smooth={true} 
+        <div className="flex justify-between items-center py-4 md:py-6">          {/* Logo */}
+          <Link
+            to="hero"
+            smooth={true}
             duration={500}
-            className="text-2xl font-bold cursor-pointer"
+            className="cursor-pointer"
           >
-            <span className="text-primary">Dev</span>Portfolio
+            <img
+              src={theme === 'dark' ? '/assets/logo_for_dark.png' : '/assets/logo_for_light.png'}
+              alt="Portfolio Logo"
+              className="h-10 w-auto"
+            />
           </Link>
 
           {/* Desktop Navigation */}
@@ -69,7 +71,7 @@ const Header: React.FC = () => {
                 {link.title}
               </Link>
             ))}
-            
+
             {/* Theme Toggler */}
             <button
               onClick={toggleTheme}
@@ -97,8 +99,8 @@ const Header: React.FC = () => {
                 <Moon size={20} className="text-primary" />
               )}
             </button>
-            
-            <button 
+
+            <button
               onClick={toggleMobileMenu}
               className="p-2 rounded-full bg-card hover:bg-card/80 transition-colors"
               aria-label="Toggle mobile menu"
@@ -117,7 +119,7 @@ const Header: React.FC = () => {
       <motion.div
         className={`md:hidden bg-card/95 backdrop-blur-sm ${isMobileMenuOpen ? 'block' : 'hidden'}`}
         initial={{ opacity: 0, height: 0 }}
-        animate={{ 
+        animate={{
           opacity: isMobileMenuOpen ? 1 : 0,
           height: isMobileMenuOpen ? 'auto' : 0
         }}

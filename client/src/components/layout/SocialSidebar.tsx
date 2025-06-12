@@ -36,7 +36,7 @@ const SocialSidebar: React.FC = () => {
   ];
 
   const { theme } = useTheme();
-  
+
   const getIcon = (iconName: string) => {
     switch (iconName) {
       case 'github':
@@ -58,9 +58,9 @@ const SocialSidebar: React.FC = () => {
   const visibleLinks = socialLinks.filter(
     link => link.platform !== 'WhatsApp' && link.platform !== 'Facebook'
   );
-  
+
   return (
-    <motion.div 
+    <motion.div
       className="fixed left-4 top-1/2 transform -translate-y-1/2 z-40 hidden md:flex flex-col items-center space-y-4"
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}

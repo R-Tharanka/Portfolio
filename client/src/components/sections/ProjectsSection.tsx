@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Project } from '../../types';
 import { getProjects } from '../../services/api';
+import TagsModal from '../ui/TagsModal';
 
 // Empty array for projects data
 const fallbackProjects: Project[] = [];
@@ -15,9 +16,8 @@ const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
-  const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({}); const [ref, inView] = useInView({
+  const [error, setError] = useState<string | null>(null); const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
@@ -29,6 +29,21 @@ const ProjectsSection: React.FC = () => {
   const allTags = Array.from(
     new Set(projects.flatMap(project => project.tags))
   );
+  // State to track window width for responsive tag display
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
+
+  useEffect(() => {
+    // Handle window resize events to recalculate visible tags
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -52,26 +67,19 @@ const ProjectsSection: React.FC = () => {
     };
 
     fetchProjects();
-  }, []);
-  // Toggle description expansion for a specific project
+  }, []);  // Toggle description expansion for a specific project
   const toggleDescription = (projectId: string) => {
     setExpandedDescriptions(prev => ({
       ...prev,
       [projectId]: !prev[projectId]
     }));
-  };
-  // Toggle tag expansion for a specific project
-  const toggleTags = (projectId: string) => {
-    setExpandedTags(prev => ({
-      ...prev,
-      [projectId]: !prev[projectId]
-    }));
-  };
-
-  // Calculate visible and hidden tags
-  const calculateVisibleTags = (projectId: string, allTags: string[]) => {
-    const visibleCount = expandedTags[projectId] ? allTags.length : Math.min(6, allTags.length);
-    const hiddenCount = allTags.length - visibleCount > 0 ? allTags.length - visibleCount : 0;
+  };  // Calculate visible and hidden tags
+  const calculateVisibleTags = (allTags: string[]) => {
+    // On mobile, show a fixed number of tags to fit in 2 lines (~6 tags)
+    // For larger screen sizes, use a similar approach but with different values
+    const maxVisibleTags = windowWidth < 640 ? 6 : 9;
+    const visibleCount = Math.min(maxVisibleTags, allTags.length);
+    const hiddenCount = allTags.length - visibleCount;
 
     return {
       visibleTags: allTags.slice(0, visibleCount),
@@ -180,10 +188,10 @@ const ProjectsSection: React.FC = () => {
                         alt={project.title}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       />
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>                      {/* project cover image */}
-                      <div className="absolute bottom-0 left-0 w-full p-4">                        <div className={`flex flex-wrap gap-2 ${!expandedTags[project.id] ? 'max-h-[4rem]' : 'max-h-[4rem] sm:max-h-none'} overflow-hidden`}>
-                        {(() => {
-                          const { visibleTags } = calculateVisibleTags(project.id, project.tags);
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>                      {/* project cover image */}                      <div className="absolute bottom-0 left-0 w-full p-4">
+                        {/* Tag container with strict 2-line height limit */}
+                        <div className="flex flex-wrap gap-2 max-h-[4rem] overflow-hidden mb-2">                          {(() => {
+                          const { visibleTags } = calculateVisibleTags(project.tags);
                           return visibleTags.map((tag, idx) => (
                             <span
                               key={`${tag}-${idx}`}
@@ -193,38 +201,23 @@ const ProjectsSection: React.FC = () => {
                             </span>
                           ));
                         })()}
-                      </div>
-
+                        </div>
                         {/* Show more tags button */}
                         {(() => {
-                          const { hiddenCount } = calculateVisibleTags(project.id, project.tags);
+                          const { hiddenCount } = calculateVisibleTags(project.tags);
                           return hiddenCount > 0 && (
                             <button
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openTagsModal(project.id, e);
                               }}
-                              className="absolute right-4 bottom-4 flex items-center justify-center px-2 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
-                              aria-label="Show all tags"
+                              className="flex items-center justify-center px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm"
+                              aria-label={`Show all ${hiddenCount} more tags`}
                             >
-                              +{hiddenCount} more
+                              +{hiddenCount} more tags
                             </button>
                           );
                         })()}
-
-                        {/* Tags expand/collapse button for larger screens */}
-                        {expandedTags[project.id] && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleTags(project.id);
-                            }}
-                            className="absolute right-4 bottom-4 hidden sm:flex items-center justify-center w-6 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
-                            aria-label="Show less tags"
-                          >
-                            <ChevronUp size={12} />
-                          </button>
-                        )}
                       </div>
                     </div>
 
@@ -311,31 +304,13 @@ const ProjectsSection: React.FC = () => {
             </AnimatePresence>)}
         </motion.div>
       </div>
-
       {/* Tags Modal */}
-      {showAllTagsModal && projects.find(p => p.id === showAllTagsModal) && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={closeTagsModal}>
-          <div className="bg-card rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-bold">All Tags</h4>
-              <button
-                onClick={closeTagsModal}
-                className="text-foreground/70 hover:text-foreground p-1 rounded-full"
-                aria-label="Close tags modal"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {projects.find(p => p.id === showAllTagsModal)?.tags.map((tag, idx) => (
-                <span key={idx} className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm">
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+      <TagsModal
+        isOpen={!!showAllTagsModal}
+        onClose={closeTagsModal}
+        tags={showAllTagsModal ? (projects.find(p => p.id === showAllTagsModal)?.tags || []) : []}
+        title="All Tags"
+      />
     </section>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { Project } from '../../types';
 import { getProjects } from '../../services/api';
 
@@ -17,11 +17,12 @@ const ProjectsSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
-  const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({});
-  const [ref, inView] = useInView({
+  const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({}); const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+  // We don't need this state anymore as we're calculating visible tags on-the-fly
+  const [showAllTagsModal, setShowAllTagsModal] = useState<string | null>(null);
 
 
   // Get all unique tags from projects
@@ -59,13 +60,34 @@ const ProjectsSection: React.FC = () => {
       [projectId]: !prev[projectId]
     }));
   };
-
   // Toggle tag expansion for a specific project
   const toggleTags = (projectId: string) => {
     setExpandedTags(prev => ({
       ...prev,
       [projectId]: !prev[projectId]
     }));
+  };
+
+  // Calculate visible and hidden tags
+  const calculateVisibleTags = (projectId: string, allTags: string[]) => {
+    const visibleCount = expandedTags[projectId] ? allTags.length : Math.min(6, allTags.length);
+    const hiddenCount = allTags.length - visibleCount > 0 ? allTags.length - visibleCount : 0;
+
+    return {
+      visibleTags: allTags.slice(0, visibleCount),
+      hiddenCount
+    };
+  };
+
+  // Open modal to show all tags
+  const openTagsModal = (projectId: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    setShowAllTagsModal(projectId);
+  };
+
+  // Close tags modal
+  const closeTagsModal = () => {
+    setShowAllTagsModal(null);
   };
 
   // Helper function to truncate text
@@ -158,38 +180,46 @@ const ProjectsSection: React.FC = () => {
                         alt={project.title}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       />
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-                      {/* project cover image */}
-                      <div className="absolute bottom-0 left-0 w-full p-4">
-                        <div className={`flex flex-wrap gap-2 max-h-[4.25rem] overflow-hidden ${expandedTags[project.id] ? 'max-h-none' : ''}`}>
-                          {project.tags.map((tag, idx) => (
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>                      {/* project cover image */}
+                      <div className="absolute bottom-0 left-0 w-full p-4">                        <div className={`flex flex-wrap gap-2 ${!expandedTags[project.id] ? 'max-h-[4rem]' : 'max-h-[4rem] sm:max-h-none'} overflow-hidden`}>
+                        {(() => {
+                          const { visibleTags } = calculateVisibleTags(project.id, project.tags);
+                          return visibleTags.map((tag, idx) => (
                             <span
                               key={`${tag}-${idx}`}
                               className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm"
                             >
                               {tag}
                             </span>
-                          ))}
-                        </div>
-                        {project.tags.length > 4 && !expandedTags[project.id] && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              toggleTags(project.id);
-                            }}
-                            className="absolute right-4 bottom-4 flex items-center justify-center w-6 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
-                            aria-label="Show more tags"
-                          >
-                            +{project.tags.length - 4}
-                          </button>
-                        )}
+                          ));
+                        })()}
+                      </div>
+
+                        {/* Show more tags button */}
+                        {(() => {
+                          const { hiddenCount } = calculateVisibleTags(project.id, project.tags);
+                          return hiddenCount > 0 && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openTagsModal(project.id, e);
+                              }}
+                              className="absolute right-4 bottom-4 flex items-center justify-center px-2 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
+                              aria-label="Show all tags"
+                            >
+                              +{hiddenCount} more
+                            </button>
+                          );
+                        })()}
+
+                        {/* Tags expand/collapse button for larger screens */}
                         {expandedTags[project.id] && (
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
                               toggleTags(project.id);
                             }}
-                            className="absolute right-4 bottom-4 flex items-center justify-center w-6 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
+                            className="absolute right-4 bottom-4 hidden sm:flex items-center justify-center w-6 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
                             aria-label="Show less tags"
                           >
                             <ChevronUp size={12} />
@@ -278,10 +308,34 @@ const ProjectsSection: React.FC = () => {
                   </motion.div>
                 ))}
               </motion.div>
-            </AnimatePresence>
-          )}
+            </AnimatePresence>)}
         </motion.div>
       </div>
+
+      {/* Tags Modal */}
+      {showAllTagsModal && projects.find(p => p.id === showAllTagsModal) && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={closeTagsModal}>
+          <div className="bg-card rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="text-lg font-bold">All Tags</h4>
+              <button
+                onClick={closeTagsModal}
+                className="text-foreground/70 hover:text-foreground p-1 rounded-full"
+                aria-label="Close tags modal"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {projects.find(p => p.id === showAllTagsModal)?.tags.map((tag, idx) => (
+                <span key={idx} className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

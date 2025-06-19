@@ -15,7 +15,9 @@ const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<string | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [expandedTags, setExpandedTags] = useState<Record<string, boolean>>({});
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -50,10 +52,17 @@ const ProjectsSection: React.FC = () => {
 
     fetchProjects();
   }, []);
-
   // Toggle description expansion for a specific project
   const toggleDescription = (projectId: string) => {
     setExpandedDescriptions(prev => ({
+      ...prev,
+      [projectId]: !prev[projectId]
+    }));
+  };
+
+  // Toggle tag expansion for a specific project
+  const toggleTags = (projectId: string) => {
+    setExpandedTags(prev => ({
       ...prev,
       [projectId]: !prev[projectId]
     }));
@@ -152,7 +161,7 @@ const ProjectsSection: React.FC = () => {
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                       {/* project cover image */}
                       <div className="absolute bottom-0 left-0 w-full p-4">
-                        <div className="flex flex-wrap gap-2 h-16 overflow-hidden">
+                        <div className={`flex flex-wrap gap-2 max-h-[4.25rem] overflow-hidden ${expandedTags[project.id] ? 'max-h-none' : ''}`}>
                           {project.tags.map((tag, idx) => (
                             <span
                               key={`${tag}-${idx}`}
@@ -162,6 +171,30 @@ const ProjectsSection: React.FC = () => {
                             </span>
                           ))}
                         </div>
+                        {project.tags.length > 4 && !expandedTags[project.id] && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleTags(project.id);
+                            }}
+                            className="absolute right-4 bottom-4 flex items-center justify-center w-6 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
+                            aria-label="Show more tags"
+                          >
+                            +{project.tags.length - 4}
+                          </button>
+                        )}
+                        {expandedTags[project.id] && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleTags(project.id);
+                            }}
+                            className="absolute right-4 bottom-4 flex items-center justify-center w-6 h-6 bg-primary/90 text-white text-xs rounded-full shadow-sm"
+                            aria-label="Show less tags"
+                          >
+                            <ChevronUp size={12} />
+                          </button>
+                        )}
                       </div>
                     </div>
 

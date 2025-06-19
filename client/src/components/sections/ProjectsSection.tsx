@@ -188,7 +188,9 @@ const ProjectsSection: React.FC = () => {
                         alt={project.title}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       />
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>                      {/* project cover image */}                      <div className="absolute bottom-0 left-0 w-full p-4">
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                      {/* project cover image */}
+                      <div className="absolute bottom-0 left-0 w-full p-4">
                         {/* Tag container with strict 2-line height limit */}
                         <div className="flex flex-wrap gap-2 max-h-[4rem] overflow-hidden mb-2">                          {(() => {
                           const { visibleTags } = calculateVisibleTags(project.tags);
@@ -256,8 +258,9 @@ const ProjectsSection: React.FC = () => {
                         <span>
                           {formatDate(project.timeline.start)} — {project.timeline.end ? formatDate(project.timeline.end) : 'Present'}
                         </span>
-                      </div>                      <div className="flex flex-wrap gap-2 mb-4">
-                        {project.technologies.slice(0, 5).map(tech => (
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {project.technologies.map(tech => (
                           <span
                             key={tech}
                             className="px-2 py-1 bg-background text-foreground/80 text-xs rounded-md"
@@ -265,11 +268,6 @@ const ProjectsSection: React.FC = () => {
                             {tech}
                           </span>
                         ))}
-                        {project.technologies.length > 5 && (
-                          <span className="px-2 py-1 bg-background text-foreground/60 text-xs rounded-md">
-                            +{project.technologies.length - 5}
-                          </span>
-                        )}
                       </div>
 
                       <div className="flex gap-4 mt-4">

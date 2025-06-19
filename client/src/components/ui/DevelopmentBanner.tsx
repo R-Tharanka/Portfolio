@@ -9,7 +9,11 @@ interface DevelopmentBannerProps {
 const DevelopmentBanner: React.FC<DevelopmentBannerProps> = ({ 
   message = "⚠️ Portfolio under development - some features may be incomplete!" 
 }) => {
-  const [isVisible, setIsVisible] = useState(true);
+  // Check if banner should be shown via environment variable or localStorage
+  // You can set this to false to disable the banner temporarily
+  const SHOW_DEV_BANNER = process.env.REACT_APP_SHOW_DEV_BANNER !== 'false';
+  
+  const [isVisible, setIsVisible] = useState(SHOW_DEV_BANNER);
     // Check if the banner was closed before and if the closure is still valid
   useEffect(() => {
     const bannerClosedExpiry = localStorage.getItem('dev-banner-closed');

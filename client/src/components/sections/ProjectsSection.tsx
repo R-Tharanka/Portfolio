@@ -5,35 +5,6 @@ import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 
 import { Project } from '../../types';
 import { getProjects } from '../../services/api';
 
-// Custom hook for window size
-const useWindowSize = () => {
-  const [windowSize, setWindowSize] = useState({
-    width: typeof window !== 'undefined' ? window.innerWidth : 0,
-    height: typeof window !== 'undefined' ? window.innerHeight : 0,
-  });
-
-  useEffect(() => {
-    // Handler to call on window resize
-    function handleResize() {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    }
-
-    // Add event listener
-    window.addEventListener('resize', handleResize);
-
-    // Call handler right away so state gets updated with initial window size
-    handleResize();
-
-    // Remove event listener on cleanup
-    return () => window.removeEventListener('resize', handleResize);
-  }, []); // Empty array ensures effect is only run on mount and unmount
-
-  return windowSize;
-};
-
 // Empty array for projects data
 const fallbackProjects: Project[] = [];
 
@@ -44,10 +15,7 @@ const ProjectsSection: React.FC = () => {
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
-  const windowSize = useWindowSize();
-  const isMobile = windowSize.width < 640;
+  const [error, setError] = useState<string | null>(null); const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -181,21 +149,18 @@ const ProjectsSection: React.FC = () => {
                         alt={project.title}
                         className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                       />
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>                      {/* project cover image */}                      <div className="absolute bottom-0 left-0 w-full p-4">
-                        <div className="flex flex-wrap gap-2 max-h-10 overflow-hidden">
-                          {project.tags.slice(0, isMobile ? 2 : 3).map(tag => (
+                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+                      {/* project cover image */}
+                      <div className="absolute bottom-0 left-0 w-full p-4">
+                        <div className="flex flex-wrap gap-2 h-16 overflow-hidden">
+                          {project.tags.map((tag, idx) => (
                             <span
-                              key={tag}
+                              key={`${tag}-${idx}`}
                               className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm"
                             >
                               {tag}
                             </span>
                           ))}
-                          {project.tags.length > (isMobile ? 2 : 3) && (
-                            <span className="px-2 py-1 bg-background/80 backdrop-blur-sm text-foreground text-xs rounded-full shadow-sm">
-                              +{project.tags.length - (isMobile ? 2 : 3)}
-                            </span>
-                          )}
                         </div>
                       </div>
                     </div>

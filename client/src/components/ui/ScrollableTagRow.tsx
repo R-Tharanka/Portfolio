@@ -67,31 +67,30 @@ const ScrollableTagRow: React.FC<ScrollableTagRowProps> = ({ tags, className = '
                 >
                     <ChevronLeft size={14} className="text-primary" />
                 </button>
-            )}            {/* Scrollable container with gradient edges */}
-            <div className="relative w-full overflow-hidden bg-black/10 backdrop-blur-sm rounded-md">{/* Left fade gradient - improved with multi-step gradient and better positioning */}
-                {showLeftArrow && (
-                    <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-card via-card/80 to-transparent z-10 pointer-events-none rounded-l-md" />
-                )}
-
-                {/* Scrollable tag container - added padding to accommodate gradients */}
-                <div
+            )}            {/* Scrollable container */}
+            <div className="relative w-full overflow-hidden bg-primary/5 backdrop-blur-sm rounded-md border border-primary/10">
+                {/* Scrollable tag container with advanced fading effect */}                <div
                     ref={scrollContainerRef}
-                    className="flex overflow-x-auto hide-scrollbar gap-2 py-1 px-3"
+                    className={`flex overflow-x-auto hide-scrollbar gap-2 py-1.5 px-4 relative ${
+                        showLeftArrow && showRightArrow
+                            ? 'mask-fade-horizontal'
+                            : showLeftArrow
+                                ? 'mask-fade-left'
+                                : showRightArrow
+                                    ? 'mask-fade-right'
+                                    : ''
+                    }`}
                 >
                     {tags.map((tag, idx) => (
                         <span
                             key={`${tag}-${idx}`}
-                            className="flex-shrink-0 px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm whitespace-nowrap"
+                            className="flex-shrink-0 px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm whitespace-nowrap transition-all"
                         >
                             {tag}
                         </span>
                     ))}
                 </div>
-
-                {/* Right fade gradient - improved with multi-step gradient and better positioning */}
-                {showRightArrow && (
-                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-card via-card/80 to-transparent z-10 pointer-events-none rounded-r-md" />
-                )}            </div>
+            </div>
 
             {/* Right scroll arrow */}
             {showRightArrow && (

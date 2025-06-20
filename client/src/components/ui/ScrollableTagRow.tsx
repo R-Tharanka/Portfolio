@@ -63,7 +63,7 @@ const ScrollableTagRow: React.FC<ScrollableTagRowProps> = ({ tags, className = '
             {/* Left scroll arrow */}
             {showLeftArrow && (
                 <button
-                    className="absolute left-0 z-10 flex items-center justify-center h-6 w-6 rounded-full bg-background/80 border border-primary/20 shadow-sm hover:bg-primary/10 transition-colors"
+                    className="relative left-0 z-10 flex items-center justify-center h-6 w-6 mr-[10px] rounded-full bg-background/80 border border-primary/20 shadow-sm hover:bg-primary/10 transition-colors"
                     onClick={scrollLeft}
                     aria-label="Scroll tags left"
                 >
@@ -94,7 +94,7 @@ const ScrollableTagRow: React.FC<ScrollableTagRowProps> = ({ tags, className = '
 
                 {/* Right fade gradient */}
                 {showRightArrow && (
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent z-10 pointer-events-none" />
+                    <div className="relative right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card ml-[10px] to-transparent z-10 pointer-events-none" />
                 )}
             </div>
 

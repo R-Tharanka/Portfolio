@@ -20,16 +20,16 @@ const TagsModal: React.FC<TagsModalProps> = ({
 
   return (
     <DocumentPortal rootId="tags-modal-portal">
-      <div 
-        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" 
+      <div
+        className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
         onClick={onClose}
       >
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ type: "spring", bounce: 0.3 }}
-          className="bg-card rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto" 
+          className="bg-card rounded-xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto"
           onClick={e => e.stopPropagation()}
         >
           <div className="flex justify-between items-center mb-4">

@@ -56,31 +56,27 @@ const ScrollableTagRow: React.FC<ScrollableTagRowProps> = ({ tags, className = '
     };
 
     // If no tags, don't render
-    if (tags.length === 0) return null;
-
-    return (
-        <div className={`relative flex items-center ${className}`}>
+    if (tags.length === 0) return null; return (
+        <div className={`relative flex items-center gap-3 ${className}`}>
             {/* Left scroll arrow */}
             {showLeftArrow && (
                 <button
-                    className="relative left-0 z-10 flex items-center justify-center h-6 w-6 mr-[10px] rounded-full bg-background/80 border border-primary/20 shadow-sm hover:bg-primary/10 transition-colors"
+                    className="flex-shrink-0 z-10 flex items-center justify-center h-6 w-6 rounded-full bg-background/90 border border-primary/30 shadow-sm hover:bg-primary/10 transition-all hover:shadow-md hover:border-primary/50"
                     onClick={scrollLeft}
                     aria-label="Scroll tags left"
                 >
                     <ChevronLeft size={14} className="text-primary" />
                 </button>
-            )}
-
-            {/* Scrollable container with gradient edges */}
-            <div className="relative w-full overflow-hidden">
-                {/* Left fade gradient */}
+            )}            {/* Scrollable container with gradient edges */}
+            <div className="relative w-full overflow-hidden bg-black/10 backdrop-blur-sm rounded-md">{/* Left fade gradient - improved with multi-step gradient and better positioning */}
                 {showLeftArrow && (
-                    <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-card to-transparent z-10 pointer-events-none" />
+                    <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-card via-card/80 to-transparent z-10 pointer-events-none rounded-l-md" />
                 )}
 
-                {/* Scrollable tag container */}        <div
+                {/* Scrollable tag container - added padding to accommodate gradients */}
+                <div
                     ref={scrollContainerRef}
-                    className="flex overflow-x-auto hide-scrollbar gap-2 py-1 px-1"
+                    className="flex overflow-x-auto hide-scrollbar gap-2 py-1 px-3"
                 >
                     {tags.map((tag, idx) => (
                         <span
@@ -92,16 +88,15 @@ const ScrollableTagRow: React.FC<ScrollableTagRowProps> = ({ tags, className = '
                     ))}
                 </div>
 
-                {/* Right fade gradient */}
+                {/* Right fade gradient - improved with multi-step gradient and better positioning */}
                 {showRightArrow && (
-                    <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-card to-transparent z-10 pointer-events-none" />
-                )}
-            </div>
+                    <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-card via-card/80 to-transparent z-10 pointer-events-none rounded-r-md" />
+                )}            </div>
 
             {/* Right scroll arrow */}
             {showRightArrow && (
                 <button
-                    className="relative right-0 z-10 flex items-center justify-center h-6 w-6 ml-[10px] rounded-full bg-background/80 border border-primary/20 shadow-sm hover:bg-primary/10 transition-colors"
+                    className="flex-shrink-0 z-10 flex items-center justify-center h-6 w-6 rounded-full bg-background/90 border border-primary/30 shadow-sm hover:bg-primary/10 transition-all hover:shadow-md hover:border-primary/50"
                     onClick={scrollRight}
                     aria-label="Scroll tags right"
                 >

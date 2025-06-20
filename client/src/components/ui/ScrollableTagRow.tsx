@@ -67,8 +67,9 @@ const ScrollableTagRow: React.FC<ScrollableTagRowProps> = ({ tags, className = '
                 >
                     <ChevronLeft size={14} className="text-primary" />
                 </button>
-            )}            {/* Scrollable container */}
-            <div className="relative w-full overflow-hidden bg-primary/5 backdrop-blur-sm rounded-md border border-primary/10">
+            )}
+            {/* Scrollable container */}
+            <div className="relative w-full overflow-hidden bg-primary/5 backdrop-blur-sm rounded-[9px] border border-primary/10">
                 {/* Left fade overlay - improved with multiple layers for better visual effect */}
                 {showLeftArrow && (
                     <>

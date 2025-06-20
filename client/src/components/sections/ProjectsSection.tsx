@@ -4,7 +4,7 @@ import { useInView } from 'react-intersection-observer';
 import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Project } from '../../types';
 import { getProjects } from '../../services/api';
-import TagsModal from '../ui/TagsModal';
+import ScrollableTagRow from '../ui/ScrollableTagRow';
 
 // Empty array for projects data
 const fallbackProjects: Project[] = [];
@@ -21,29 +21,11 @@ const ProjectsSection: React.FC = () => {
     triggerOnce: true,
     threshold: 0.1,
   });
-  // We don't need this state anymore as we're calculating visible tags on-the-fly
-  const [showAllTagsModal, setShowAllTagsModal] = useState<string | null>(null);
-
 
   // Get all unique tags from projects
   const allTags = Array.from(
     new Set(projects.flatMap(project => project.tags))
   );
-  // State to track window width for responsive tag display
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
-
-  useEffect(() => {
-    // Handle window resize events to recalculate visible tags
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -73,29 +55,6 @@ const ProjectsSection: React.FC = () => {
       ...prev,
       [projectId]: !prev[projectId]
     }));
-  };  // Calculate visible and hidden tags
-  const calculateVisibleTags = (allTags: string[]) => {
-    // On mobile, show a fixed number of tags to fit in 2 lines (~6 tags)
-    // For larger screen sizes, use a similar approach but with different values
-    const maxVisibleTags = windowWidth < 640 ? 6 : 9;
-    const visibleCount = Math.min(maxVisibleTags, allTags.length);
-    const hiddenCount = allTags.length - visibleCount;
-
-    return {
-      visibleTags: allTags.slice(0, visibleCount),
-      hiddenCount
-    };
-  };
-
-  // Open modal to show all tags
-  const openTagsModal = (projectId: string, event: React.MouseEvent) => {
-    event.stopPropagation();
-    setShowAllTagsModal(projectId);
-  };
-
-  // Close tags modal
-  const closeTagsModal = () => {
-    setShowAllTagsModal(null);
   };
 
   // Helper function to truncate text
@@ -191,36 +150,11 @@ const ProjectsSection: React.FC = () => {
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                       {/* project cover image */}
                       <div className="absolute bottom-0 left-0 w-full p-4">
-                        {/* Tag container with strict 2-line height limit */}
-                        <div className="flex flex-wrap gap-2 max-h-[4rem] overflow-hidden mb-2">
-                          {(() => {
-                            const { visibleTags } = calculateVisibleTags(project.tags);
-                            return visibleTags.map((tag, idx) => (
-                              <span
-                                key={`${tag}-${idx}`}
-                                className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm"
-                              >
-                                {tag}
-                              </span>
-                            ));
-                          })()}
-                        </div>
-                        {/* Show more tags button */}
-                        {(() => {
-                          const { hiddenCount } = calculateVisibleTags(project.tags);
-                          return hiddenCount > 0 && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openTagsModal(project.id, e);
-                              }}
-                              className="flex items-center justify-center px-2 py-1 bg-background/80 border border-primary/60 text-primary text-xs rounded-md shadow-sm hover:bg-primary/10 transition-colors"
-                              aria-label={`Show all ${hiddenCount} more tags`}
-                            >
-                              +{hiddenCount} more tags
-                            </button>
-                          );
-                        })()}
+                        {/* Scrollable tag container */}
+                        <ScrollableTagRow
+                          tags={project.tags}
+                          className="mx-1"
+                        />
                       </div>
                     </div>
 
@@ -303,13 +237,6 @@ const ProjectsSection: React.FC = () => {
             </AnimatePresence>)}
         </motion.div>
       </div>
-      {/* Tags Modal */}
-      <TagsModal
-        isOpen={!!showAllTagsModal}
-        onClose={closeTagsModal}
-        tags={showAllTagsModal ? (projects.find(p => p.id === showAllTagsModal)?.tags || []) : []}
-        title="All Tags"
-      />
     </section>
   );
 };

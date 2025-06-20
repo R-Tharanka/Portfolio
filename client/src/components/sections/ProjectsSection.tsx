@@ -192,17 +192,18 @@ const ProjectsSection: React.FC = () => {
                       {/* project cover image */}
                       <div className="absolute bottom-0 left-0 w-full p-4">
                         {/* Tag container with strict 2-line height limit */}
-                        <div className="flex flex-wrap gap-2 max-h-[4rem] overflow-hidden mb-2">                          {(() => {
-                          const { visibleTags } = calculateVisibleTags(project.tags);
-                          return visibleTags.map((tag, idx) => (
-                            <span
-                              key={`${tag}-${idx}`}
-                              className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm"
-                            >
-                              {tag}
-                            </span>
-                          ));
-                        })()}
+                        <div className="flex flex-wrap gap-2 max-h-[4rem] overflow-hidden mb-2">
+                          {(() => {
+                            const { visibleTags } = calculateVisibleTags(project.tags);
+                            return visibleTags.map((tag, idx) => (
+                              <span
+                                key={`${tag}-${idx}`}
+                                className="px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm"
+                              >
+                                {tag}
+                              </span>
+                            ));
+                          })()}
                         </div>
                         {/* Show more tags button */}
                         {(() => {
@@ -213,7 +214,7 @@ const ProjectsSection: React.FC = () => {
                                 e.stopPropagation();
                                 openTagsModal(project.id, e);
                               }}
-                              className="flex items-center justify-center px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm"
+                              className="flex items-center justify-center px-2 py-1 bg-background/80 border border-primary/60 text-primary text-xs rounded-md shadow-sm hover:bg-primary/10 transition-colors"
                               aria-label={`Show all ${hiddenCount} more tags`}
                             >
                               +{hiddenCount} more tags

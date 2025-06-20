@@ -86,6 +86,20 @@
     -ms-overflow-style: none;  /* IE and Edge */
     scrollbar-width: none;     /* Firefox */
   }
+    .mask-fade-horizontal {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 15%, black 85%, transparent);
+  }
+
+  .mask-fade-left {
+    -webkit-mask-image: linear-gradient(to right, transparent, black 15%);
+    mask-image: linear-gradient(to right, transparent, black 15%);
+  }
+
+  .mask-fade-right {
+    -webkit-mask-image: linear-gradient(to right, black 85%, transparent);
+    mask-image: linear-gradient(to right, black 85%, transparent);
+  }
 }
 
 html {

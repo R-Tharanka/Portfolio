@@ -69,27 +69,36 @@ const ScrollableTagRow: React.FC<ScrollableTagRowProps> = ({ tags, className = '
                 </button>
             )}            {/* Scrollable container */}
             <div className="relative w-full overflow-hidden bg-primary/5 backdrop-blur-sm rounded-md border border-primary/10">
-                {/* Scrollable tag container with advanced fading effect */}                <div
+                {/* Left fade overlay - improved with multiple layers for better visual effect */}
+                {showLeftArrow && (
+                    <>
+                        <div className="absolute left-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-r from-card/80 via-card/50 to-transparent pointer-events-none" />
+                        <div className="absolute left-0 top-0 bottom-0 w-2 z-10 bg-card/90 pointer-events-none shadow-[2px_0px_4px_rgba(0,0,0,0.1)]" />
+                    </>
+                )}
+
+                {/* Scrollable tag container */}
+                <div
                     ref={scrollContainerRef}
-                    className={`flex overflow-x-auto hide-scrollbar gap-2 py-1.5 px-4 relative ${
-                        showLeftArrow && showRightArrow
-                            ? 'mask-fade-horizontal'
-                            : showLeftArrow
-                                ? 'mask-fade-left'
-                                : showRightArrow
-                                    ? 'mask-fade-right'
-                                    : ''
-                    }`}
+                    className="flex overflow-x-auto hide-scrollbar gap-2 py-1.5 px-6 relative"
                 >
                     {tags.map((tag, idx) => (
                         <span
                             key={`${tag}-${idx}`}
-                            className="flex-shrink-0 px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm whitespace-nowrap transition-all"
+                            className="flex-shrink-0 px-2 py-1 bg-primary/90 text-white text-xs rounded-full shadow-sm whitespace-nowrap transition-all hover:bg-primary hover:shadow-md"
                         >
                             {tag}
                         </span>
                     ))}
                 </div>
+
+                {/* Right fade overlay - improved with multiple layers for better visual effect */}
+                {showRightArrow && (
+                    <>
+                        <div className="absolute right-0 top-0 bottom-0 w-12 z-10 bg-gradient-to-l from-card/80 via-card/50 to-transparent pointer-events-none" />
+                        <div className="absolute right-0 top-0 bottom-0 w-2 z-10 bg-card/90 pointer-events-none shadow-[-2px_0px_4px_rgba(0,0,0,0.1)]" />
+                    </>
+                )}
             </div>
 
             {/* Right scroll arrow */}

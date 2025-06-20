@@ -129,7 +129,7 @@ const ContactSection: React.FC = () => {
                   </div>
                   <div>
                     <h4 className="text-lg font-medium">Location</h4>
-                    <p className="text-foreground/70">Galle, Sri Lanka</p>
+                    <p className="text-foreground/70">Malabe, Sri Lanka</p>
                   </div>
                 </div>
               </div>

@@ -149,11 +149,11 @@ const ProjectsSection: React.FC = () => {
                       />
                       <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                       {/* project cover image */}
-                      <div className="absolute bottom-0 left-0 w-full p-4">
+                      <div className="absolute bottom-0 left-0 w-full px-4 pb-5 pt-2">
                         {/* Scrollable tag container */}
                         <ScrollableTagRow
                           tags={project.tags}
-                          className="mx-1"
+                          className="mx-0.5"
                         />
                       </div>
                     </div>

@@ -1,8 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../client/.env') });
 
 // Configuration
-const SITE_URL = process.env.SITE_URL || 'https://yourportfolio.com';
+const SITE_URL = process.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.vercel.app';
 const PUBLIC_DIR = path.join(__dirname, '../client/public');
 
 // Define the site structure

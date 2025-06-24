@@ -10,32 +10,31 @@ const PUBLIC_DIR = path.join(__dirname, '../client/public');
 const pages = [
   {
     url: '/',
-    changefreq: 'weekly',
+    changefreq: 'daily',
     priority: '1.0'
   },
   {
     url: '/about',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.8'
   },
   {
     url: '/projects',
-    changefreq: 'weekly',
+    changefreq: 'daily',
     priority: '0.8'
   },
   {
     url: '/skills',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.8'
-  },
-  {
+  },  {
     url: '/education',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.7'
   },
   {
     url: '/contact',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.7'
   }
 ];

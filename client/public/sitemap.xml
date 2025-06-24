@@ -2,38 +2,8 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://ruchira-portfolio.vercel.app/</loc>
-    <lastmod>2025-06-24T08:08:10.172Z</lastmod>
+    <lastmod>2025-06-24T08:25:04.552Z</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
-  </url>
-  <url>
-    <loc>https://ruchira-portfolio.vercel.app/about</loc>
-    <lastmod>2025-06-24T08:08:10.172Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ruchira-portfolio.vercel.app/projects</loc>
-    <lastmod>2025-06-24T08:08:10.172Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ruchira-portfolio.vercel.app/skills</loc>
-    <lastmod>2025-06-24T08:08:10.172Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://ruchira-portfolio.vercel.app/education</loc>
-    <lastmod>2025-06-24T08:08:10.172Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://ruchira-portfolio.vercel.app/contact</loc>
-    <lastmod>2025-06-24T08:08:10.172Z</lastmod>
-    <changefreq>daily</changefreq>
-    <priority>0.7</priority>
   </url>
 </urlset>

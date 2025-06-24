@@ -7,36 +7,14 @@ const SITE_URL = process.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.ve
 const PUBLIC_DIR = path.join(__dirname, '../client/public');
 
 // Define the site structure
+// Single page application - only the homepage
 const pages = [
   {
     url: '/',
-    changefreq: 'daily',
+    changefreq: 'daily', // Set to daily since you're making frequent changes during development
     priority: '1.0'
-  },
-  {
-    url: '/about',
-    changefreq: 'daily',
-    priority: '0.8'
-  },
-  {
-    url: '/projects',
-    changefreq: 'daily',
-    priority: '0.8'
-  },
-  {
-    url: '/skills',
-    changefreq: 'daily',
-    priority: '0.8'
-  },  {
-    url: '/education',
-    changefreq: 'daily',
-    priority: '0.7'
-  },
-  {
-    url: '/contact',
-    changefreq: 'daily',
-    priority: '0.7'
   }
+  // Admin page removed for privacy/security
 ];
 
 // Generate sitemap XML

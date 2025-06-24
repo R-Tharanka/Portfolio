@@ -7,18 +7,14 @@ const SITE_URL = process.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.ve
 const PUBLIC_DIR = path.join(__dirname, '../client/public');
 
 // Define the site structure
-// Single page application - only the homepage and admin page
+// Single page application - only the homepage
 const pages = [
   {
     url: '/',
     changefreq: 'daily', // Set to daily since you're making frequent changes during development
     priority: '1.0'
-  },
-  {
-    url: '/admin',
-    changefreq: 'daily',
-    priority: '0.5'
   }
+  // Admin page removed for privacy/security
 ];
 
 // Generate sitemap XML

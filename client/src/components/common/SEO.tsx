@@ -12,9 +12,8 @@ interface SEOProps {
 const SEO: React.FC<SEOProps> = ({
   title = 'Ruchira Tharanka | Full-Stack Developer',
   description = 'I’m Ruchira Tharanka Full-Stack Developer. Explore my portfolio of dynamic React front-ends, secure Node.js back-ends, MongoDB databases, and innovative projects that solve real-world problems.',
-  keywords = 'developer, portfolio, web developer, software engineer, frontend, backend, full stack, javascript, react, nodejs, typescript, html, css, web design, Ruchira Tharanka, personal website, Ruchira, Tharanka',
-  ogImage = '/og-image.png', // You'll need to add this image to your public folder
-  ogUrl = 'https://ruchira-portfolio.vercel.app/' // Replace with your actual domain
+  keywords = 'developer, portfolio, web developer, software engineer, frontend, backend, full stack, javascript, react, nodejs, typescript, html, css, web design, Ruchira Tharanka, personal website, Ruchira, Tharanka',  ogImage = '/og-image.png',
+  ogUrl = import.meta.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.vercel.app/'
 }) => {
   const siteTitle = title.includes('Portfolio') ? title : `${title} | Portfolio`;
 

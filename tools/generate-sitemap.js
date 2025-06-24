@@ -1,40 +1,40 @@
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../client/.env') });
 
 // Configuration
-const SITE_URL = process.env.SITE_URL || 'https://yourportfolio.com';
+const SITE_URL = process.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.vercel.app';
 const PUBLIC_DIR = path.join(__dirname, '../client/public');
 
 // Define the site structure
 const pages = [
   {
     url: '/',
-    changefreq: 'weekly',
+    changefreq: 'daily',
     priority: '1.0'
   },
   {
     url: '/about',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.8'
   },
   {
     url: '/projects',
-    changefreq: 'weekly',
+    changefreq: 'daily',
     priority: '0.8'
   },
   {
     url: '/skills',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.8'
-  },
-  {
+  },  {
     url: '/education',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.7'
   },
   {
     url: '/contact',
-    changefreq: 'monthly',
+    changefreq: 'daily',
     priority: '0.7'
   }
 ];

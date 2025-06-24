@@ -6,4 +6,4 @@ Disallow: /admin/
 Disallow: /admin/*
 
 # Sitemap
-Sitemap: https://yourportfolio.com/sitemap.xml
+Sitemap: https://ruchira-portfolio.vercel.app/sitemap.xml

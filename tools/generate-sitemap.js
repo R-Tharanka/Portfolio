@@ -19,12 +19,8 @@ const pages = [
 
 // Generate sitemap XML
 const generateSitemap = () => {  const today = new Date().toISOString();
-  
-  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"\n';
-  xml += '       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n';
-  xml += '       xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9\n';
-  xml += '                           http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">\n';
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+  xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     // Add each page to the sitemap
   pages.forEach(page => {
     xml += '  <url>\n';

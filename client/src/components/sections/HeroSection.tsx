@@ -56,12 +56,12 @@ const HeroSection: React.FC = () => {
                 wrapper="span"
                 cursor={false}
                 repeat={0}
-                speed={30} // Slower typing speed
+                speed={35} // Slower typing speed
                 className="block"
               />
               <TypeAnimation
                 sequence={[
-                  1500, // Wait until "Hi, I'm" is fully typed
+                  1400, // Wait until "Hi, I'm" is fully typed
                   "Ruchira Tharanka",
                 ]}
                 wrapper="span"

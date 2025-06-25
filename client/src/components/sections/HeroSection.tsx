@@ -50,24 +50,24 @@ const HeroSection: React.FC = () => {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
               <TypeAnimation
                 sequence={[
-                  100, // Initial delay before starting
+                  500, // Increased initial delay for visibility
                   "Hi, I'm",
                 ]}
                 wrapper="span"
                 cursor={false}
                 repeat={0}
-                speed={50}
+                speed={30} // Slower typing speed
                 className="block"
               />
               <TypeAnimation
                 sequence={[
-                  700, // Delay before starting
+                  1500, // Wait until "Hi, I'm" is fully typed
                   "Ruchira Tharanka",
                 ]}
                 wrapper="span"
-                cursor={false}
+                cursor={true} // Show cursor for better effect
                 repeat={0}
-                speed={50}
+                speed={30} // Slower typing speed
                 className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
               />
             </h1>

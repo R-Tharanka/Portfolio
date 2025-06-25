@@ -66,7 +66,8 @@ const HeroSection: React.FC = () => {
               >
                 View My Work
                 <ArrowRight size={18} className="ml-2" />
-              </Link>              <a
+              </Link>
+              <a
                 href={cvPdf}
                 className="inline-flex items-center px-6 py-3 bg-card hover:bg-card/80 text-foreground font-medium rounded-full border border-border transition-colors shadow-md"
                 download="Ruchira_Tharanka_CV.pdf"

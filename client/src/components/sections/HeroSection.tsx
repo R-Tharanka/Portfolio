@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
+import { TypeAnimation } from 'react-type-animation';
 // Import with cache busting query parameter
 import heroProfileImgSrc from '../../assets/img/hero-profile.png';
 import cvPdf from '../../assets/cv/Ruchira_Tharanka_CV.pdf';
@@ -47,8 +48,28 @@ const HeroSection: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              <span className="block">Hi, I'm</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Ruchira Tharanka</span>
+              <TypeAnimation
+                sequence={[
+                  100, // Initial delay before starting
+                  "Hi, I'm",
+                ]}
+                wrapper="span"
+                cursor={false}
+                repeat={0}
+                speed={50}
+                className="block"
+              />
+              <TypeAnimation
+                sequence={[
+                  700, // Delay before starting
+                  "Ruchira Tharanka",
+                ]}
+                wrapper="span"
+                cursor={false}
+                repeat={0}
+                speed={50}
+                className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
+              />
             </h1>
 
             <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto lg:mx-0">

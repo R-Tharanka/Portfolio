@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
 import { Link } from 'react-scroll';
+import { TypeAnimation } from 'react-type-animation';
 // Import with cache busting query parameter
 import heroProfileImgSrc from '../../assets/img/hero-profile.png';
 import cvPdf from '../../assets/cv/Ruchira_Tharanka_CV.pdf';
@@ -47,8 +48,28 @@ const HeroSection: React.FC = () => {
             transition={{ duration: 0.8, delay: 0.4 }}
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-              <span className="block">Hi, I'm</span>
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Ruchira Tharanka</span>
+              <TypeAnimation
+                sequence={[
+                  500, // Increased initial delay for visibility
+                  "Hi, I'm",
+                ]}
+                wrapper="span"
+                cursor={false}
+                repeat={0}
+                speed={30} // Slower typing speed
+                className="block"
+              />
+              <TypeAnimation
+                sequence={[
+                  1500, // Wait until "Hi, I'm" is fully typed
+                  "Ruchira Tharanka",
+                ]}
+                wrapper="span"
+                cursor={true} // Show cursor for better effect
+                repeat={0}
+                speed={30} // Slower typing speed
+                className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary"
+              />
             </h1>
 
             <p className="text-xl md:text-2xl text-foreground/70 mb-8 max-w-2xl mx-auto lg:mx-0">
@@ -66,7 +87,8 @@ const HeroSection: React.FC = () => {
               >
                 View My Work
                 <ArrowRight size={18} className="ml-2" />
-              </Link>              <a
+              </Link>
+              <a
                 href={cvPdf}
                 className="inline-flex items-center px-6 py-3 bg-card hover:bg-card/80 text-foreground font-medium rounded-full border border-border transition-colors shadow-md"
                 download="Ruchira_Tharanka_CV.pdf"

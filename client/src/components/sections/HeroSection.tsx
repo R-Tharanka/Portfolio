@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
@@ -8,7 +8,60 @@ import { TypeAnimation } from 'react-type-animation';
 import heroProfileImgSrc from '../../assets/img/hero-profile.png';
 import cvPdf from '../../assets/cv/Ruchira_Tharanka_CV.pdf';
 
+// Helper function to generate typing animation sequence
+const generateTypingSequence = (text: string, typingDelay: number = 10, pauseDuration: number = 2000) => {
+  const sequence: (string | number)[] = [];
+  
+  // Generate typing effect (progressively show more letters)
+  for (let i = 1; i <= text.length; i++) {
+    sequence.push(text.substring(0, i)); // Add the text up to this character
+    if (i < text.length) sequence.push(typingDelay); // Add delay except after the last character
+  }
+  
+  // Add pause at the end of complete text
+  sequence.push(pauseDuration);
+  
+  return sequence;
+};
+
+// Helper function to generate deletion animation sequence
+const generateDeletionSequence = (text: string, deletionDelay: number = 10) => {
+  const sequence: (string | number)[] = [];
+  
+  // Generate deletion effect (progressively remove letters)
+  for (let i = text.length - 1; i >= 0; i--) {
+    sequence.push(text.substring(0, i)); // Add the text minus the last character
+    if (i > 0) sequence.push(deletionDelay); // Add delay except after the last character
+  }
+  
+  return sequence;
+};
+
 const HeroSection: React.FC = () => {
+  // Generate the complete animation sequence
+  const animationSequence = useMemo(() => {
+    const text1 = "Full Stack Developer";
+    const text2 = "SE Undergraduate";
+    const typingDelay = 10;
+    const deletionDelay = 10;
+    const completePause = 2000;
+    const transitionPause = 200;
+    
+    const sequence: (string | number)[] = [
+      // First text - type, pause, then delete
+      ...generateTypingSequence(text1, typingDelay, completePause),
+      ...generateDeletionSequence(text1, deletionDelay),
+      transitionPause,
+      
+      // Second text - type, pause, then delete
+      ...generateTypingSequence(text2, typingDelay, completePause),
+      ...generateDeletionSequence(text2, deletionDelay),
+      transitionPause,
+    ];
+    
+    return sequence;
+  }, []);
+
   return (
     <section id="hero" className="min-h-screen flex items-center pt-20 relative overflow-hidden">
       {/* Background elements */}
@@ -36,88 +89,7 @@ const HeroSection: React.FC = () => {
               </div>
               <div className="absolute -bottom-4 -right-4 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg">
                 <TypeAnimation
-                  sequence={[
-                    // First typing of "Full Stack Developer"
-                    "F",
-                    10, "Fu",
-                    10, "Ful",
-                    10, "Full",
-                    10, "Full ",
-                    10, "Full S",
-                    10, "Full St",
-                    10, "Full Sta",
-                    10, "Full Stac",
-                    10, "Full Stack",
-                    10, "Full Stack ",
-                    10, "Full Stack D",
-                    10, "Full Stack De",
-                    10, "Full Stack Dev",
-                    10, "Full Stack Deve",
-                    10, "Full Stack Devel",
-                    10, "Full Stack Develo",
-                    10, "Full Stack Develop",
-                    10, "Full Stack Develope",
-                    10, "Full Stack Developer",
-                    2000, // Pause before deleting
-                    // Backspace effect
-                    "Full Stack Develope",
-                    10, "Full Stack Develop",
-                    10, "Full Stack Develo",
-                    10, "Full Stack Devel",
-                    10, "Full Stack Deve",
-                    10, "Full Stack Dev",
-                    10, "Full Stack De",
-                    10, "Full Stack D",
-                    10, "Full Stack ",
-                    10, "Full Stack",
-                    10, "Full Stac",
-                    10, "Full Sta",
-                    10, "Full St",
-                    10, "Full S",
-                    10, "Full ",
-                    10, "Full",
-                    10, "Ful",
-                    10, "Fu",
-                    10, "F",
-                    10, "",
-                    200, // Small pause before next text
-                    // Now type "SE Undergraduate"
-                    "S",
-                    10, "SE",
-                    10, "SE ",
-                    10, "SE U",
-                    10, "SE Un",
-                    10, "SE Und",
-                    10, "SE Unde",
-                    10, "SE Under",
-                    10, "SE Underg",
-                    10, "SE Undergr",
-                    10, "SE Undergra",
-                    10, "SE Undergrad",
-                    10, "SE Undergradu",
-                    10, "SE Undergradua",
-                    10, "SE Undergraduat",
-                    10, "SE Undergraduate",
-                    2000, // Pause before deleting
-                    // Backspace effect for second text
-                    "SE Undergraduat",
-                    10, "SE Undergradua",
-                    10, "SE Undergradu",
-                    10, "SE Undergrad",
-                    10, "SE Undergra",
-                    10, "SE Undergr",
-                    10, "SE Underg",
-                    10, "SE Under",
-                    10, "SE Unde",
-                    10, "SE Und",
-                    10, "SE Un",
-                    10, "SE U",
-                    10, "SE ",
-                    10, "SE",
-                    10, "S",
-                    10, "",
-                    200, // Small pause before loop restarts
-                  ]}
+                  sequence={animationSequence}
                   wrapper="span"
                   speed={1} // Default speed, individual delays are set in sequence
                   repeat={Infinity} // Loop forever

@@ -76,21 +76,21 @@ const HeroSection: React.FC = () => {
               Crafting robust, scalable web applications using the modern JavaScript ecosystem.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col items-center sm:flex-row sm:items-center sm:gap-[60px] gap-4 justify-center lg:justify-start">
               <Link
                 to="projects"
                 spy={true}
                 smooth={true}
                 offset={-80}
                 duration={800}
-                className="inline-flex items-center px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-full transition-colors cursor-pointer shadow-md"
+                className="inline-flex items-center w-fit px-6 py-3 bg-primary hover:bg-primary-dark text-white font-medium rounded-full transition-colors cursor-pointer shadow-md"
               >
                 View My Work
                 <ArrowRight size={18} className="ml-2" />
               </Link>
               <a
                 href={cvPdf}
-                className="inline-flex items-center px-6 py-3 bg-card hover:bg-card/80 text-foreground font-medium rounded-full border border-border transition-colors shadow-md"
+                className="inline-flex items-center w-fit px-6 py-3 bg-card hover:bg-card/80 text-foreground font-medium rounded-full border border-border transition-colors shadow-md"
                 download="Ruchira_Tharanka_CV.pdf"
                 onClick={() => {
                   toast.success('CV Downloading...');

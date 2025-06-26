@@ -10,12 +10,13 @@ interface SEOProps {
 }
 
 const SEO: React.FC<SEOProps> = ({
-  title = 'Ruchira Tharanka | Full-Stack Developer',
+  title = 'Ruchira Tharanka | Full-Stack Developer | Portfolio',
   description = 'I’m Ruchira Tharanka Full-Stack Developer. Explore my portfolio of dynamic React front-ends, secure Node.js back-ends, MongoDB databases, and innovative projects that solve real-world problems.',
   keywords = 'developer, portfolio, web developer, software engineer, frontend, backend, full stack, javascript, react, nodejs, typescript, html, css, web design, Ruchira Tharanka, personal website, Ruchira, Tharanka',  ogImage = '/og-image.png',
   ogUrl = import.meta.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.vercel.app/'
 }) => {
-  const siteTitle = title.includes('Portfolio') ? title : `${title} | Portfolio`;
+  // Use the title as is, without modification
+  const siteTitle = title;
 
   return (
     <Helmet>

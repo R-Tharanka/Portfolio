@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { Download, ArrowRight } from 'lucide-react';
@@ -8,7 +8,60 @@ import { TypeAnimation } from 'react-type-animation';
 import heroProfileImgSrc from '../../assets/img/hero-profile.png';
 import cvPdf from '../../assets/cv/Ruchira_Tharanka_CV.pdf';
 
+// Helper function to generate typing animation sequence
+const generateTypingSequence = (text: string, typingDelay: number = 10, pauseDuration: number = 2000) => {
+  const sequence: (string | number)[] = [];
+  
+  // Generate typing effect (progressively show more letters)
+  for (let i = 1; i <= text.length; i++) {
+    sequence.push(text.substring(0, i)); // Add the text up to this character
+    if (i < text.length) sequence.push(typingDelay); // Add delay except after the last character
+  }
+  
+  // Add pause at the end of complete text
+  sequence.push(pauseDuration);
+  
+  return sequence;
+};
+
+// Helper function to generate deletion animation sequence
+const generateDeletionSequence = (text: string, deletionDelay: number = 10) => {
+  const sequence: (string | number)[] = [];
+  
+  // Generate deletion effect (progressively remove letters)
+  for (let i = text.length - 1; i >= 0; i--) {
+    sequence.push(text.substring(0, i)); // Add the text minus the last character
+    if (i > 0) sequence.push(deletionDelay); // Add delay except after the last character
+  }
+  
+  return sequence;
+};
+
 const HeroSection: React.FC = () => {
+  // Generate the complete animation sequence
+  const animationSequence = useMemo(() => {
+    const text1 = "Full Stack Developer";
+    const text2 = "SE Undergraduate";
+    const typingDelay = 10;
+    const deletionDelay = 10;
+    const completePause = 2000;
+    const transitionPause = 200;
+    
+    const sequence: (string | number)[] = [
+      // First text - type, pause, then delete
+      ...generateTypingSequence(text1, typingDelay, completePause),
+      ...generateDeletionSequence(text1, deletionDelay),
+      transitionPause,
+      
+      // Second text - type, pause, then delete
+      ...generateTypingSequence(text2, typingDelay, completePause),
+      ...generateDeletionSequence(text2, deletionDelay),
+      transitionPause,
+    ];
+    
+    return sequence;
+  }, []);
+
   return (
     <section id="hero" className="min-h-screen flex items-center pt-20 relative overflow-hidden">
       {/* Background elements */}
@@ -35,7 +88,13 @@ const HeroSection: React.FC = () => {
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg">
-                Full Stack Developer
+                <TypeAnimation
+                  sequence={animationSequence}
+                  wrapper="span"
+                  speed={1} // Default speed, individual delays are set in sequence
+                  repeat={Infinity} // Loop forever
+                  cursor={true}
+                />
               </div>
             </div>
           </motion.div>
@@ -76,7 +135,7 @@ const HeroSection: React.FC = () => {
               Crafting robust, scalable web applications using the modern JavaScript ecosystem.
             </p>
 
-            <div className="flex flex-col items-center sm:flex-row sm:items-center sm:gap-[60px] gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col items-center sm:flex-row sm:gap-[60px] gap-4 justify-center lg:justify-start">
               <Link
                 to="projects"
                 spy={true}

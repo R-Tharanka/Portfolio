@@ -194,7 +194,7 @@ const AdminPanel: React.FC = () => {
   }
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <SEO title="Admin Dashboard" description="Portfolio Admin Panel for content management" />
+      <SEO title="Ruchira Tharanka Portfolio | Admin Dashboard" description="Portfolio Admin Panel for content management" />
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <div className="flex items-center space-x-3">

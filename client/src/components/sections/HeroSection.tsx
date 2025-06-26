@@ -35,7 +35,94 @@ const HeroSection: React.FC = () => {
                 />
               </div>
               <div className="absolute -bottom-4 -right-4 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg">
-                Full Stack Developer
+                <TypeAnimation
+                  sequence={[
+                    // First typing of "Full Stack Developer"
+                    "F",
+                    10, "Fu",
+                    10, "Ful",
+                    10, "Full",
+                    10, "Full ",
+                    10, "Full S",
+                    10, "Full St",
+                    10, "Full Sta",
+                    10, "Full Stac",
+                    10, "Full Stack",
+                    10, "Full Stack ",
+                    10, "Full Stack D",
+                    10, "Full Stack De",
+                    10, "Full Stack Dev",
+                    10, "Full Stack Deve",
+                    10, "Full Stack Devel",
+                    10, "Full Stack Develo",
+                    10, "Full Stack Develop",
+                    10, "Full Stack Develope",
+                    10, "Full Stack Developer",
+                    2000, // Pause before deleting
+                    // Backspace effect
+                    "Full Stack Develope",
+                    10, "Full Stack Develop",
+                    10, "Full Stack Develo",
+                    10, "Full Stack Devel",
+                    10, "Full Stack Deve",
+                    10, "Full Stack Dev",
+                    10, "Full Stack De",
+                    10, "Full Stack D",
+                    10, "Full Stack ",
+                    10, "Full Stack",
+                    10, "Full Stac",
+                    10, "Full Sta",
+                    10, "Full St",
+                    10, "Full S",
+                    10, "Full ",
+                    10, "Full",
+                    10, "Ful",
+                    10, "Fu",
+                    10, "F",
+                    10, "",
+                    200, // Small pause before next text
+                    // Now type "SE Undergraduate"
+                    "S",
+                    10, "SE",
+                    10, "SE ",
+                    10, "SE U",
+                    10, "SE Un",
+                    10, "SE Und",
+                    10, "SE Unde",
+                    10, "SE Under",
+                    10, "SE Underg",
+                    10, "SE Undergr",
+                    10, "SE Undergra",
+                    10, "SE Undergrad",
+                    10, "SE Undergradu",
+                    10, "SE Undergradua",
+                    10, "SE Undergraduat",
+                    10, "SE Undergraduate",
+                    2000, // Pause before deleting
+                    // Backspace effect for second text
+                    "SE Undergraduat",
+                    10, "SE Undergradua",
+                    10, "SE Undergradu",
+                    10, "SE Undergrad",
+                    10, "SE Undergra",
+                    10, "SE Undergr",
+                    10, "SE Underg",
+                    10, "SE Under",
+                    10, "SE Unde",
+                    10, "SE Und",
+                    10, "SE Un",
+                    10, "SE U",
+                    10, "SE ",
+                    10, "SE",
+                    10, "S",
+                    10, "",
+                    200, // Small pause before loop restarts
+                  ]}
+                  wrapper="span"
+                  speed={1} // Default speed, individual delays are set in sequence
+                  repeat={Infinity} // Loop forever
+                  cursor={true}
+                />
               </div>
             </div>
           </motion.div>

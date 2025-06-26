@@ -76,7 +76,7 @@ const HeroSection: React.FC = () => {
               Crafting robust, scalable web applications using the modern JavaScript ecosystem.
             </p>
 
-            <div className="flex flex-col items-center sm:flex-row sm:items-center sm:gap-[60px] gap-4 justify-center lg:justify-start">
+            <div className="flex flex-col sm:flex-row sm:gap-[60px] gap-4 justify-center lg:justify-start">
               <Link
                 to="projects"
                 spy={true}

@@ -93,7 +93,7 @@ const HeroSection: React.FC = () => {
                   wrapper="span"
                   speed={1} // Default speed, individual delays are set in sequence
                   repeat={Infinity} // Loop forever
-                  cursor={true}
+                  cursor={false}
                 />
               </div>
             </div>

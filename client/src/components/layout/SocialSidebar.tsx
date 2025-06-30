@@ -82,7 +82,7 @@ const SocialSidebar: React.FC = () => {
       <motion.button
         onClick={toggleSidebar}
         className={`
-          p-[1px] 
+          p-[0px] 
           ${isExpanded ? 'bg-card/60' : 'bg-card/70'} 
           rounded-r-md 
           h-20 

@@ -207,8 +207,10 @@ const ContactSection: React.FC = () => {
               <h3 className="text-2xl font-bold mb-6">Send a Message</h3>
 
               <form onSubmit={handleSubmit} className="space-y-6">
-                {/* Two-column layout for Name and Email on larger screens */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Layout for Name and Email fields:
+                  - One column (stacked) below 668px and above 1024px
+                  - Two columns (side-by-side) between 668px-768px */}
+                <div className="grid grid-cols-1 sm:[grid-template-columns:repeat(2,1fr)] md:grid-cols-1 lg:grid-cols-2 gap-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-foreground/80 mb-1">
                       Your Name

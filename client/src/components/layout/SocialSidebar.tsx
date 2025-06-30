@@ -6,6 +6,8 @@ import { useTheme } from '../../context/ThemeContext';
 import whatsappL from '../../assets/img/icons/whatsapp-light.png'
 import whatsappD from '../../assets/img/icons/whatsapp-dark.png'
 
+// No need for a separate style variable since we're using Tailwind's animate-pulse
+
 const SocialSidebar: React.FC = () => {
   // Initialize state from localStorage if available, default to true (expanded)
   const [isExpanded, setIsExpanded] = useState(() => {
@@ -72,23 +74,25 @@ const SocialSidebar: React.FC = () => {
     localStorage.setItem('socialSidebarExpanded', JSON.stringify(newState));
   };
 
+  // No need for custom keyframes since we're using Tailwind's animate-pulse
+  
   return (
     <div className="fixed left-0 top-1/2 transform -translate-y-1/2 z-40 hidden md:flex items-center">
       {/* Position the toggle button at the edge of the screen */}
       <motion.button
         onClick={toggleSidebar}
         className={`
-          p-1 
-          bg-card/60
+          p-[1px] 
+          ${isExpanded ? 'bg-card/60' : 'bg-card/70'} 
           rounded-r-md 
           h-20 
-          shadow-lg 
+          ${isExpanded ? 'shadow-lg' : 'shadow-lg shadow-primary/20'} 
           flex 
           items-center 
           justify-center 
           backdrop-blur-md 
           border-[1px] 
-          border-border/40
+          ${isExpanded ? 'border-border/40' : 'border-primary/40'}
           hover:border-primary/50 
           transition-all 
           duration-300
@@ -106,10 +110,18 @@ const SocialSidebar: React.FC = () => {
           WebkitBackdropFilter: 'blur(8px)'
         }}
       >
-        {isExpanded ? 
-          <ChevronsLeft size={18} className="text-foreground transition-colors group-hover:text-primary" /> : 
-          <ChevronsRight size={18} className="text-primary transition-colors" />
-        }
+        {isExpanded ? (
+          <ChevronsLeft size={20} className="text-foreground transition-colors group-hover:text-primary" />
+        ) : (
+          <div className="flex items-center justify-center w-full relative">
+            <div className="absolute w-full h-full bg-primary/20 rounded-full filter blur-md animate-pulse"></div>
+            <ChevronsRight 
+              size={22} 
+              color="#3b82f6" 
+              className="z-10 drop-shadow-[0_0_3px_rgba(59,130,246,0.7)]"
+            />
+          </div>
+        )}
       </motion.button>
       
       <motion.div
@@ -135,8 +147,8 @@ const SocialSidebar: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 + index * 0.1 }}
             style={{
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)'
+              backdropFilter: 'blur(2px)',
+              WebkitBackdropFilter: 'blur(2px)'
             }}
           >
             {getIcon(social.icon)}

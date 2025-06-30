@@ -190,7 +190,7 @@ const Footer: React.FC = () => {
           />
         </div>
       )}
-      <footer className="bg-card text-card-foreground py-12 border-t border-border relative overflow-hidden">
+      <footer className="bg-card text-card-foreground py-[26px] border-t border-border relative overflow-hidden">
         {/* Background design elements */}
         <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none">
           <div className="absolute top-10 left-10 w-64 h-64 rounded-full bg-primary blur-3xl"></div>
@@ -300,7 +300,7 @@ const Footer: React.FC = () => {
           </div>
 
           <motion.div
-            className="mt-10 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center"
+            className="mt-5 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-center"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5 }}

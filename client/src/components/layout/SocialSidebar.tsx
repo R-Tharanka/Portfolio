@@ -1,14 +1,119 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Facebook, Instagram, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Github, Linkedin, Facebook, Instagram, ChevronsLeft } from 'lucide-react';
 import { SocialMedia } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import whatsappL from '../../assets/img/icons/whatsapp-light.png'
 import whatsappD from '../../assets/img/icons/whatsapp-dark.png'
 
+// Separate component for the animated gradient chevrons
+const AnimatedGradientChevrons: React.FC = () => {
+  // Generate unique IDs for each gradient to avoid conflicts
+  const uniqueId = React.useId();
+  const firstGradientId = `chevron-gradient-1-${uniqueId}`;
+  const secondGradientId = `chevron-gradient-2-${uniqueId}`;
+  
+  return (
+    <div className="flex items-center justify-center w-full relative">
+      <div className="absolute w-full h-full bg-primary/20 rounded-full filter blur-md animate-pulse"></div>
+      
+      {/* SVG container */}
+      <div className="relative z-10 flex items-center justify-center w-full">
+        <svg 
+          xmlns="http://www.w3.org/2000/svg" 
+          width="28" 
+          height="24" 
+          viewBox="0 0 28 24"
+          className="drop-shadow-[0_0_4px_rgba(99,102,241,0.6)]"
+        >
+          <defs>
+            {/* First gradient for first chevron */}
+            <linearGradient id={firstGradientId} gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="rgb(59, 130, 246)" className="animate-gradient-stop-1" />
+              <stop offset="100%" stopColor="rgb(139, 92, 246)" className="animate-gradient-stop-2" />
+            </linearGradient>
+            
+            {/* Second gradient for second chevron */}
+            <linearGradient id={secondGradientId} gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stopColor="rgb(139, 92, 246)" className="animate-gradient-stop-2" />
+              <stop offset="100%" stopColor="rgb(59, 130, 246)" className="animate-gradient-stop-1" />
+            </linearGradient>
+          </defs>
+          
+          {/* Two chevrons with different gradients */}
+          <g fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M8 19L15 12L8 5" stroke={`url(#${firstGradientId})`} />
+            <path d="M17 19L24 12L17 5" stroke={`url(#${secondGradientId})`} />
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+};
+
+// No longer using a text-based gradient since it doesn't work with SVG
+
 // No need for a separate style variable since we're using Tailwind's animate-pulse
 
 const SocialSidebar: React.FC = () => {
+  // Add a style tag in the component for animating the SVG gradient
+  React.useEffect(() => {
+    const styleEl = document.createElement('style');
+    styleEl.textContent = `
+      /* Animation for gradient stops */
+      @keyframes gradientFlow {
+        0% {
+          stop-color: rgb(59, 130, 246); /* primary blue */
+        }
+        50% {
+          stop-color: rgb(139, 92, 246); /* secondary purple */
+        }
+        100% {
+          stop-color: rgb(59, 130, 246); /* back to primary blue */
+        }
+      }
+      
+      @keyframes gradientFlowReverse {
+        0% {
+          stop-color: rgb(139, 92, 246); /* secondary purple */
+        }
+        50% {
+          stop-color: rgb(59, 130, 246); /* primary blue */
+        }
+        100% {
+          stop-color: rgb(139, 92, 246); /* back to secondary purple */
+        }
+      }
+      
+      /* Animation classes for the gradient stops */
+      .animate-gradient-stop-1 {
+        animation: gradientFlow 3s ease-in-out infinite;
+      }
+      
+      .animate-gradient-stop-2 {
+        animation: gradientFlowReverse 3s ease-in-out infinite;
+      }
+      
+      /* Add a slight pulse effect to enhance visibility */
+      @keyframes subtlePulse {
+        0% {
+          stroke-width: 2.5;
+        }
+        50% {
+          stroke-width: 3;
+        }
+        100% {
+          stroke-width: 2.5;
+        }
+      }
+    `;
+    document.head.appendChild(styleEl);
+    
+    return () => {
+      document.head.removeChild(styleEl);
+    };
+  }, []);
+  
   // Initialize state from localStorage if available, default to true (expanded)
   const [isExpanded, setIsExpanded] = useState(() => {
     const savedState = localStorage.getItem('socialSidebarExpanded');
@@ -113,14 +218,7 @@ const SocialSidebar: React.FC = () => {
         {isExpanded ? (
           <ChevronsLeft size={20} className="text-foreground transition-colors group-hover:text-primary" />
         ) : (
-          <div className="flex items-center justify-center w-full relative">
-            <div className="absolute w-full h-full bg-primary/20 rounded-full filter blur-md animate-pulse"></div>
-            <ChevronsRight 
-              size={22} 
-              color="#3b82f6" 
-              className="z-10 drop-shadow-[0_0_3px_rgba(59,130,246,0.7)]"
-            />
-          </div>
+          <AnimatedGradientChevrons />
         )}
       </motion.button>
       

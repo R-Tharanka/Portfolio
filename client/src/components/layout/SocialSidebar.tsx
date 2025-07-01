@@ -21,8 +21,8 @@ const AnimatedGradientChevrons: React.FC = () => {
       <div className="relative z-10 flex items-center justify-center w-full">
         <svg 
           xmlns="http://www.w3.org/2000/svg" 
-          width="28" 
-          height="24" 
+          width="20" 
+          height="22" 
           viewBox="0 0 28 24"
           className="drop-shadow-[0_0_4px_rgba(99,102,241,0.6)]"
         >

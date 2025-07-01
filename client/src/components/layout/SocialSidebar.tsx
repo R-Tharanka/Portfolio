@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Facebook, Instagram, ChevronsLeft } from 'lucide-react';
 import { SocialMedia } from '../../types';
@@ -106,11 +106,87 @@ const SocialSidebar: React.FC = () => {
           stroke-width: 2.5;
         }
       }
+
+      /* Chevron animation styling */
+      @keyframes chevronBounce {
+        0%, 100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-4px);
+        }
+      }
+      
+      .chevron-animation {
+        animation: chevronBounce 1.5s ease-in-out infinite;
+      }
+      
+      /* Scroll animation for chevron color */
+      @keyframes chevronColorPulse {
+        0% {
+          color: currentColor;
+        }
+        25% {
+          color: rgb(59, 130, 246); /* primary blue */
+        }
+        50% {
+          color: currentColor;
+        }
+        75% {
+          color: rgb(59, 130, 246); /* primary blue */
+        }
+        100% {
+          color: currentColor;
+        }
+      }
+      
+      .chevron-scroll-animation {
+        animation: chevronColorPulse 2s ease-in-out infinite;
+      }
     `;
     document.head.appendChild(styleEl);
     
     return () => {
       document.head.removeChild(styleEl);
+    };
+  }, []);
+  
+  // Scroll animation state
+  const [scrollAnimationActive, setScrollAnimationActive] = useState(false);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const scrollTimerExtended = useRef<ReturnType<typeof setTimeout> | null>(null);
+  
+  // Scroll event handler
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollAnimationActive(true);
+      
+      // Clear previous timeouts
+      if (scrollTimer.current) {
+        clearTimeout(scrollTimer.current);
+      }
+      if (scrollTimerExtended.current) {
+        clearTimeout(scrollTimerExtended.current);
+      }
+      
+      // Set a timer to deactivate animation 2 seconds after scrolling stops
+      scrollTimer.current = setTimeout(() => {
+        scrollTimerExtended.current = setTimeout(() => {
+          setScrollAnimationActive(false);
+        }, 2000);
+      }, 100);
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      if (scrollTimer.current) {
+        clearTimeout(scrollTimer.current);
+      }
+      if (scrollTimerExtended.current) {
+        clearTimeout(scrollTimerExtended.current);
+      }
     };
   }, []);
   
@@ -216,7 +292,10 @@ const SocialSidebar: React.FC = () => {
         }}
       >
         {isExpanded ? (
-          <ChevronsLeft size={20} className="text-foreground transition-colors group-hover:text-primary" />
+          <ChevronsLeft 
+            size={20} 
+            className={`text-foreground transition-colors group-hover:text-primary ${scrollAnimationActive ? 'chevron-scroll-animation' : ''}`}
+          />
         ) : (
           <AnimatedGradientChevrons />
         )}

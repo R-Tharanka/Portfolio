@@ -87,14 +87,18 @@ const HeroSection: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <div className="absolute -bottom-4 -right-4 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg">
-                <TypeAnimation
-                  sequence={animationSequence}
-                  wrapper="span"
-                  speed={1} // Default speed, individual delays are set in sequence
-                  repeat={Infinity} // Loop forever
-                  cursor={false}
-                />
+              <div className="absolute -bottom-5 -right-4 bg-accent text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg\">
+                {/* Add a container with fixed height and direction control */}
+                <div className="h-[20px] flex justify-start items-center">
+                  <TypeAnimation
+                    sequence={animationSequence}
+                    wrapper="span"
+                    speed={1} // Default speed, individual delays are set in sequence
+                    repeat={Infinity} // Loop forever
+                    cursor={false}
+                    className="block" 
+                  />
+                </div>
               </div>
             </div>
           </motion.div>

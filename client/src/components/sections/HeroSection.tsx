@@ -87,6 +87,7 @@ const HeroSection: React.FC = () => {
                   className="w-full h-full object-cover"
                 />
               </div>
+              {/* accent badge */}
               <div className="absolute -bottom-5 right-[124px] sm:right-[98px] md:right-[125px] lg:right-[170px] translate-x-full bg-accent text-white text-sm font-medium px-4 py-2 rounded-full shadow-lg min-w-[10px] text-left transition-all">
                 {/* Add a container with fixed height and direction control */}
                 <div className="h-[20px] flex justify-start items-center">

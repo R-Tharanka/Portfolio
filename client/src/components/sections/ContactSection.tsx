@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Mail, MapPin, Phone, Send } from 'lucide-react';
 import { ContactFormData } from '../../types';
 import { submitContactForm } from '../../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
+import { useTheme } from '../../context/ThemeContext';
 
 const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -17,11 +18,24 @@ const ContactSection: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const { theme } = useTheme();
 
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
   });
+
+  // Effect to reset reCAPTCHA when theme changes
+  useEffect(() => {
+    // When theme changes and reCAPTCHA was already rendered, we need to reset it
+    if (recaptchaRef.current && window.grecaptcha) {
+      // Reset the token when theme changes
+      setCaptchaToken(null);
+      // Reset the widget to force re-render with new theme
+      window.grecaptcha.reset();
+    }
+  }, [theme]);
 
   // Handle reCAPTCHA token directly via onChange
 
@@ -62,14 +76,9 @@ const ContactSection: React.FC = () => {
       });
       setCaptchaToken(null);
 
-      // Reset captcha
-      const recaptchaElement = document.querySelector('iframe[src*="recaptcha"]')?.parentElement;
-      if (recaptchaElement) {
-        // Find and reset the reCAPTCHA
-        const captchaId = recaptchaElement.getAttribute('id') || '';
-        if (captchaId && window.grecaptcha) {
-          window.grecaptcha.reset();
-        }
+      // Reset captcha using ref
+      if (recaptchaRef.current) {
+        recaptchaRef.current.reset();
       }
 
     } catch (error) {
@@ -278,9 +287,10 @@ const ContactSection: React.FC = () => {
                 {/* reCAPTCHA Component */}
                 <div className="my-4">
                   <ReCAPTCHA
+                    ref={recaptchaRef}
                     sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                     onChange={setCaptchaToken}
-                    theme="dark"
+                    theme={theme === 'dark' ? 'dark' : 'light'}
                   />
                 </div>
 

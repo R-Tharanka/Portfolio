@@ -24,7 +24,7 @@ Visit my live portfolio at [ruchira-portfolio.vercel.app](https://ruchira-portfo
 
 ## License
 
-This is a personal portfolio project. You may view the code for reference purposes but all rights are reserved and no permissions are granted for use, modification, or distribution.
+This is a personal portfolio project. You may view the code for reference purposes but all rights are reserved and no permissions are granted for use, modification, or distribution. See the [LICENSE](https://github.com/R-Tharanka/Portfolio/blob/main/LICENSE) file for details.
 
 Copyright (c) 2025 [Ruchira Tharanka]. All rights reserved.
 

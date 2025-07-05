@@ -90,8 +90,10 @@ const EducationSection: React.FC = () => {
                 <div className={`md:w-1/2 pl-10 md:pl-0 ${index % 2 === 0 ? 'md:pr-16' : 'md:pl-16'}`}>
                   <div className="bg-card rounded-xl p-6 shadow-md border border-border/50 hover:border-primary/30 transition-all duration-300 hover:shadow-lg">
                     <div className="flex items-center mb-4">
-                      <GraduationCap size={20} className="text-primary mr-2" />
-                      <h3 className="text-xl font-bold">{item.title}</h3>
+                      <div className="relative left-[-8px] flex-shrink-0 w-6">
+                        <GraduationCap size={20} className="text-primary" />
+                      </div>
+                      <h3 className="text-xl font-bold flex-grow">{item.title}</h3>
                     </div>
                     
                     <div className="mb-4">

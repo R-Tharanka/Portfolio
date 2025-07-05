@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { isTokenExpired } from '../utils/auth';
 import logger from '../utils/logger';
 
@@ -9,6 +9,57 @@ const getApiBaseUrl = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
   logger.log('Using API URL:', apiUrl);
   return apiUrl;
+};
+
+// Define fallback data to use when API is unreachable
+const fallbackData = {
+  skills: [
+    { 
+      id: 'fallback-1', 
+      name: 'Frontend Development', 
+      proficiency: 90, 
+      icon: 'react', 
+      category: 'Frontend' as SkillCategory 
+    },
+    { 
+      id: 'fallback-2', 
+      name: 'Backend Development', 
+      proficiency: 85, 
+      icon: 'node-js', 
+      category: 'Backend' as SkillCategory 
+    },
+    // Add more fallback skills as needed
+  ],
+  projects: [
+    { 
+      id: 'fallback-1', 
+      title: 'Portfolio Website', 
+      description: 'Currently having trouble connecting to the backend server. Please check back later.',
+      technologies: ['React', 'Node.js'],
+      timeline: {
+        start: '2023-01-01',
+        end: null
+      },
+      imageUrl: '/assets/img/fallback-project.png',
+      tags: ['Frontend', 'Backend'],
+      featured: true
+    }
+    // Add more fallback projects if needed
+  ],
+  education: [
+    { 
+      id: 'fallback-1', 
+      institution: 'Sample University',
+      title: 'Computer Science Degree', 
+      description: 'Loading education data failed. Please check back later.',
+      skills: ['Programming', 'Problem Solving'],
+      timeline: {
+        start: '2018-01-01',
+        end: '2022-01-01'
+      }
+    }
+    // Add more fallback education items if needed
+  ]
 };
 
 const api = axios.create({
@@ -23,6 +74,17 @@ const api = axios.create({
     _t: Date.now()
   }
 });
+
+// Central error event dispatcher for component-level error handling
+export const apiErrorEvents = {
+  dispatch: (errorType: string, errorDetails: any) => {
+    const event = new CustomEvent('api:error', {
+      detail: { type: errorType, details: errorDetails }
+    });
+    window.dispatchEvent(event);
+    logger.error(`API Error [${errorType}]:`, errorDetails);
+  }
+};
 
 // Single consolidated request interceptor for debugging, authentication and special headers
 api.interceptors.request.use(
@@ -68,6 +130,7 @@ api.interceptors.request.use(
   },
   (error) => {
     console.error('API Request Error:', error);
+    apiErrorEvents.dispatch('request', error);
     return Promise.reject(error);
   }
 );
@@ -75,26 +138,119 @@ api.interceptors.request.use(
 // Add a response interceptor for logging and error handling
 api.interceptors.response.use(response => {
   return response;
-}, error => {
-  const { response } = error;
-  if (response?.status === 401) {
-    // Unauthorized - token might be invalid or expired
-    console.error('Authentication error:', response?.data?.message || 'Unauthorized access');
-
-    // Clear token from localStorage
-    localStorage.removeItem('adminToken');
-
-    // Dispatch a custom event to notify app about token expiration
-    const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
-    window.dispatchEvent(tokenExpiredEvent);
-  } else if (response?.status === 500) {
-    console.error('Server Error:', response?.data?.message || 'Unknown server error');
+}, (error: AxiosError) => {
+  const { response, message } = error;
+  
+  // Network errors (no response from server - server down, CORS issues, etc.)
+  if (!response) {
+    // Check if it's likely a CORS issue
+    const isCorsError = message.includes('Network Error') || 
+                        message.includes('CORS') || 
+                        message.toLowerCase().includes('cross-origin');
+    
+    // Create appropriate error info based on error type
+    const errorInfo = {
+      type: 'network',
+      subtype: isCorsError ? 'cors' : 'connection',
+      message: isCorsError 
+        ? 'Server connectivity issue detected. The API server may be down or unreachable.'
+        : 'Unable to connect to the server. Please check your internet connection or try again later.',
+      originalError: message
+    };
+    
+    apiErrorEvents.dispatch('network', errorInfo);
+    
+    // Show a toast message for network errors with more specific messaging
+    if (isCorsError) {
+      showErrorToast(
+        'API Connection Error', 
+        'Server is unreachable. Using limited offline functionality.'
+      );
+    } else {
+      showErrorToast(
+        'Network Error', 
+        'Server is unavailable. Some features may be limited.'
+      );
+    }
+  } 
+  // Server responded with an error status
+  else {
+    const status = response.status;
+    const errorData = response.data as any;
+    
+    // Authentication errors
+    if (status === 401) {
+      console.error('Authentication error:', errorData?.message || 'Unauthorized access');
+      
+      // Clear token from localStorage
+      localStorage.removeItem('adminToken');
+      
+      // Dispatch a custom event to notify app about token expiration
+      const tokenExpiredEvent = new CustomEvent('auth:tokenExpired');
+      window.dispatchEvent(tokenExpiredEvent);
+      
+      apiErrorEvents.dispatch('auth', { status, message: 'Authentication failed. Please login again.' });
+    } 
+    // Server errors
+    else if (status >= 500) {
+      console.error('Server Error:', errorData?.message || 'Unknown server error');
+      apiErrorEvents.dispatch('server', { 
+        status, 
+        message: 'The server encountered an error. Please try again later.' 
+      });
+      
+      // Show a toast message for server errors
+      showErrorToast('Server Error', 'The server encountered an error. Please try again later.');
+    }
+    // Other client errors
+    else if (status >= 400) {
+      console.error('Client Error:', errorData?.message || 'Unknown client error');
+      apiErrorEvents.dispatch('client', { 
+        status, 
+        message: errorData?.message || 'Something went wrong with your request.' 
+      });
+    }
   }
+  
   return Promise.reject(error);
 });
 
+// Simple toast error message function
+// This should be replaced with your actual toast notification system
+function showErrorToast(title: string, message: string) {
+  // Check if we have a toast service to use
+  const event = new CustomEvent('toast:error', {
+    detail: { title, message }
+  });
+  window.dispatchEvent(event);
+  
+  // Log to console in case no toast handler is set up
+  console.error(`${title}: ${message}`);
+}
+
+// Helper function to handle API errors with fallback data
+const handleApiError = <T>(error: any, endpoint: string, fallback?: T): ApiResponse<T> => {
+  const errorMessage = error.response?.data?.message ||
+    error.response?.data?.msg ||
+    error.message ||
+    `Failed to fetch data from ${endpoint}`;
+
+  console.error(`Error with ${endpoint}:`, error);
+  console.error('Detailed error:', {
+    status: error.response?.status,
+    statusText: error.response?.statusText,
+    message: errorMessage,
+    url: error.config?.url
+  });
+
+  return {
+    data: fallback as T,
+    error: errorMessage
+  };
+};
+
 // Types from our application
-import { Skill, Project, Education, ContactFormData } from '../types';
+import { Skill, Project, Education, ContactFormData, SkillCategory } from '../types';
 
 // API response types
 export interface ApiResponse<T> {
@@ -111,23 +267,7 @@ export const getSkills = async (): Promise<ApiResponse<Skill[]>> => {
     const response = await api.get('/skills');
     return { data: response.data };
   } catch (error: any) {
-    console.error('Error fetching skills:', error);
-    const errorMessage = error.response?.data?.message ||
-      error.response?.data?.msg ||
-      error.message ||
-      'Failed to fetch skills';
-
-    console.error('Detailed error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      message: errorMessage,
-      url: error.config?.url
-    });
-
-    return {
-      data: [],
-      error: errorMessage
-    };
+    return handleApiError<Skill[]>(error, 'skills', fallbackData.skills);
   }
 };
 
@@ -150,23 +290,7 @@ export const getProjects = async (): Promise<ApiResponse<Project[]>> => {
 
     return { data: projectsWithIds };
   } catch (error: any) {
-    console.error('Error fetching projects:', error);
-    const errorMessage = error.response?.data?.message ||
-      error.response?.data?.msg ||
-      error.message ||
-      'Failed to fetch projects';
-
-    console.error('Detailed error:', {
-      status: error.response?.status,
-      statusText: error.response?.statusText,
-      message: errorMessage,
-      url: error.config?.url
-    });
-
-    return {
-      data: [],
-      error: errorMessage
-    };
+    return handleApiError<Project[]>(error, 'projects', fallbackData.projects);
   }
 };
 
@@ -175,11 +299,8 @@ export const getFeaturedProjects = async (): Promise<ApiResponse<Project[]>> => 
     const response = await api.get('/projects/featured');
     return { data: response.data };
   } catch (error: any) {
-    console.error('Error fetching featured projects:', error);
-    return {
-      data: [],
-      error: error.response?.data?.msg || 'Failed to fetch featured projects'
-    };
+    const featuredFallback = fallbackData.projects.filter(project => project.featured);
+    return handleApiError<Project[]>(error, 'featured projects', featuredFallback);
   }
 };
 
@@ -205,11 +326,7 @@ export const getEducation = async (): Promise<ApiResponse<Education[]>> => {
 
     return { data: educationWithIds };
   } catch (error: any) {
-    console.error('Error fetching education:', error);
-    return {
-      data: [],
-      error: error.response?.data?.msg || 'Failed to fetch education'
-    };
+    return handleApiError<Education[]>(error, 'education', fallbackData.education);
   }
 };
 
@@ -219,10 +336,21 @@ export const submitContactForm = async (formData: ContactFormData): Promise<ApiR
     const response = await api.post('/contact', formData);
     return { data: response.data };
   } catch (error: any) {
-    console.error('Error submitting contact form:', error);
+    // Special handling for contact form submission
+    const isNetworkError = !error.response;
+    const errorMsg = isNetworkError 
+      ? "We couldn't reach our servers. Please try again later or contact directly via email."
+      : error.response?.data?.msg || 'Failed to submit contact form';
+    
+    // Dispatch event for potential offline message saving
+    if (isNetworkError) {
+      const event = new CustomEvent('contact:offline', { detail: formData });
+      window.dispatchEvent(event);
+    }
+    
     return {
       data: null,
-      error: error.response?.data?.msg || 'Failed to submit contact form'
+      error: errorMsg
     };
   }
 };

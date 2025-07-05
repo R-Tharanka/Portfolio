@@ -6,6 +6,8 @@ import { HelmetProvider } from 'react-helmet-async';
 import Analytics from './components/common/Analytics';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import ToastManager from './components/ui/ToastManager';
+import ApiOfflineNotice from './components/ui/ApiOfflineNotice';
 import SocialSidebar from './components/layout/SocialSidebar';
 import HeroSection from './components/sections/HeroSection';
 import AboutSection from './components/sections/AboutSection';
@@ -54,6 +56,8 @@ function App() {
             }}
           />
           <Analytics />
+          <ToastManager /> {/* Add global toast manager for API errors */}
+          <ApiOfflineNotice /> {/* Show notice when API is unreachable */}
           <div className="relative">
             <DevelopmentBanner />
             <BrowserRouter>

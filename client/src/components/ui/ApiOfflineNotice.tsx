@@ -10,18 +10,22 @@ interface ApiOfflineNoticeProps {
 const ApiOfflineNotice: React.FC<ApiOfflineNoticeProps> = ({ 
   message = "API server is currently unavailable. Limited functionality available."
 }) => {
-  const { isApiOnline, hasShownOfflineNotice, setHasShownOfflineNotice } = useApi();
+  const { isApiOnline, setHasShownOfflineNotice } = useApi();
   const [isVisible, setIsVisible] = useState(false);
   useEffect(() => {
     // Check if the notice was dismissed in this session
     const dismissed = sessionStorage.getItem('api-offline-notice-dismissed') === 'true';
     
-    // Show notice if API is offline and not dismissed
-    if (!isApiOnline && !dismissed && !hasShownOfflineNotice) {
+    // Always show notice if API is offline and not dismissed, regardless of previous state
+    if (!isApiOnline && !dismissed) {
+      console.log('API is offline, showing notice');
       setIsVisible(true);
       setHasShownOfflineNotice(true);
+    } else if (isApiOnline) {
+      // Reset visibility if API comes back online
+      setIsVisible(false);
     }
-  }, [isApiOnline, hasShownOfflineNotice, setHasShownOfflineNotice]);
+  }, [isApiOnline, setHasShownOfflineNotice]);
   
   const handleDismiss = () => {
     setIsVisible(false);
@@ -37,7 +41,7 @@ const ApiOfflineNotice: React.FC<ApiOfflineNoticeProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -50 }}
       transition={{ duration: 0.3 }}
-      className="fixed top-16 inset-x-0 mx-auto z-[10002] max-w-md bg-amber-50 dark:bg-amber-900 border border-amber-200 dark:border-amber-700 rounded-lg shadow-lg p-4"
+      className="fixed top-16 inset-x-0 mx-auto z-[11000] max-w-md bg-amber-50 dark:bg-amber-900 border border-amber-200 dark:border-amber-700 rounded-lg shadow-lg p-4"
     >
       <div className="flex items-start">
         <div className="flex-shrink-0 mt-0.5">

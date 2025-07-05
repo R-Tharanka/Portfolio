@@ -3,20 +3,19 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Project } from '../../types';
-import { getProjects } from '../../services/api';
+import { useApiService } from '../../hooks/useApiService';
 import ScrollableTagRow from '../ui/ScrollableTagRow';
-
-// Empty array for projects data
-const fallbackProjects: Project[] = [];
 
 // Maximum description length before truncation
 const MAX_DESCRIPTION_LENGTH = 200;
 
 const ProjectsSection: React.FC = () => {
+  const { getProjects } = useApiService();
   const [activeTag, setActiveTag] = useState<string | 'All'>('All');
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [error, setError] = useState<string | null>(null); 
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -34,7 +33,7 @@ const ProjectsSection: React.FC = () => {
         const response = await getProjects();
         if (response.error) {
           setError(response.error);
-          setProjects(fallbackProjects); // Use fallback data in case of error
+          setProjects(response.data); // Fallback data is already included in the response
         } else {
           setProjects(response.data);
           setError(null);
@@ -42,7 +41,7 @@ const ProjectsSection: React.FC = () => {
       } catch (err) {
         console.error('Failed to fetch projects:', err);
         setError('Failed to load projects. Using fallback data.');
-        setProjects(fallbackProjects); // Use fallback data in case of error
+        setProjects([]); // Empty array if all else fails
       } finally {
         setLoading(false);
       }
@@ -117,7 +116,15 @@ const ProjectsSection: React.FC = () => {
           {/* Error State */}
           {error && !loading && filteredProjects.length === 0 && (
             <div className="text-center py-16">
+              <p className="text-xl mb-2">Could Not Load Projects</p>
               <p className="text-foreground/70">{error}</p>
+            </div>
+          )}
+          
+          {/* No Data State */}
+          {!error && !loading && filteredProjects.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-foreground/70">No projects found for the selected filter.</p>
             </div>
           )}
 

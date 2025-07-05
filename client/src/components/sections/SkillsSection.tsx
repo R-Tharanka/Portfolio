@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Skill, SkillCategory } from '../../types';
-import { getSkills } from '../../services/api';
+import { useApiService } from '../../hooks/useApiService';
 import { Loader2 } from 'lucide-react';
 import { iconMap } from '../ui/iconMap';
 
@@ -50,12 +50,10 @@ const getIconComponent = (iconName: string) => {
   return iconMap['default'];
 };
 
-// Empty array for skills
-const fallbackSkills: Skill[] = [];
-
 const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps', 'Languages', 'Design', 'Other'];
 
 const SkillsSection: React.FC = () => {
+  const { getSkills } = useApiService();
   const [activeCategory, setActiveCategory] = useState<SkillCategory | 'All'>('All');
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,7 +70,7 @@ const SkillsSection: React.FC = () => {
         const response = await getSkills();
         if (response.error) {
           setError(response.error);
-          setSkills(fallbackSkills); // Use fallback data in case of error
+          setSkills(response.data); // Fallback data is already included in the response
         } else {
           setSkills(response.data);
           setError(null);
@@ -80,7 +78,7 @@ const SkillsSection: React.FC = () => {
       } catch (err) {
         console.error('Failed to fetch skills:', err);
         setError('Failed to load skills. Using fallback data.');
-        setSkills(fallbackSkills); // Use fallback data in case of error
+        setSkills([]); // Empty array if all else fails
       } finally {
         setLoading(false);
       }
@@ -137,6 +135,15 @@ const SkillsSection: React.FC = () => {
           <div className="relative min-h-[400px] bg-card/30 rounded-xl p-8 flex items-center justify-center">
             {loading ? (
               <Loader2 className="animate-spin h-10 w-10 text-primary" />
+            ) : error ? (
+              <div className="text-center text-foreground/70 p-8">
+                <p className="text-xl mb-2">Could Not Load Skills</p>
+                <p>{error}</p>
+              </div>
+            ) : filteredSkills.length === 0 ? (
+              <div className="text-center text-foreground/70">
+                <p>No skills data available for the selected category.</p>
+              </div>
             ) : (
               <AnimatePresence mode="wait">
                 <motion.div

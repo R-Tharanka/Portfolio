@@ -49,7 +49,7 @@ function App() {
               position="top-center"
               toastOptions={{
                 style: {
-                  zIndex: 10000, // Ensure toasts appear above all other elements
+                  zIndex: 10000, // High but still lower than ApiOfflineNotice
                   background: 'var(--color-background)',
                   color: 'var(--color-text)',
                   backdropFilter: 'blur(8px)',

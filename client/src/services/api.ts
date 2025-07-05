@@ -11,55 +11,12 @@ const getApiBaseUrl = () => {
   return apiUrl;
 };
 
-// Define fallback data to use when API is unreachable
-const fallbackData = {
-  skills: [
-    { 
-      id: 'fallback-1', 
-      name: 'Frontend Development', 
-      proficiency: 90, 
-      icon: 'react', 
-      category: 'Frontend' as SkillCategory 
-    },
-    { 
-      id: 'fallback-2', 
-      name: 'Backend Development', 
-      proficiency: 85, 
-      icon: 'node-js', 
-      category: 'Backend' as SkillCategory 
-    },
-    // Add more fallback skills as needed
-  ],
-  projects: [
-    { 
-      id: 'fallback-1', 
-      title: 'Portfolio Website', 
-      description: 'Currently having trouble connecting to the backend server. Please check back later.',
-      technologies: ['React', 'Node.js'],
-      timeline: {
-        start: '2023-01-01',
-        end: null
-      },
-      imageUrl: '/assets/img/fallback-project.png',
-      tags: ['Frontend', 'Backend'],
-      featured: true
-    }
-    // Add more fallback projects if needed
-  ],
-  education: [
-    { 
-      id: 'fallback-1', 
-      institution: 'Sample University',
-      title: 'Computer Science Degree', 
-      description: 'Loading education data failed. Please check back later.',
-      skills: ['Programming', 'Problem Solving'],
-      timeline: {
-        start: '2018-01-01',
-        end: '2022-01-01'
-      }
-    }
-    // Add more fallback education items if needed
-  ]
+// Define error messages for when API is unreachable
+const errorMessages = {
+  skills: "Unable to load skills data. The server is currently unavailable.",
+  projects: "Unable to load project data. The server is currently unavailable.",
+  education: "Unable to load education data. The server is currently unavailable.",
+  contact: "Unable to send message. The server is currently unavailable."
 };
 
 const api = axios.create({
@@ -217,12 +174,12 @@ function showErrorToast(title: string, message: string) {
   console.error(`${title}: ${message}`);
 }
 
-// Helper function to handle API errors with fallback data
-const handleApiError = <T>(error: any, endpoint: string, fallback?: T): ApiResponse<T> => {
+// Helper function to handle API errors with appropriate error messages
+const handleApiError = <T>(error: any, endpoint: string): ApiResponse<T> => {
   const errorMessage = error.response?.data?.message ||
     error.response?.data?.msg ||
     error.message ||
-    `Failed to fetch data from ${endpoint}`;
+    `Unable to load ${endpoint}. The server is currently unavailable.`;
 
   console.error(`Error with ${endpoint}:`, error);
   console.error('Detailed error:', {
@@ -233,7 +190,7 @@ const handleApiError = <T>(error: any, endpoint: string, fallback?: T): ApiRespo
   });
 
   return {
-    data: fallback as T,
+    data: [] as unknown as T, // Return empty array for collection endpoints
     error: errorMessage
   };
 };
@@ -256,7 +213,7 @@ export const getSkills = async (): Promise<ApiResponse<Skill[]>> => {
     const response = await api.get('/skills');
     return { data: response.data };
   } catch (error: any) {
-    return handleApiError<Skill[]>(error, 'skills', fallbackData.skills);
+    return handleApiError<Skill[]>(error, 'skills');
   }
 };
 
@@ -279,7 +236,7 @@ export const getProjects = async (): Promise<ApiResponse<Project[]>> => {
 
     return { data: projectsWithIds };
   } catch (error: any) {
-    return handleApiError<Project[]>(error, 'projects', fallbackData.projects);
+    return handleApiError<Project[]>(error, 'projects');
   }
 };
 
@@ -288,8 +245,7 @@ export const getFeaturedProjects = async (): Promise<ApiResponse<Project[]>> => 
     const response = await api.get('/projects/featured');
     return { data: response.data };
   } catch (error: any) {
-    const featuredFallback = fallbackData.projects.filter(project => project.featured);
-    return handleApiError<Project[]>(error, 'featured projects', featuredFallback);
+    return handleApiError<Project[]>(error, 'featured projects');
   }
 };
 
@@ -315,7 +271,7 @@ export const getEducation = async (): Promise<ApiResponse<Education[]>> => {
 
     return { data: educationWithIds };
   } catch (error: any) {
-    return handleApiError<Education[]>(error, 'education', fallbackData.education);
+    return handleApiError<Education[]>(error, 'education');
   }
 };
 

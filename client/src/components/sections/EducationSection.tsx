@@ -3,12 +3,10 @@ import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Calendar, GraduationCap, Loader2 } from 'lucide-react';
 import { Education } from '../../types';
-import { getEducation } from '../../services/api';
-
-// Empty array for education data
-const fallbackEducation: Education[] = [];
+import { useApiService } from '../../hooks/useApiService';
 
 const EducationSection: React.FC = () => {
+  const { getEducation } = useApiService();
   const [education, setEducation] = useState<Education[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,7 +22,7 @@ const EducationSection: React.FC = () => {
         const response = await getEducation();
         if (response.error) {
           setError(response.error);
-          setEducation(fallbackEducation); // Use fallback data in case of error
+          setEducation(response.data); // Fallback data is already included in the response
         } else {
           setEducation(response.data);
           setError(null);
@@ -32,7 +30,7 @@ const EducationSection: React.FC = () => {
       } catch (err) {
         console.error('Failed to fetch education:', err);
         setError('Failed to load education. Using fallback data.');
-        setEducation(fallbackEducation); // Use fallback data in case of error
+        setEducation([]); // Empty array if all else fails
       } finally {
         setLoading(false);
       }
@@ -60,9 +58,16 @@ const EducationSection: React.FC = () => {
             {/* Vertical Line */}
             <div className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 h-full w-1 bg-primary/20 rounded-full"></div>
             
-            {education.length === 0 && !loading && (
+            {education.length === 0 && !loading && error && (
               <div className="text-center text-foreground/70 py-8">
-                {error || 'No education data available.'}
+                <p className="text-xl mb-2">Could Not Load Education</p>
+                <p>{error}</p>
+              </div>
+            )}
+            
+            {education.length === 0 && !loading && !error && (
+              <div className="text-center text-foreground/70 py-8">
+                No education data available.
               </div>
             )}
             

@@ -116,7 +116,15 @@ const ProjectsSection: React.FC = () => {
           {/* Error State */}
           {error && !loading && filteredProjects.length === 0 && (
             <div className="text-center py-16">
+              <p className="text-xl mb-2">Could Not Load Projects</p>
               <p className="text-foreground/70">{error}</p>
+            </div>
+          )}
+          
+          {/* No Data State */}
+          {!error && !loading && filteredProjects.length === 0 && (
+            <div className="text-center py-16">
+              <p className="text-foreground/70">No projects found for the selected filter.</p>
             </div>
           )}
 

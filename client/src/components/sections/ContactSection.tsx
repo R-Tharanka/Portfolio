@@ -17,6 +17,7 @@ const ContactSection: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string>("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { theme } = useTheme();
@@ -63,6 +64,8 @@ const ContactSection: React.FC = () => {
       });
 
       if (response.error) {
+        setSubmitStatus('error');
+        setErrorMessage(response.error);
         throw new Error(response.error);
       }
 
@@ -84,9 +87,12 @@ const ContactSection: React.FC = () => {
       // Also update the key to ensure complete re-rendering if needed
       setCaptchaKey(Date.now());
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting form:', error);
       setSubmitStatus('error');
+      if (!errorMessage) {
+        setErrorMessage(error.message || "Unable to send message. The server is currently unavailable.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -330,7 +336,7 @@ const ContactSection: React.FC = () => {
 
                 {submitStatus === 'error' && (
                   <div className="p-3 bg-error/10 border border-error/30 rounded-lg text-error text-center">
-                    Something went wrong. Please try again.
+                    {errorMessage || "Unable to send message. The server is currently unavailable."}
                   </div>
                 )}
               </form>

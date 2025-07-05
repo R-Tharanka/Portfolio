@@ -135,6 +135,15 @@ const SkillsSection: React.FC = () => {
           <div className="relative min-h-[400px] bg-card/30 rounded-xl p-8 flex items-center justify-center">
             {loading ? (
               <Loader2 className="animate-spin h-10 w-10 text-primary" />
+            ) : error ? (
+              <div className="text-center text-foreground/70 p-8">
+                <p className="text-xl mb-2">Could Not Load Skills</p>
+                <p>{error}</p>
+              </div>
+            ) : filteredSkills.length === 0 ? (
+              <div className="text-center text-foreground/70">
+                <p>No skills data available for the selected category.</p>
+              </div>
             ) : (
               <AnimatePresence mode="wait">
                 <motion.div

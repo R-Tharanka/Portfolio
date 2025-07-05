@@ -58,9 +58,16 @@ const EducationSection: React.FC = () => {
             {/* Vertical Line */}
             <div className="absolute left-0 md:left-1/2 transform md:-translate-x-1/2 h-full w-1 bg-primary/20 rounded-full"></div>
             
-            {education.length === 0 && !loading && (
+            {education.length === 0 && !loading && error && (
               <div className="text-center text-foreground/70 py-8">
-                {error || 'No education data available.'}
+                <p className="text-xl mb-2">Could Not Load Education</p>
+                <p>{error}</p>
+              </div>
+            )}
+            
+            {education.length === 0 && !loading && !error && (
+              <div className="text-center text-foreground/70 py-8">
+                No education data available.
               </div>
             )}
             

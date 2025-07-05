@@ -139,9 +139,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(response => {
   return response;
 }, (error: AxiosError) => {
-  const { response, message } = error;
-  
-  // Network errors (no response from server - server down, CORS issues, etc.)
+  const { response, message } = error;    // Network errors (no response from server - server down, CORS issues, etc.)
   if (!response) {
     // Check if it's likely a CORS issue
     const isCorsError = message.includes('Network Error') || 
@@ -158,20 +156,11 @@ api.interceptors.response.use(response => {
       originalError: message
     };
     
+    // Dispatch event for ApiOfflineNotice to handle - no toast needed
     apiErrorEvents.dispatch('network', errorInfo);
     
-    // Show a toast message for network errors with more specific messaging
-    if (isCorsError) {
-      showErrorToast(
-        'API Connection Error', 
-        'Server is unreachable. Using limited offline functionality.'
-      );
-    } else {
-      showErrorToast(
-        'Network Error', 
-        'Server is unavailable. Some features may be limited.'
-      );
-    }
+    // Just log to console for debugging - no toast notification
+    console.warn('API Connection Error: Server is unreachable. Using fallback data.');
   } 
   // Server responded with an error status
   else {

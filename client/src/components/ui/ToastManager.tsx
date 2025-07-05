@@ -15,26 +15,36 @@ const ToastManager: React.FC = () => {
     // Listen for toast events
     const handleErrorToast = (event: CustomEvent) => {
       const { title, message, type = 'error' } = event.detail;
+      
+      // Check if it's a network error message from the API service
+      if (title?.toLowerCase().includes('api connection error') || 
+          title?.toLowerCase().includes('network error') ||
+          message?.toLowerCase().includes('server is unreachable') ||
+          message?.toLowerCase().includes('cors')) {
+        // Suppress toast for API network errors - ApiOfflineNotice will handle this
+        console.log('Network error toast suppressed:', title, message);
+        return;
+      }
+      
+      // Show other toasts normally
       addToast(title, message, type);
     };
     
-    // Listen for API error events
+    // Listen for API error events - but don't show network errors as toast
+    // since they're already shown in the ApiOfflineNotice
     const handleApiError = (event: CustomEvent) => {
       const { type } = event.detail;
       
-      // Set appropriate toast messages based on error type
-      if (type === 'network') {
-        addToast(
-          'Connection Error', 
-          'Unable to connect to the server. Some features may be limited.',
-          'error'
-        );
-      } else if (type === 'server') {
+      // Only show server errors as toasts (not network errors)
+      if (type === 'server') {
         addToast(
           'Server Error',
           'Our servers are having issues. Please try again later.',
           'error'
         );
+      } else if (type === 'network' || type === 'connection' || type === 'cors') {
+        // Explicitly do nothing - ApiOfflineNotice handles these errors
+        console.log('Network error intercepted by ToastManager - suppressing toast notification');
       }
     };
 

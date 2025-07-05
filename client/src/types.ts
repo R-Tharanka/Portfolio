@@ -35,6 +35,7 @@ export interface Project {
   repoLink?: string;
   demoLink?: string;
   tags: string[];
+  featured?: boolean; // Indicates if the project should be featured on the homepage
 }
 
 // Education Type

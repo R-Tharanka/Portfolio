@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { ServiceWorkerProvider } from './context/ServiceWorkerContext';
+import { ApiProvider } from './context/ApiContext';
 import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
 import Analytics from './components/common/Analytics';
@@ -43,30 +44,32 @@ function App() {
     <HelmetProvider>
       <ThemeProvider>
         <ServiceWorkerProvider>
-          <Toaster
-            position="top-center"
-            toastOptions={{
-              style: {
-                zIndex: 10000, // Ensure toasts appear above all other elements
-                background: 'var(--color-background)',
-                color: 'var(--color-text)',
-                backdropFilter: 'blur(8px)',
-                fontWeight: 500
-              },
-            }}
-          />
-          <Analytics />
-          <ToastManager /> {/* Add global toast manager for API errors */}
-          <ApiOfflineNotice /> {/* Show notice when API is unreachable */}
-          <div className="relative">
-            <DevelopmentBanner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<MainPage />} />
-                <Route path="/admin" element={<AdminPanel />} />
-              </Routes>
-            </BrowserRouter>
-          </div>
+          <ApiProvider>
+            <Toaster
+              position="top-center"
+              toastOptions={{
+                style: {
+                  zIndex: 10000, // Ensure toasts appear above all other elements
+                  background: 'var(--color-background)',
+                  color: 'var(--color-text)',
+                  backdropFilter: 'blur(8px)',
+                  fontWeight: 500
+                },
+              }}
+            />
+            <Analytics />
+            <ToastManager /> {/* Add global toast manager for API errors */}
+            <ApiOfflineNotice /> {/* Show notice when API is unreachable */}
+            <div className="relative">
+              <DevelopmentBanner />
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/" element={<MainPage />} />
+                  <Route path="/admin" element={<AdminPanel />} />
+                </Routes>
+              </BrowserRouter>
+            </div>
+          </ApiProvider>
         </ServiceWorkerProvider>
       </ThemeProvider>
     </HelmetProvider>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { WifiOff, X } from 'lucide-react';
+import { useApi } from '../../context/ApiContext';
 
 interface ApiOfflineNoticeProps {
   message?: string;
@@ -9,38 +10,26 @@ interface ApiOfflineNoticeProps {
 const ApiOfflineNotice: React.FC<ApiOfflineNoticeProps> = ({ 
   message = "API server is currently unavailable. Limited functionality available."
 }) => {
+  const { isApiOnline, hasShownOfflineNotice, setHasShownOfflineNotice } = useApi();
   const [isVisible, setIsVisible] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
-  
   useEffect(() => {
-    // Listen for network/API error events
-    const handleApiError = (event: CustomEvent) => {
-      const { type } = event.detail;
-      
-      // Only show for network errors if not dismissed
-      if (type === 'network' && !isDismissed) {
-        setIsVisible(true);
-      }
-    };
+    // Check if the notice was dismissed in this session
+    const dismissed = sessionStorage.getItem('api-offline-notice-dismissed') === 'true';
     
-    // Add event listeners
-    window.addEventListener('api:error' as any, handleApiError);
-    
-    // Clean up
-    return () => {
-      window.removeEventListener('api:error' as any, handleApiError);
-    };
-  }, [isDismissed]);
+    // Show notice if API is offline and not dismissed
+    if (!isApiOnline && !dismissed && !hasShownOfflineNotice) {
+      setIsVisible(true);
+      setHasShownOfflineNotice(true);
+    }
+  }, [isApiOnline, hasShownOfflineNotice, setHasShownOfflineNotice]);
   
   const handleDismiss = () => {
     setIsVisible(false);
-    setIsDismissed(true);
-    // Set session storage to remember dismissal
     sessionStorage.setItem('api-offline-notice-dismissed', 'true');
   };
   
-  // Don't render anything if not visible
-  if (!isVisible) return null;
+  // Don't render anything if API is online or notice is dismissed
+  if (isApiOnline || !isVisible) return null;
   
   return (
     <motion.div
@@ -48,7 +37,7 @@ const ApiOfflineNotice: React.FC<ApiOfflineNoticeProps> = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -50 }}
       transition={{ duration: 0.3 }}
-      className="fixed top-16 inset-x-0 mx-auto z-50 max-w-md bg-amber-50 dark:bg-amber-900 border border-amber-200 dark:border-amber-700 rounded-lg shadow-lg p-4"
+      className="fixed top-16 inset-x-0 mx-auto z-[10002] max-w-md bg-amber-50 dark:bg-amber-900 border border-amber-200 dark:border-amber-700 rounded-lg shadow-lg p-4"
     >
       <div className="flex items-start">
         <div className="flex-shrink-0 mt-0.5">

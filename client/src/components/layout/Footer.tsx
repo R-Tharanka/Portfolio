@@ -129,8 +129,7 @@ const Footer: React.FC = () => {
             'Successfully unregistered all service workers',
             'Cleared browser caches',
             'Removed stored API URLs',
-            'Ready to reload with fresh data',
-            'Please use one of the buttons below to refresh the page'
+            'Ready to reload with fresh data'
           ]
         });
       } else if (result && result.type === 'error') {

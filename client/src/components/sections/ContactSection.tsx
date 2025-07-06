@@ -6,6 +6,7 @@ import { ContactFormData } from '../../types';
 import { submitContactForm } from '../../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
 import { useTheme } from '../../context/ThemeContext';
+import ConfirmationModal from '../ui/ConfirmationModal';
 
 const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -16,9 +17,14 @@ const ContactSection: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string>("");
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    type: 'success' as 'success' | 'error'
+  });
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { theme } = useTheme();
   // Add a key state to force re-render of reCAPTCHA when theme changes
@@ -64,12 +70,23 @@ const ContactSection: React.FC = () => {
       });
 
       if (response.error) {
-        setSubmitStatus('error');
         setErrorMessage(response.error);
+        setModalConfig({
+          title: 'Message Failed',
+          message: response.error || 'Unable to send message. The server is currently unavailable.',
+          type: 'error'
+        });
+        setIsModalOpen(true);
         throw new Error(response.error);
       }
 
-      setSubmitStatus('success');
+      // Success case
+      setModalConfig({
+        title: 'Message Sent',
+        message: 'Thank you for your message! I\'ll get back to you as soon as possible.',
+        type: 'success'
+      });
+      setIsModalOpen(true);
 
       // Reset form
       setFormData({
@@ -89,7 +106,6 @@ const ContactSection: React.FC = () => {
 
     } catch (error: any) {
       console.error('Error submitting form:', error);
-      setSubmitStatus('error');
       if (!errorMessage) {
         setErrorMessage(error.message || "Unable to send message. The server is currently unavailable.");
       }
@@ -328,22 +344,36 @@ const ContactSection: React.FC = () => {
                   )}
                 </button>
 
-                {submitStatus === 'success' && (
-                  <div className="p-3 bg-success/10 border border-success/30 rounded-lg text-success text-center">
-                    Message sent successfully! I'll get back to you soon.
-                  </div>
-                )}
-
-                {submitStatus === 'error' && (
-                  <div className="p-3 bg-error/10 border border-error/30 rounded-lg text-error text-center">
-                    {errorMessage || "Unable to send message. The server is currently unavailable."}
-                  </div>
-                )}
               </form>
             </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal 
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          if (modalConfig.type === 'success') {
+            // Reset form after successful submission when modal closes
+            setFormData({
+              name: '',
+              email: '',
+              title: '',
+              message: '',
+            });
+            // Reset captcha
+            setCaptchaToken(null);
+            if (recaptchaRef.current) {
+              recaptchaRef.current.reset();
+            }
+          }
+        }}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+      />
     </section>
   );
 };

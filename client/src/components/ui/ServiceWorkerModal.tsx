@@ -105,7 +105,9 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
                             onClick={handleClose}
                         />
 
-                        {/* Modal Container - Fixed position with proper centering */}                    <div className="fixed inset-0 overflow-y-auto z-9500"> {/* Higher than backdrop but lower than toasts */}
+                        {/* Modal Container - Fixed position with proper centering */}
+                        <div className="fixed inset-0 overflow-y-auto z-9500"> 
+													{/* Higher than backdrop but lower than toasts */}
                             <div className="flex items-center justify-center min-h-full p-4">
                                 {/* Modal Content with animations */}
                                 <motion.div
@@ -142,11 +144,11 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
 
                                         {/* Details */}
                                         {status.details && status.details.length > 0 && (
-                                            <div className="bg-card-foreground/5 p-3 rounded-md my-4">
+                                            <div className="bg-card-foreground/5 p-3 rounded-md my-5">
                                                 <h4 className="text-sm font-medium mb-2">Cleanup Details:</h4>
                                                 <ul className="space-y-1.5">
                                                     {status.details.map((detail, index) => (
-                                                        <li key={index} className="text-sm flex items-start gap-2">
+                                                        <li key={index} className="text-sm flex items-center gap-2">
                                                             <div className="mt-0.5">
                                                                 {status.type === 'loading' ? (
                                                                     <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
@@ -163,16 +165,12 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
                                             </div>
                                         )}
 
-                                        {/* Help text */}
-                                        <div className="mt-5 text-sm text-foreground/70">
-                                            <p>This tool helps resolve the following issues:</p>
-                                            <ul className="list-disc mt-2 pl-5 space-y-1">
-                                                <li>CORS errors when refreshing pages</li>
-                                                <li>Outdated cached content displaying incorrectly</li>
-                                                <li>API connection problems</li>
-                                                <li>Service worker conflicts</li>
-                                            </ul>
-                                        </div>
+                                        {/* Instructions text for warning state */}
+                                        {status.type === 'warning' && onConfirm && (
+                                            <div className="mt-6 text-sm text-foreground/70 text-center">
+                                                <p>Click "Proceed with Cleanup" to continue or "Cancel" to exit</p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Footer with actions */}

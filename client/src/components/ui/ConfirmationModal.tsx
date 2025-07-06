@@ -30,15 +30,15 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     };
   }, [isOpen]);
 
-  // Auto-close after 5 seconds for success modals
+  // Auto-close after 10 seconds for all modals
   useEffect(() => {
-    if (isOpen && type === 'success') {
+    if (isOpen) {
       const timer = setTimeout(() => {
         onClose();
-      }, 5000);
+      }, 10000);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, onClose, type]);
+  }, [isOpen, onClose]);
 
   return (
     <DocumentPortal rootId="confirmation-modal-portal">
@@ -61,79 +61,91 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: "spring", bounce: 0.3 }}
-                className="relative w-full max-w-sm bg-card rounded-lg shadow-xl border border-border overflow-hidden"
+                className="relative w-full max-w-sm bg-card rounded-2xl shadow-xl border border-border/30 overflow-hidden"
               >
-                {/* Header */}
-                <div className="p-4 border-b border-border flex items-center justify-between">
-                  <h3 className="text-lg font-semibold">{title}</h3>
-                  <button
-                    onClick={onClose}
-                    className="p-1 hover:bg-muted rounded-full"
-                    aria-label="Close modal"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-
+                {/* Close icon (top-right corner) */}
+                <button
+                  onClick={onClose}
+                  className="absolute top-3 right-3 p-2 hover:bg-muted/50 rounded-full transition-colors z-10"
+                  aria-label="Close modal"
+                >
+                  <X className="h-5 w-5 text-foreground/70" />
+                </button>
+                
                 {/* Content */}
-                <div className="p-6 flex flex-col items-center">
+                <div className="pt-10 pb-8 px-8 flex flex-col items-center">
+                  {/* Progress bar for auto-close */}
+                  <motion.div
+                    initial={{ width: "100%" }}
+                    animate={{ width: "0%" }}
+                    transition={{ duration: 10, ease: "linear" }}
+                    className={`absolute top-0 left-0 h-1 ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`}
+                  />
+                
                   {/* Animated Icon */}
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
                     transition={{ 
                       type: "spring", 
-                      duration: 0.5, 
+                      duration: 0.6, 
                       bounce: 0.5 
                     }}
-                    className="mb-4"
+                    className="mb-6"
                   >
                     {type === 'success' ? (
-                      <motion.div
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                      >
+                      <motion.div>
                         <div className="relative">
                           <motion.div
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
-                            transition={{ delay: 0.1, duration: 0.4 }}
-                            className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
+                            transition={{ duration: 0.4 }}
+                            className="h-24 w-24 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
                           >
-                            <CheckCircle className="h-12 w-12 text-green-500" />
+                            <motion.div
+                              initial={{ scale: 0, opacity: 0 }}
+                              animate={{ scale: 1, opacity: 1 }}
+                              transition={{ delay: 0.2, duration: 0.5 }}
+                            >
+                              <CheckCircle className="h-14 w-14 text-green-500" />
+                            </motion.div>
                           </motion.div>
                         </div>
                       </motion.div>
                     ) : (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 0.4 }}
-                      >
-                        <div className="h-20 w-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                          <XCircle className="h-12 w-12 text-red-500" />
+                      <motion.div>
+                        <div className="h-24 w-24 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                          <motion.div
+                            initial={{ scale: 0, rotate: 0 }}
+                            animate={{ scale: 1, rotate: [0, 5, -5, 0] }}
+                            transition={{ delay: 0.2, duration: 0.5 }}
+                          >
+                            <XCircle className="h-14 w-14 text-red-500" />
+                          </motion.div>
                         </div>
                       </motion.div>
                     )}
                   </motion.div>
 
-                  {/* Message */}
-                  <p className="text-center text-foreground/80">{message}</p>
-                </div>
-
-                {/* Footer */}
-                <div className="p-4 bg-card-foreground/5 border-t border-border">
-                  <button
-                    onClick={onClose}
-                    className={`w-full flex items-center justify-center gap-2 p-2.5 rounded-md transition-colors ${
-                      type === 'success'
-                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                        : 'bg-primary hover:bg-primary/90 text-white'
-                    }`}
+                  {/* Title with increased prominence */}
+                  <motion.h3
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.5 }}
+                    className="text-xl font-bold mb-2 text-center"
                   >
-                    <span>{type === 'success' ? 'Great!' : 'Close'}</span>
-                  </button>
+                    {title}
+                  </motion.h3>
+
+                  {/* Message */}
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.3, duration: 0.5 }}
+                    className="text-center text-foreground/80"
+                  >
+                    {message}
+                  </motion.p>
                 </div>
               </motion.div>
             </div>

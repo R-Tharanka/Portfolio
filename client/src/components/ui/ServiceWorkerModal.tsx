@@ -171,6 +171,13 @@ const ServiceWorkerModal: React.FC<ServiceWorkerModalProps> = ({
                                                 <p>Click "Proceed with Cleanup" to continue or "Cancel" to exit</p>
                                             </div>
                                         )}
+                                        
+                                        {/* Instructions text for success state */}
+                                        {status.type === 'success' && (
+                                            <div className="mt-6 text-sm text-foreground/70 text-center">
+                                                <p>Please use one of the buttons below to refresh the page</p>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Footer with actions */}

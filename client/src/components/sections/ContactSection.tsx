@@ -83,7 +83,7 @@ const ContactSection: React.FC = () => {
       // Success case
       setModalConfig({
         title: 'Message Sent',
-        message: 'Thank you for your message! I\'ll get back to you as soon as possible.',
+        message: 'Thank you! I\'ll get back to you soon.',
         type: 'success'
       });
       setIsModalOpen(true);

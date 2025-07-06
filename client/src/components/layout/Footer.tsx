@@ -237,11 +237,10 @@ const Footer: React.FC = () => {
                         message: 'Fix Connection Issues & Refresh Cache',
                         details: [
                           'This tool will attempt to fix the following issues:',
-                          '• Problems with API connections',
-                          '• Outdated or corrupted cache data',
-                          '• Service worker conflicts',
-                          '• CORS errors when refreshing pages',
-                          'Click "Proceed with Cleanup" to continue or "Cancel" to exit'
+                          '\u00A0\u00A0Problems with API connections',
+                          '\u00A0\u00A0Outdated or corrupted cache data',
+                          '\u00A0\u00A0Service worker conflicts',
+                          '\u00A0\u00A0CORS errors when refreshing pages'
                         ],
                         onConfirm: handleConfirmedCleanup
                       });

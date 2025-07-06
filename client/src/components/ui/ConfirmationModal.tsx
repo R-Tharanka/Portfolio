@@ -61,7 +61,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: "spring", bounce: 0.3 }}
-                className="relative w-full max-w-sm bg-card rounded-2xl shadow-xl border border-border/30 overflow-hidden"
+                className="relative w-full max-w-xs bg-card rounded-2xl shadow-xl border border-border/30 overflow-hidden"
               >
                 {/* Close icon (top-right corner) */}
                 <button
@@ -73,7 +73,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </button>
                 
                 {/* Content */}
-                <div className="pt-10 pb-8 px-8 flex flex-col items-center">
+                <div className="pt-8 pb-6 px-6 flex flex-col items-center">
                   {/* Progress bar for auto-close */}
                   <motion.div
                     initial={{ width: "100%" }}
@@ -91,7 +91,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                       duration: 0.6, 
                       bounce: 0.5 
                     }}
-                    className="mb-6"
+                    className="mb-4"
                   >
                     {type === 'success' ? (
                       <motion.div>
@@ -100,27 +100,27 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                             initial={{ scale: 0 }}
                             animate={{ scale: 1 }}
                             transition={{ duration: 0.4 }}
-                            className="h-24 w-24 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
+                            className="h-20 w-20 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center"
                           >
                             <motion.div
                               initial={{ scale: 0, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{ delay: 0.2, duration: 0.5 }}
                             >
-                              <CheckCircle className="h-14 w-14 text-green-500" />
+                              <CheckCircle className="h-12 w-12 text-green-500" />
                             </motion.div>
                           </motion.div>
                         </div>
                       </motion.div>
                     ) : (
                       <motion.div>
-                        <div className="h-24 w-24 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                        <div className="h-20 w-20 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                           <motion.div
                             initial={{ scale: 0, rotate: 0 }}
                             animate={{ scale: 1, rotate: [0, 5, -5, 0] }}
                             transition={{ delay: 0.2, duration: 0.5 }}
                           >
-                            <XCircle className="h-14 w-14 text-red-500" />
+                            <XCircle className="h-12 w-12 text-red-500" />
                           </motion.div>
                         </div>
                       </motion.div>
@@ -132,7 +132,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.5 }}
-                    className="text-xl font-bold mb-2 text-center"
+                    className="text-lg font-bold mb-1 text-center"
                   >
                     {title}
                   </motion.h3>

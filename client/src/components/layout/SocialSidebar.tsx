@@ -317,7 +317,7 @@ const SocialSidebar: React.FC = () => {
             href={social.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-3 bg-card/80 hover:bg-primary/90 text-foreground hover:text-white rounded-full transition-all duration-300 shadow-md relative group backdrop-blur-sm border border-border/30"
+            className="p-[10px] bg-card/80 hover:bg-primary/90 text-foreground hover:text-white rounded-full transition-all duration-300 shadow-md relative group backdrop-blur-sm border border-border/30"
             aria-label={social.platform}
             whileHover={{ x: 5, boxShadow: "0px 0px 8px rgba(0, 0, 0, 0.2)", transition: { duration: 0.2 } }}
             initial={{ opacity: 0, y: 20 }}

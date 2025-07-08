@@ -61,7 +61,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: "spring", bounce: 0.3 }}
-                className="relative w-full max-w-[250px] bg-card rounded-2xl shadow-xl border border-border/30 overflow-hidden"
+                className="relative w-full max-w-[255px] bg-card rounded-2xl shadow-xl border border-border/30 overflow-hidden"
               >
                 {/* Close icon (top-right corner) */}
                 <button

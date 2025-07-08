@@ -73,7 +73,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </button>
                 
                 {/* Content */}
-                <div className="pt-7 pb-5 px-5 flex flex-col items-center">
+                <div className="pt-7 pb-5 px-[22px] flex flex-col items-center">
                   {/* Progress bar for auto-close */}
                   <motion.div
                     initial={{ width: "100%" }}

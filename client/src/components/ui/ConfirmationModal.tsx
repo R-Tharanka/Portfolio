@@ -61,7 +61,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 animate={{ opacity: 1, scale: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95, y: 10 }}
                 transition={{ type: "spring", bounce: 0.3 }}
-                className="relative w-full max-w-xs bg-card rounded-2xl shadow-xl border border-border/30 overflow-hidden"
+                className="relative w-full max-w-[250px] bg-card rounded-2xl shadow-xl border border-border/30 overflow-hidden"
               >
                 {/* Close icon (top-right corner) */}
                 <button
@@ -73,7 +73,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </button>
                 
                 {/* Content */}
-                <div className="pt-8 pb-6 px-6 flex flex-col items-center">
+                <div className="pt-7 pb-5 px-5 flex flex-col items-center">
                   {/* Progress bar for auto-close */}
                   <motion.div
                     initial={{ width: "100%" }}

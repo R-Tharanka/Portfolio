@@ -10,6 +10,7 @@ const { protect } = require('../middleware/auth');
 // @access  Public (consider restricting in production)
 router.post('/register', [
   check('username', 'Username is required').not().isEmpty(),
+  check('email', 'Please include a valid email').isEmail(),
   check('password', 'Please enter a password with 6 or more characters').isLength({ min: 6 })
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -17,17 +18,24 @@ router.post('/register', [
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
 
   try {
     // Check if admin already exists
     let admin = await Admin.findOne({ username });
     if (admin) {
-      return res.status(400).json({ msg: 'Admin already exists' });
+      return res.status(400).json({ msg: 'Username already exists' });
+    }
+    
+    // Check if email already exists
+    admin = await Admin.findOne({ email });
+    if (admin) {
+      return res.status(400).json({ msg: 'Email already exists' });
     }
 
     admin = new Admin({
       username,
+      email,
       password
     });
 
@@ -94,20 +102,21 @@ router.get('/', protect, async (req, res) => {
 });
 
 // @route   PUT /api/auth/update-credentials
-// @desc    Update admin credentials (username and/or password)
+// @desc    Update admin credentials (username, email and/or password)
 // @access  Private
 router.put('/update-credentials', [
   protect,
   check('currentPassword', 'Current password is required').exists(),
   check('newPassword', 'New password must be at least 6 characters').optional().isLength({ min: 6 }),
-  check('newUsername', 'Username cannot be empty').optional().not().isEmpty()
+  check('newUsername', 'Username cannot be empty').optional().not().isEmpty(),
+  check('newEmail', 'Email must be valid').optional().isEmail()
 ], async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const { currentPassword, newPassword, newUsername } = req.body;
+  const { currentPassword, newPassword, newUsername, newEmail } = req.body;
 
   try {
     // Get admin with password
@@ -128,6 +137,17 @@ router.put('/update-credentials', [
       }
 
       admin.username = newUsername;
+    }
+    
+    // Update email if provided
+    if (newEmail && newEmail !== admin.email) {
+      // Check if new email already exists
+      const emailExists = await Admin.findOne({ email: newEmail });
+      if (emailExists) {
+        return res.status(400).json({ msg: 'Email already exists' });
+      }
+
+      admin.email = newEmail;
     }
 
     // Update password if provided

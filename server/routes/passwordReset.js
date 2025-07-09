@@ -8,8 +8,8 @@ const ResetToken = require('../models/ResetToken');
 const bcrypt = require('bcryptjs');
 const { isProduction } = require('../utils/environment');
 
-// Token expiration time in milliseconds (15 minutes)
-const TOKEN_EXPIRY = 15 * 60 * 1000;
+// Token expiration time in milliseconds (from environment in minutes, converted to ms)
+const TOKEN_EXPIRY = (parseInt(process.env.PASSWORD_RESET_EXPIRY) || 15) * 60 * 1000;
 
 // Configure nodemailer transporter
 // For production, use your actual SMTP credentials
@@ -65,7 +65,7 @@ router.post('/reset-request', async (req, res) => {
 
     // Generate reset token
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY); // Token valid for 15 minutes
+    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY); // Token valid based on environment setting
     
     // Remove any existing tokens for this admin
     await ResetToken.deleteMany({ adminId: admin._id });
@@ -102,6 +102,7 @@ router.post('/reset-request', async (req, res) => {
           <p>This link will expire in 15 minutes.</p>
           <hr>
           <p style="font-size: 12px; color: #666;">If the button doesn't work, copy and paste this URL into your browser: ${resetLink}</p>
+          <p style="font-size: 12px; color: #666;">This link will expire in ${process.env.PASSWORD_RESET_EXPIRY || 15} minutes.</p>
         </div>
       `
     });

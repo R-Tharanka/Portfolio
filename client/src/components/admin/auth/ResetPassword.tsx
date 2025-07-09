@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { resetPassword, verifyResetToken } from '../../../services/api';
 
+// Get password reset expiry from environment variable (in minutes)
+const passwordResetExpiry = import.meta.env.VITE_PASSWORD_RESET_EXPIRY || '15';
+
 const ResetPassword: React.FC = () => {
   const [formData, setFormData] = useState({
     newPassword: '',
@@ -118,6 +121,9 @@ const ResetPassword: React.FC = () => {
             <h1 className="text-2xl font-bold text-red-500">Invalid Reset Link</h1>
             <p className="text-foreground/70 mt-2">
               This password reset link is invalid or has expired.
+              <span className="block text-xs mt-1">
+                Reset links are valid for {passwordResetExpiry} minutes only.
+              </span>
             </p>
           </div>
           

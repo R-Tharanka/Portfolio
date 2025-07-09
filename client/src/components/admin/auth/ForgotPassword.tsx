@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import { requestPasswordReset } from '../../../services/api';
 import { Mail } from 'lucide-react';
 
+// Get password reset expiry from environment variable (in minutes)
+const passwordResetExpiry = import.meta.env.VITE_PASSWORD_RESET_EXPIRY || '15';
+
 const ForgotPassword: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,6 +68,9 @@ const ForgotPassword: React.FC = () => {
           <h1 className="text-2xl font-bold text-foreground">Forgot Password</h1>
           <p className="text-foreground/70 mt-2">
             Enter your email address and we'll send you a link to reset your password.
+            <span className="block text-xs mt-1">
+              (Link will expire after {passwordResetExpiry} minutes)
+            </span>
           </p>
         </div>
         
@@ -116,6 +122,12 @@ const ForgotPassword: React.FC = () => {
             </Link>
           </div>
         </form>
+        
+        <div className="mt-4 text-center text-sm text-foreground/70">
+          <p>
+            Note: The password reset link will expire in {passwordResetExpiry} minutes.
+          </p>
+        </div>
       </div>
     </div>
   );

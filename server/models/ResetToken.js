@@ -14,12 +14,15 @@ const resetTokenSchema = new mongoose.Schema({
   expiresAt: {
     type: Date,
     required: true,
-    default: () => new Date(Date.now() + 15 * 60 * 1000) // 15 minutes from now
+    default: () => {
+      const minutes = parseInt(process.env.PASSWORD_RESET_EXPIRY) || 15;
+      return new Date(Date.now() + minutes * 60 * 1000);
+    }
   },
   createdAt: {
     type: Date,
     default: Date.now,
-    expires: 900 // Automatically remove documents after 15 minutes (in seconds)
+    expires: () => (parseInt(process.env.PASSWORD_RESET_EXPIRY) || 15) * 60 // Automatically remove documents after expiry (in seconds)
   }
 });
 

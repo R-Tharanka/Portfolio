@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { login } from '../../../services/api';
 
 interface LoginFormProps {
   onLogin: (token: string) => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {  const [formData, setFormData] = useState({
+const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
+  const [formData, setFormData] = useState({
     username: '',
     password: '',
   });
@@ -29,9 +31,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {  const [formData,
       } else {
         onLogin(response.data.token);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login failed:', err);
-      setError('Login failed. Please check your credentials and try again.');
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -52,7 +54,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {  const [formData,
         )}
         
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div>            <label htmlFor="username" className="block text-sm font-medium text-foreground/80 mb-1">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-foreground/80 mb-1">
               Username
             </label>
             <input
@@ -94,6 +97,15 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {  const [formData,
           >
             {isSubmitting ? 'Logging in...' : 'Login'}
           </button>
+          
+          <div className="text-center">
+            <Link
+              to="/admin/forgot-password"
+              className="text-sm text-primary hover:text-primary-dark hover:underline transition-all"
+            >
+              Forgot username or password?
+            </Link>
+          </div>
         </form>
       </div>
     </div>

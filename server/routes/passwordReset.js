@@ -11,6 +11,19 @@ const { isProduction } = require('../utils/environment');
 // Token expiration time in milliseconds (from environment in minutes, converted to ms)
 const TOKEN_EXPIRY = (parseInt(process.env.PASSWORD_RESET_EXPIRY) || 15) * 60 * 1000;
 
+// Debug environment variables
+console.log('Environment variables for password reset:');
+console.log('CLIENT_URL:', process.env.CLIENT_URL);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PASSWORD_RESET_EXPIRY:', process.env.PASSWORD_RESET_EXPIRY);
+console.log('Current directory:', __dirname);
+console.log('Full environment:', JSON.stringify({
+  CLIENT_URL: process.env.CLIENT_URL,
+  NODE_ENV: process.env.NODE_ENV,
+  PORT: process.env.PORT,
+  EMAIL_FROM: process.env.EMAIL_FROM
+}));
+
 // Configure nodemailer transporter
 // For production, use your actual SMTP credentials
 // For development, use a testing service like Ethereal or Mailtrap
@@ -77,8 +90,15 @@ router.post('/reset-request', async (req, res) => {
       expiresAt
     });
     
-    // Create reset link
-    const resetLink = `${req.protocol}://${req.get('host')}/admin/reset-password?token=${token}`;
+    // Create reset link using the client URL from environment variables
+    // IMPORTANT: Always use the frontend URL for reset links, not the API URL
+    const clientUrl = process.env.CLIENT_URL || `${req.protocol}://${req.get('host')}`;
+    
+    console.log('Environment CLIENT_URL:', process.env.CLIENT_URL);
+    console.log('Using clientUrl:', clientUrl);
+    
+    const resetLink = `${clientUrl}/admin/reset-password?token=${token}`;
+    console.log('Generated reset link:', resetLink);
     
     // Send email
     const transporter = getTransporter();

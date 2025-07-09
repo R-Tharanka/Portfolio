@@ -143,19 +143,24 @@ if (process.env.NODE_ENV === 'production') {
   const clientBuildPath = path.resolve(__dirname, '../client/dist');
   app.use(express.static(clientBuildPath));
   
+  // Error handling middleware for API routes only
+  app.use('/api', notFound);
+  app.use(errorHandler);
+  
   // Any route that doesn't match the API routes should serve the React app
+  // This must be the LAST route handler
   app.get('*', (req, res) => {
-    // Skip API routes - they should be handled by their own handlers
-    if (!req.url.startsWith('/api/')) {
-      console.log(`Serving React app for route: ${req.url}`);
-      res.sendFile(path.resolve(clientBuildPath, 'index.html'));
-    }
+    // This will catch all remaining routes, including /admin/reset-password
+    console.log(`Serving React app for route: ${req.url}`);
+    res.sendFile(path.resolve(clientBuildPath, 'index.html'));
   });
 }
 
-// Error handling middleware - Only for API routes now
-app.use('/api', notFound);
-app.use(errorHandler);
+// Error handling middleware for development mode
+if (process.env.NODE_ENV !== 'production') {
+  app.use('/api', notFound);
+  app.use(errorHandler);
+}
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

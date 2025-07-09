@@ -4,6 +4,7 @@ const cors = require('cors');
 const helmet = require('helmet');
 const xss = require('xss-clean');
 const mongoSanitize = require('express-mongo-sanitize');
+const path = require('path');
 require('dotenv').config();
 
 // Import routes
@@ -128,7 +129,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Mount routes
+// Mount API routes
 app.use('/api/skills', skillsRoutes);
 app.use('/api/projects', projectsRoutes);
 app.use('/api/education', educationRoutes);
@@ -136,8 +137,24 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes); // Password reset functionality
 
-// Error handling middleware
-app.use(notFound);
+// Serve static files from client build folder in production
+if (process.env.NODE_ENV === 'production') {
+  // Set static folder
+  const clientBuildPath = path.resolve(__dirname, '../client/dist');
+  app.use(express.static(clientBuildPath));
+  
+  // Any route that doesn't match the API routes should serve the React app
+  app.get('*', (req, res) => {
+    // Skip API routes - they should be handled by their own handlers
+    if (!req.url.startsWith('/api/')) {
+      console.log(`Serving React app for route: ${req.url}`);
+      res.sendFile(path.resolve(clientBuildPath, 'index.html'));
+    }
+  });
+}
+
+// Error handling middleware - Only for API routes now
+app.use('/api', notFound);
 app.use(errorHandler);
 
 app.listen(PORT, () => {

@@ -12,6 +12,7 @@ const projectsRoutes = require('./routes/projects');
 const educationRoutes = require('./routes/education');
 const contactRoutes = require('./routes/contact');
 const authRoutes = require('./routes/auth');
+const passwordResetRoutes = require('./routes/passwordReset');
 
 // Import middleware
 const { globalLimiter, notFound, errorHandler } = require('./middleware/errorHandler');
@@ -133,6 +134,7 @@ app.use('/api/projects', projectsRoutes);
 app.use('/api/education', educationRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/auth', passwordResetRoutes); // Password reset functionality
 
 // Error handling middleware
 app.use(notFound);

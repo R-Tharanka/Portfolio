@@ -11,7 +11,7 @@ const getApiBaseUrl = () => {
   return apiUrl;
 };
 
-// Define error messages for when API is unreachable
+// Define error messages for when API is unreachable (used in handleApiError function)
 const errorMessages = {
   skills: "Unable to load skills data. The server is currently unavailable.",
   projects: "Unable to load project data. The server is currently unavailable.",
@@ -176,10 +176,14 @@ function showErrorToast(title: string, message: string) {
 
 // Helper function to handle API errors with appropriate error messages
 const handleApiError = <T>(error: any, endpoint: string): ApiResponse<T> => {
+  const defaultErrorMsg = 
+    errorMessages[endpoint as keyof typeof errorMessages] || 
+    `Unable to load ${endpoint}. The server is currently unavailable.`;
+    
   const errorMessage = error.response?.data?.message ||
     error.response?.data?.msg ||
     error.message ||
-    `Unable to load ${endpoint}. The server is currently unavailable.`;
+    defaultErrorMsg;
 
   console.error(`Error with ${endpoint}:`, error);
   console.error('Detailed error:', {
@@ -196,7 +200,7 @@ const handleApiError = <T>(error: any, endpoint: string): ApiResponse<T> => {
 };
 
 // Types from our application
-import { Skill, Project, Education, ContactFormData, SkillCategory } from '../types';
+import { Skill, Project, Education, ContactFormData } from '../types';
 
 // API response types
 export interface ApiResponse<T> {
@@ -301,6 +305,45 @@ export const submitContactForm = async (formData: ContactFormData): Promise<ApiR
 };
 
 // ******************* ADMIN AUTH API *******************
+export const requestPasswordReset = async (email: string): Promise<ApiResponse<{ msg: string }>> => {
+  try {
+    const response = await api.post('/auth/reset-request', { email });
+    return { data: response.data, error: undefined };
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to request password reset';
+    return { 
+      data: { msg: 'Failed to process request' }, 
+      error: errorMessage 
+    };
+  }
+};
+
+export const verifyResetToken = async (token: string): Promise<ApiResponse<{ valid: boolean }>> => {
+  try {
+    const response = await api.get(`/auth/verify-reset-token?token=${token}`);
+    return { data: response.data, error: undefined };
+  }  catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Invalid or expired reset token';
+    return { 
+      data: { valid: false }, 
+      error: errorMessage 
+    };
+  }
+};
+
+export const resetPassword = async (token: string, newPassword: string): Promise<ApiResponse<{ msg: string }>> => {
+  try {
+    const response = await api.post('/auth/reset-password', { token, newPassword });
+    return { data: response.data, error: undefined };
+  } catch (error: any) {
+    const errorMessage = error.response?.data?.message || 'Failed to reset password';
+    return { 
+      data: { msg: 'Password reset failed' }, 
+      error: errorMessage 
+    };
+  }
+};
+
 export const login = async (credentials: { username: string; password: string }): Promise<ApiResponse<{ token: string }>> => {
   try {
     const response = await api.post('/auth/login', credentials);

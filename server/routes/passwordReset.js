@@ -4,12 +4,12 @@ const router = express.Router();
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
 const Admin = require('../models/Admin');
+const ResetToken = require('../models/ResetToken');
 const bcrypt = require('bcryptjs');
 const { isProduction } = require('../utils/environment');
 
-// Store tokens in memory for development
-// In production, these should be stored in a database with expiration times
-const resetTokens = {};
+// Token expiration time in milliseconds (15 minutes)
+const TOKEN_EXPIRY = 15 * 60 * 1000;
 
 // Configure nodemailer transporter
 // For production, use your actual SMTP credentials
@@ -65,13 +65,17 @@ router.post('/reset-request', async (req, res) => {
 
     // Generate reset token
     const token = crypto.randomBytes(32).toString('hex');
-    const expiresAt = Date.now() + 3600000; // Token valid for 1 hour
+    const expiresAt = new Date(Date.now() + TOKEN_EXPIRY); // Token valid for 15 minutes
     
-    // Store token with admin ID and expiration
-    resetTokens[token] = {
-      adminId: admin._id.toString(),
+    // Remove any existing tokens for this admin
+    await ResetToken.deleteMany({ adminId: admin._id });
+    
+    // Store token in database
+    await ResetToken.create({
+      token,
+      adminId: admin._id,
       expiresAt
-    };
+    });
     
     // Create reset link
     const resetLink = `${req.protocol}://${req.get('host')}/admin/reset-password?token=${token}`;
@@ -95,7 +99,7 @@ router.post('/reset-request', async (req, res) => {
             </a>
           </p>
           <p>If you did not request this reset, please ignore this email and contact the system administrator.</p>
-          <p>This link will expire in 1 hour.</p>
+          <p>This link will expire in 15 minutes.</p>
           <hr>
           <p style="font-size: 12px; color: #666;">If the button doesn't work, copy and paste this URL into your browser: ${resetLink}</p>
         </div>
@@ -113,20 +117,29 @@ router.post('/reset-request', async (req, res) => {
 });
 
 // Verify reset token
-router.get('/verify-reset-token', (req, res) => {
-  const { token } = req.query;
-  
-  if (!token) {
-    return res.status(400).json({ message: 'Token is required' });
+router.get('/verify-reset-token', async (req, res) => {
+  try {
+    const { token } = req.query;
+    
+    if (!token) {
+      return res.status(400).json({ message: 'Token is required' });
+    }
+    
+    // Look up token in database
+    const resetToken = await ResetToken.findOne({ 
+      token,
+      expiresAt: { $gt: new Date() } // Token must not be expired
+    });
+    
+    if (!resetToken) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+    
+    res.status(200).json({ valid: true });
+  } catch (error) {
+    console.error('Verify token error:', error);
+    res.status(500).json({ message: 'Server error. Please try again later.' });
   }
-  
-  const tokenData = resetTokens[token];
-  
-  if (!tokenData || tokenData.expiresAt < Date.now()) {
-    return res.status(400).json({ message: 'Invalid or expired reset token' });
-  }
-  
-  res.status(200).json({ valid: true });
 });
 
 // Reset password with token
@@ -138,14 +151,18 @@ router.post('/reset-password', async (req, res) => {
       return res.status(400).json({ message: 'Token and new password are required' });
     }
     
-    const tokenData = resetTokens[token];
+    // Find the token in the database
+    const resetToken = await ResetToken.findOne({ 
+      token,
+      expiresAt: { $gt: new Date() } // Token must not be expired
+    });
     
-    if (!tokenData || tokenData.expiresAt < Date.now()) {
+    if (!resetToken) {
       return res.status(400).json({ message: 'Invalid or expired reset token' });
     }
     
     // Find admin by ID
-    const admin = await Admin.findById(tokenData.adminId);
+    const admin = await Admin.findById(resetToken.adminId);
     
     if (!admin) {
       return res.status(404).json({ message: 'Admin not found' });
@@ -159,8 +176,8 @@ router.post('/reset-password', async (req, res) => {
     admin.password = hashedPassword;
     await admin.save();
     
-    // Invalidate token
-    delete resetTokens[token];
+    // Delete the used token
+    await ResetToken.deleteOne({ _id: resetToken._id });
     
     res.status(200).json({ msg: 'Password reset successful' });
     

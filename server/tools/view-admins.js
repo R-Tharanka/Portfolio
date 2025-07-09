@@ -1,4 +1,4 @@
-require('dotenv').config({ path: '../.env' });
+require('dotenv').config();
 const mongoose = require('mongoose');
 const Admin = require('../models/Admin');
 
@@ -21,18 +21,27 @@ async function viewAdmins() {
       process.exit(0);
     }
 
-    console.log(`\nFound ${admins.length} admin account(s):\n`);
+    console.log(`\n=== Found ${admins.length} admin account(s) ===\n`);
     
-    // Display admin details
-    admins.forEach((admin, index) => {
-      console.log(`--- Admin ${index + 1} ---`);
-      console.log(`ID: ${admin._id}`);
-      console.log(`Username: ${admin.username}`);
-      console.log(`Email: ${admin.email || 'Not set'}`);
-      console.log(`Created: ${admin.createdAt}`);
-      console.log('');
-    });
+    // Display admin details in a table format
+    console.log('ID'.padEnd(25) + ' | ' + 
+                'USERNAME'.padEnd(20) + ' | ' + 
+                'EMAIL'.padEnd(30) + ' | ' + 
+                'CREATED AT');
+    console.log('-'.repeat(90));
 
+    // Process each admin
+    for (const admin of admins) {
+      const createdDate = new Date(admin.createdAt).toLocaleString();
+      console.log(
+        `${admin._id}`.padEnd(25) + ' | ' +
+        `${admin.username || 'N/A'}`.padEnd(20) + ' | ' +
+        `${admin.email || 'N/A'}`.padEnd(30) + ' | ' +
+        createdDate
+      );
+    }
+
+    console.log('\n=== End of admin accounts list ===');
   } catch (error) {
     console.error('Error:', error.message);
   } finally {

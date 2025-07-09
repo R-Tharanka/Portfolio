@@ -32,6 +32,22 @@ async function addAdmin() {
       process.exit(1);
     }
     
+    const email = await askQuestion('Enter admin email: ');
+    
+    // Check if email is valid
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      console.log('Please provide a valid email address.');
+      process.exit(1);
+    }
+    
+    // Check if email already exists
+    const emailExists = await Admin.findOne({ email });
+    if (emailExists) {
+      console.log('An admin with this email already exists. Please use a different email.');
+      process.exit(1);
+    }
+    
     const password = await askQuestion('Enter admin password (min 6 characters): ');
 
     if (password.length < 6) {
@@ -42,6 +58,7 @@ async function addAdmin() {
     // Create admin user
     const admin = new Admin({
       username,
+      email,
       password
     });
 

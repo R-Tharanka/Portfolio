@@ -40,6 +40,7 @@ async function updateAdmin() {
     
     // Get new credentials
     const newUsername = await askQuestion('Enter new username (leave blank to keep current): ');
+    const newEmail = await askQuestion('Enter new email (leave blank to keep current): ');
     const newPassword = await askQuestion('Enter new password (min 6 characters, leave blank to keep current): ');
     
     // Update the admin user
@@ -53,6 +54,25 @@ async function updateAdmin() {
       
       admin.username = newUsername;
       console.log('Username will be updated.');
+    }
+    
+    if (newEmail && newEmail !== admin.email) {
+      // Check if email is valid
+      const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+      if (!emailRegex.test(newEmail)) {
+        console.log('Please provide a valid email address.');
+        process.exit(1);
+      }
+      
+      // Check if email is already taken
+      const emailExists = await Admin.findOne({ email: newEmail });
+      if (emailExists) {
+        console.log('This email is already taken. Please choose a different one.');
+        process.exit(1);
+      }
+      
+      admin.email = newEmail;
+      console.log('Email will be updated.');
     }
     
     if (newPassword) {

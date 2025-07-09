@@ -30,6 +30,15 @@ async function setupAdmin() {
     // Get admin credentials
     console.log('Creating first admin user...');
     const username = await askQuestion('Enter admin username: ');
+    const email = await askQuestion('Enter admin email: ');
+    
+    // Check if email is valid
+    const emailRegex = /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/;
+    if (!emailRegex.test(email)) {
+      console.log('Please provide a valid email address.');
+      process.exit(1);
+    }
+    
     const password = await askQuestion('Enter admin password (min 6 characters): ');
 
     if (password.length < 6) {
@@ -40,6 +49,7 @@ async function setupAdmin() {
     // Create admin user
     const admin = new Admin({
       username,
+      email,
       password
     });
 

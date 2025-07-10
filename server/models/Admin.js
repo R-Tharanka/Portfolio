@@ -31,11 +31,15 @@ const adminSchema = new mongoose.Schema({
 // Encrypt password using bcrypt
 adminSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
-    next();
+    console.log(`Password not modified for user ${this._id}, skipping hash`);
+    return next();
   }
   
+  console.log(`Hashing password for user ${this._id}`);
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
+  console.log(`Password hashed successfully for user ${this._id}`);
+  next();
 });
 
 // Sign JWT and return
@@ -49,7 +53,9 @@ adminSchema.methods.getSignedJwtToken = function() {
 
 // Match user entered password to hashed password in database
 adminSchema.methods.matchPassword = async function(enteredPassword) {
-  return await bcrypt.compare(enteredPassword, this.password);
+  const result = await bcrypt.compare(enteredPassword, this.password);
+  console.log(`Password match attempt for user ${this._id}: ${result ? 'SUCCESS' : 'FAILED'}`);
+  return result;
 };
 
 module.exports = mongoose.model('Admin', adminSchema);

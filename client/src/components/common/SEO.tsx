@@ -1,5 +1,5 @@
 import React from 'react';
-import { Helmet, HelmetProvider } from 'react-helmet-async';
+import { Helmet } from 'react-helmet-async';
 
 interface SEOProps {
   title?: string;
@@ -14,7 +14,8 @@ const SEO: React.FC<SEOProps> = ({
   description = 'I’m Ruchira Tharanka Full-Stack Developer. Explore my portfolio of dynamic React front-ends, secure Node.js back-ends, MongoDB databases, and innovative projects that solve real-world problems.',
   keywords = 'full-stack developer, frontend developer, backend developer, MERN stack, React, Node.js, JavaScript, TypeScript, HTML, CSS, UI/UX design, software engineer, freelance developer, portfolio, web applications, web development, web design, personal website, Ruchira Tharanka, portfolio, Ruchira, Tharanka, React TypeScript portfolio project',
   ogImage = '/og-image.png',
-  ogUrl = import.meta.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.vercel.app/'
+  // Only use environment variable for URL, no hardcoded fallback in production code
+  ogUrl = import.meta.env.VITE_PORTFOLIO_URL || window.location.origin
 }) => {
   // Use the title as is, without modification
   const siteTitle = title;

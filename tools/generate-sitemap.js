@@ -3,7 +3,8 @@ const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../client/.env') });
 
 // Configuration
-const SITE_URL = process.env.VITE_PORTFOLIO_URL || 'https://ruchira-portfolio.vercel.app';
+// IMPORTANT: Default to localhost only for development, production value should always come from env
+const SITE_URL = process.env.VITE_PORTFOLIO_URL || 'http://localhost:3000';
 const PUBLIC_DIR = path.join(__dirname, '../client/public');
 
 // Define the site structure

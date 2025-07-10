@@ -36,7 +36,7 @@ app.use(globalLimiter); // Rate limiting
 // Apply custom CORS headers middleware
 app.use(corsHeadersMiddleware);
 // Configure CORS to accept requests from your frontend domain
-// Using a simpler origin configuration with our known domains 
+// Using environment variables for allowed origins
 const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps, curl, etc)
@@ -49,10 +49,7 @@ const corsOptions = {
     // Create a comprehensive list of allowed origins
     const allowedOrigins = [
       primaryDomain,
-      ...allowedOriginsStr.split(',').filter(Boolean),
-      // Add any known variations that might be cached from previous deployments
-      'https://ruchira-portfolio.vercel.app',
-      'https://www.ruchira-portfolio.vercel.app'
+      ...allowedOriginsStr.split(',').filter(Boolean)
     ].filter(Boolean);
 
     // For development environments, be more lenient
@@ -137,22 +134,53 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes); // Password reset functionality
 
-// Serve static files from client build folder in production
+// In production, we only handle API requests
+// The client is served separately by Vercel
 if (process.env.NODE_ENV === 'production') {
-  // Set static folder
-  const clientBuildPath = path.resolve(__dirname, '../client/dist');
-  app.use(express.static(clientBuildPath));
+  // Add CORS headers to allow client to access API 
+  app.use((req, res, next) => {
+    // Parse allowed origins from environment variables
+    const primaryDomain = process.env.CORS_ORIGIN;
+    const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';
+    const additionalOrigins = allowedOriginsStr.split(',').filter(Boolean);
+    
+    // Combine primary domain with additional allowed origins
+    const allowedOrigins = [primaryDomain, ...additionalOrigins].filter(Boolean);
+    
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Cache-Control, Pragma, Expires');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    
+    next();
+  });
   
-  // Error handling middleware for API routes only
+  // Error handling middleware for API routes
   app.use('/api', notFound);
   app.use(errorHandler);
   
-  // Any route that doesn't match the API routes should serve the React app
-  // This must be the LAST route handler
+  // Return a simple message for any other route
   app.get('*', (req, res) => {
-    // This will catch all remaining routes, including /admin/reset-password
-    console.log(`Serving React app for route: ${req.url}`);
-    res.sendFile(path.resolve(clientBuildPath, 'index.html'));
+    if (!req.path.startsWith('/api')) {
+      console.log(`Non-API route requested: ${req.url}`);
+      res.status(200).json({ 
+        message: "Portfolio API server is running. Frontend is served separately.",
+        apiEndpoints: {
+          skills: "/api/skills",
+          projects: "/api/projects",
+          education: "/api/education",
+          contact: "/api/contact"
+        }
+      });
+    }
   });
 }
 

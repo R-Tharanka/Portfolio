@@ -13,12 +13,12 @@ const TOKEN_EXPIRY = (parseInt(process.env.PASSWORD_RESET_EXPIRY) || 15) * 60 * 
 
 // Debug environment variables
 console.log('Environment variables for password reset:');
-console.log('CLIENT_URL:', process.env.CLIENT_URL);
+console.log('CORS_ORIGIN:', process.env.CORS_ORIGIN);
 console.log('NODE_ENV:', process.env.NODE_ENV);
 console.log('PASSWORD_RESET_EXPIRY:', process.env.PASSWORD_RESET_EXPIRY);
 console.log('Current directory:', __dirname);
 console.log('Full environment:', JSON.stringify({
-  CLIENT_URL: process.env.CLIENT_URL,
+  CORS_ORIGIN: process.env.CORS_ORIGIN,
   NODE_ENV: process.env.NODE_ENV,
   PORT: process.env.PORT,
   EMAIL_FROM: process.env.EMAIL_FROM
@@ -90,11 +90,13 @@ router.post('/reset-request', async (req, res) => {
       expiresAt
     });
     
-    // Create reset link using the client URL from environment variables
+    // Create reset link using the frontend URL from environment variables
     // IMPORTANT: Always use the frontend URL for reset links, not the API URL
-    const clientUrl = process.env.CLIENT_URL || `${req.protocol}://${req.get('host')}`;
+    // Default to the host from request if CORS_ORIGIN is not set
+    const clientUrl = process.env.CORS_ORIGIN || 
+                      `${req.protocol}://${req.get('host')}`;
     
-    console.log('Environment CLIENT_URL:', process.env.CLIENT_URL);
+    console.log('Environment CORS_ORIGIN:', process.env.CORS_ORIGIN);
     console.log('Using clientUrl:', clientUrl);
     
     const resetLink = `${clientUrl}/admin/reset-password?token=${token}`;

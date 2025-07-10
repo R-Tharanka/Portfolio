@@ -4,16 +4,25 @@ module.exports = (req, res, next) => {
     const origin = req.headers.origin;
 
     if (origin) {
-        // Check if origin matches CORS_ORIGIN or is in ALLOWED_ORIGINS
+        // Check if origin matches allowed origins
+        const primaryDomain = process.env.CORS_ORIGIN || '';
         const allowedOriginsStr = process.env.ALLOWED_ORIGINS || '';
-        const allowedOrigins = allowedOriginsStr.split(',').filter(Boolean);
-        const primaryDomain = process.env.CORS_ORIGIN;
+        const allowedOrigins = [
+            primaryDomain,
+            ...allowedOriginsStr.split(',').filter(Boolean)
+        ].filter(Boolean);
 
-        if (origin === primaryDomain || allowedOrigins.includes(origin)) {
+        if (allowedOrigins.includes(origin)) {
             res.header('Access-Control-Allow-Origin', origin);
-        } else {
+        } else if (primaryDomain) {
             // Default to configured primary domain if origin doesn't match
             res.header('Access-Control-Allow-Origin', primaryDomain);
+        }
+        
+        // Log rejected origins in development
+        if (process.env.NODE_ENV === 'development' && !allowedOrigins.includes(origin)) {
+            console.log(`CORS headers: Unrecognized origin: ${origin}`);
+            console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
         }
     }
 

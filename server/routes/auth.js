@@ -73,10 +73,15 @@ router.post('/login', [
     }
 
     // Check password
+    console.log(`Login attempt for user: ${username}`);
     const isMatch = await admin.matchPassword(password);
+    
     if (!isMatch) {
+      console.log(`Failed login attempt for user: ${username} - Password mismatch`);
       return res.status(401).json({ msg: 'Invalid credentials' });
     }
+    
+    console.log(`Successful login for user: ${username}`);
 
     // Return JWT
     const token = admin.getSignedJwtToken();

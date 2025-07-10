@@ -191,13 +191,11 @@ router.post('/reset-password', async (req, res) => {
       return res.status(404).json({ message: 'Admin not found' });
     }
     
-    // Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-    
-    // Update password
-    admin.password = hashedPassword;
+    // Update password - don't hash here, the model's pre-save hook will do it
+    console.log(`Resetting password for admin: ${admin.username} (${admin._id})`);
+    admin.password = newPassword;
     await admin.save();
+    console.log('Password reset saved successfully');
     
     // Delete the used token
     await ResetToken.deleteOne({ _id: resetToken._id });

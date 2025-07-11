@@ -133,7 +133,7 @@ const ProjectsSection: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTag}
-                className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                className="grid grid-cols-1 justify-items-center md:grid-cols-2 gap-12"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}

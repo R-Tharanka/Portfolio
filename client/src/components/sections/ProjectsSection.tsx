@@ -133,7 +133,7 @@ const ProjectsSection: React.FC = () => {
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTag}
-                className="grid grid-cols-1 justify-items-center md:grid-cols-2 gap-12"
+                className="grid grid-cols-1 justify-items-center md:grid-cols-2 gap-12 px-[40px]"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -166,8 +166,9 @@ const ProjectsSection: React.FC = () => {
                     </div>
 
                     <div className="p-6">
-                      <h3 className="text-xl font-bold mb-2">{project.title}</h3>                      <div className="mb-4">
-                        <p className={`text-foreground/70 relative overflow-hidden ${expandedDescriptions[project.id] ? '' : 'line-clamp-4 max-h-24'
+                      <h3 className="text-xl font-bold mb-2">{project.title}</h3>                      
+                      <div className="mb-4">
+                        <p className={`text-foreground/70 relative overflow-hidden text-justify ${expandedDescriptions[project.id] ? '' : 'line-clamp-4 max-h-24'
                           }`}>
                           {expandedDescriptions[project.id]
                             ? project.description

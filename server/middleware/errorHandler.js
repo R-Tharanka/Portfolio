@@ -3,7 +3,7 @@ const rateLimit = require('express-rate-limit');
 // Global rate limiting middleware
 exports.globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  max: 150, // limit each IP to 150 requests per windowMs (increased from 100)
   message: { error: 'Too many requests, please try again later' },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers

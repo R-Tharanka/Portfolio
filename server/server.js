@@ -53,13 +53,17 @@ const corsOptions = {
       ...allowedOriginsStr.split(',').filter(Boolean)
     ].filter(Boolean);
 
+    // Clean up any trailing slashes in origins for comparison
+    const cleanOrigin = origin.replace(/\/$/, '');
+    const cleanAllowedOrigins = allowedOrigins.map(o => o.replace(/\/$/, ''));
+
     // For development environments, be more lenient
-    if (process.env.NODE_ENV === 'development' || allowedOrigins.indexOf(origin) !== -1) {
+    if (process.env.NODE_ENV === 'development' || cleanAllowedOrigins.includes(cleanOrigin)) {
       callback(null, true);
     } else {
       // For development/debugging - log rejected origins
-      console.log(`CORS rejected origin: ${origin}`);
-      console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
+      console.log(`CORS rejected origin: ${cleanOrigin}`);
+      console.log(`Allowed origins: ${cleanAllowedOrigins.join(', ')}`);
       callback(new Error(`CORS not allowed for origin: ${origin}`), false);
     }
   },

@@ -12,7 +12,11 @@ module.exports = (req, res, next) => {
             ...allowedOriginsStr.split(',').filter(Boolean)
         ].filter(Boolean);
 
-        if (allowedOrigins.includes(origin)) {
+        // Clean up any trailing slashes in origins for comparison
+        const cleanOrigin = origin.replace(/\/$/, '');
+        const cleanAllowedOrigins = allowedOrigins.map(o => o.replace(/\/$/, ''));
+        
+        if (cleanAllowedOrigins.includes(cleanOrigin)) {
             res.header('Access-Control-Allow-Origin', origin);
         } else if (primaryDomain) {
             // Default to configured primary domain if origin doesn't match
@@ -20,7 +24,7 @@ module.exports = (req, res, next) => {
         }
         
         // Log rejected origins in development
-        if (process.env.NODE_ENV === 'development' && !allowedOrigins.includes(origin)) {
+        if (process.env.NODE_ENV === 'development' && !cleanAllowedOrigins.includes(cleanOrigin)) {
             console.log(`CORS headers: Unrecognized origin: ${origin}`);
             console.log(`Allowed origins: ${allowedOrigins.join(', ')}`);
         }

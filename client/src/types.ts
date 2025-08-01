@@ -21,6 +21,16 @@ export type SkillCategory =
   | 'Design'
   | 'Other';
 
+// Media Type for Projects
+export interface ProjectMedia {
+  type: 'image' | 'video';
+  url: string;
+  isExternal: boolean;
+  order: number;
+  displayFirst: boolean;
+  _id?: string; // MongoDB will generate this
+}
+
 // Project Type
 export interface Project {
   id: string;
@@ -31,7 +41,8 @@ export interface Project {
     start: string;
     end: string | null; // null means "Present"
   };
-  imageUrl: string;
+  imageUrl: string; // Kept for backward compatibility
+  media?: ProjectMedia[]; // New field for multiple media items
   repoLink?: string;
   demoLink?: string;
   tags: string[];

@@ -14,6 +14,7 @@ const educationRoutes = require('./routes/education');
 const contactRoutes = require('./routes/contact');
 const authRoutes = require('./routes/auth');
 const passwordResetRoutes = require('./routes/passwordReset');
+const uploadsRoutes = require('./routes/uploads');
 
 // Import middleware
 const { globalLimiter, notFound, errorHandler } = require('./middleware/errorHandler');
@@ -133,6 +134,10 @@ app.use('/api/education', educationRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes); // Password reset functionality
+app.use('/api/uploads', uploadsRoutes); // Media upload functionality
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // In production, we only handle API requests
 // The client is served separately by Vercel

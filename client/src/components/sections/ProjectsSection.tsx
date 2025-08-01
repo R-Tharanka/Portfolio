@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
+import MediaCarousel from '../ui/MediaCarousel';
 import { Project } from '../../types';
 import { useApiService } from '../../hooks/useApiService';
 import ScrollableTagRow from '../ui/ScrollableTagRow';
@@ -148,15 +149,16 @@ const ProjectsSection: React.FC = () => {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     whileHover={{ y: -5 }}
                   >
-                    <div className="relative h-52 sm:h-48 overflow-hidden">
-                      <img
-                        src={project.imageUrl}
-                        alt={project.title}
-                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+                    <div className="relative overflow-hidden">
+                      <MediaCarousel 
+                        mediaItems={project.media}
+                        fallbackImageUrl={project.imageUrl}
+                        height="h-52 sm:h-48"
+                        autoplay={true}
+                        interval={5000}
                       />
-                      <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                       {/* project cover image */}
-                      <div className="absolute bottom-0 left-0 w-full px-4 pb-5 pt-2">
+                      <div className="absolute bottom-0 left-0 w-full px-4 pb-5 pt-2 z-10">
                         {/* Scrollable tag container */}
                         <ScrollableTagRow
                           tags={project.tags}

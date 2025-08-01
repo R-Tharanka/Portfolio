@@ -1,5 +1,30 @@
 const mongoose = require('mongoose');
 
+const mediaSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ['image', 'video'],
+    required: [true, 'Media type is required']
+  },
+  url: {
+    type: String,
+    required: [true, 'Media URL is required'],
+    trim: true
+  },
+  isExternal: {
+    type: Boolean,
+    default: false
+  },
+  order: {
+    type: Number,
+    default: 0
+  },
+  displayFirst: {
+    type: Boolean,
+    default: false
+  }
+});
+
 const projectSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -27,10 +52,15 @@ const projectSchema = new mongoose.Schema({
       trim: true
     }
   },
+  // Keep imageUrl for backward compatibility
   imageUrl: {
     type: String,
-    required: [true, 'Project image URL is required'],
     trim: true
+  },
+  // New field for multiple media items
+  media: {
+    type: [mediaSchema],
+    default: []
   },
   repoLink: {
     type: String,

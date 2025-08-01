@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Project } from '../../../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { Project, ProjectMedia } from '../../../types';
 import { getProjects, createProject, updateProject, deleteProject } from '../../../services/api';
 import { deleteProjectFixed } from '../../../services/projectsService';
+import MediaUploader from './MediaUploader';
+import MediaViewer from './MediaViewer';
 import {
   Loader2, Plus, Pencil, Trash2, ChevronDown, ChevronUp, ExternalLink,
   Github, Calendar, LayoutGrid, List, ArrowUpDown, BarChart2,
@@ -61,6 +63,9 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     }));
   };
 
+  // State for media items
+  const [mediaItems, setMediaItems] = useState<ProjectMedia[]>([]);
+  
   const [formData, setFormData] = useState<Omit<Project, 'id'>>({
     title: '',
     description: '',
@@ -70,6 +75,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
       end: null
     },
     imageUrl: '',
+    media: [],
     repoLink: '',
     demoLink: '',
     tags: []
@@ -160,10 +166,12 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         end: null
       },
       imageUrl: '',
+      media: [],
       repoLink: '',
       demoLink: '',
       tags: []
     });
+    setMediaItems([]);
     setEditingProject(null);
     setIsFormOpen(false);
   };
@@ -184,6 +192,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
       id: project.id || (project as any)._id
     };
 
+    // Set form data with media items
     setFormData({
       title: project.title,
       description: project.description,
@@ -193,10 +202,29 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         end: project.timeline.end
       },
       imageUrl: project.imageUrl,
+      media: project.media || [],
       repoLink: project.repoLink || '',
       demoLink: project.demoLink || '',
       tags: project.tags
     });
+    
+    // Initialize media items state
+    if (project.media && project.media.length > 0) {
+      setMediaItems(project.media);
+    } else if (project.imageUrl) {
+      // If no media items but imageUrl exists, create one from it
+      setMediaItems([
+        {
+          type: 'image',
+          url: project.imageUrl,
+          isExternal: true,
+          order: 0,
+          displayFirst: true
+        }
+      ]);
+    } else {
+      setMediaItems([]);
+    }
     setEditingProject(projectWithId);
     setIsFormOpen(true);
 
@@ -214,6 +242,12 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
 
     setLoading(true);
     try {
+      // Prepare form data with media items
+      const formDataWithMedia = {
+        ...formData,
+        media: mediaItems
+      };
+      
       if (editingProject) {
         // Get project ID, ensuring we handle both id and _id from MongoDB
         const projectId = editingProject.id || (editingProject as any)._id;
@@ -221,7 +255,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         // Log debugging information
         console.log('Attempting to update project:', editingProject);
         console.log('Using project ID:', projectId);
-        console.log('Project data being sent:', formData);
+        console.log('Project data being sent:', formDataWithMedia);
 
         // Validate ID before update
         if (!projectId) {
@@ -244,7 +278,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
         }
 
         // Update existing project with a string ID (ensure it's a string)
-        const response = await updateProject(String(projectId), formData, token);
+        const response = await updateProject(String(projectId), formDataWithMedia, token);
 
         // Log the response
         console.log('Project update response:', response);
@@ -717,15 +751,27 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
             </div>
 
             <div>
-              <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">Image URL</label>
+              <label htmlFor="imageUrl" className="block text-sm font-medium mb-1">
+                Image URL <span className="text-xs text-foreground/60">(Alternative to media uploads)</span>
+              </label>
               <input
                 type="text"
                 id="imageUrl"
                 name="imageUrl"
                 value={formData.imageUrl}
                 onChange={handleChange}
-                required
                 className="w-full px-3 py-2 bg-card border border-border rounded-md focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="Optional if using media uploads"
+              />
+            </div>
+            
+            {/* Media uploader */}
+            <div>
+              <MediaUploader 
+                projectId={editingProject?.id || null}
+                token={token}
+                initialMedia={mediaItems}
+                onMediaChange={setMediaItems}
               />
             </div>
 
@@ -834,12 +880,11 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                     className="bg-card rounded-lg border border-border/50 overflow-hidden hover:shadow-md transition-shadow"
                   >
                     <div className="relative h-48">
-                      <img
-                        src={project.imageUrl}
-                        alt={project.title}
-                        className="w-full h-full object-cover"
+                      <MediaViewer 
+                        mediaItems={project.media || []}
+                        autoplay={false}
                       />
-                      <div className="absolute top-0 right-0 p-2 flex gap-1">
+                      <div className="absolute top-0 right-0 p-2 flex gap-1 z-10">
                         <button
                           onClick={() => openEditForm(project)}
                           className="p-1.5 bg-black/60 hover:bg-primary text-white rounded-full transition-colors"
@@ -855,7 +900,7 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                           <Trash2 size={14} />
                         </button>
                       </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent">
+                      <div className="absolute bottom-0 left-0 right-0 p-2 bg-gradient-to-t from-black/80 to-transparent z-10">
                         <div className="flex flex-wrap gap-1">
                           {project.tags.slice(0, 3).map((tag, i) => (
                             <span key={i} className="px-1.5 py-0.5 bg-primary/90 text-white text-xs rounded-full">
@@ -938,12 +983,11 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
                     className="flex flex-col md:flex-row gap-4 border border-border/50 rounded-lg overflow-hidden hover:border-primary/30 hover:shadow-md transition-all"
                   >
                     <div className="md:w-1/4 h-48 md:h-auto relative group">
-                      <img
-                        src={project.imageUrl}
-                        alt={project.title}
-                        className="w-full h-full object-cover"
+                      <MediaViewer 
+                        mediaItems={project.media || []}
+                        autoplay={false}
                       />
-                      <div className="hidden group-hover:flex absolute top-0 right-0 p-2 gap-1">
+                      <div className="hidden group-hover:flex absolute top-0 right-0 p-2 gap-1 z-10">
                         <button
                           onClick={() => openEditForm(project)}
                           className="p-1.5 bg-black/60 hover:bg-primary text-white rounded-full transition-colors"

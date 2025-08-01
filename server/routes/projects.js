@@ -65,8 +65,12 @@ router.post('/', [
     check('description', 'Description is required').not().isEmpty(),
     check('technologies', 'At least one technology is required').isArray({ min: 1 }),
     check('timeline.start', 'Start date is required').not().isEmpty(),
-    check('imageUrl', 'Image URL is required').not().isEmpty(),
-    check('tags', 'At least one tag is required').isArray({ min: 1 })
+    // Make imageUrl optional since we now have media array
+    check('tags', 'At least one tag is required').isArray({ min: 1 }),
+    // Validate media array if provided
+    check('media').optional().isArray(),
+    check('media.*.type').optional().isIn(['image', 'video']),
+    check('media.*.url').optional().isURL().withMessage('Valid URL required for media')
   ]
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -81,19 +85,38 @@ router.post('/', [
       technologies,
       timeline,
       imageUrl,
+      media,
       repoLink,
       demoLink,
       tags,
       featured
     } = req.body;
 
+    // If we have new media items and no display first is set, set the first one
+    if (media && Array.isArray(media) && media.length > 0) {
+      let hasDisplayFirst = media.some(item => item.displayFirst);
+      
+      if (!hasDisplayFirst && media.length > 0) {
+        media[0].displayFirst = true;
+      }
+      
+      // Ensure all media items have an order value
+      media.forEach((item, index) => {
+        if (item.order === undefined) {
+          item.order = index;
+        }
+      });
+    }
+    
     // Create new project
     const project = new Project({
       title,
       description,
       technologies,
       timeline,
-      imageUrl,
+      imageUrl: imageUrl || (media && media.length > 0 ? 
+        media.find(m => m.displayFirst)?.url || media[0].url : ''),
+      media,
       repoLink,
       demoLink,
       tags,
@@ -117,7 +140,10 @@ router.put('/:id', [
     check('title', 'Title is required').optional().not().isEmpty(),
     check('description', 'Description is required').optional().not().isEmpty(),
     check('technologies', 'Technologies should be an array').optional().isArray(),
-    check('tags', 'Tags should be an array').optional().isArray()
+    check('tags', 'Tags should be an array').optional().isArray(),
+    check('media').optional().isArray(),
+    check('media.*.type').optional().isIn(['image', 'video']),
+    check('media.*.url').optional().isURL().withMessage('Valid URL required for media')
   ]
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -130,6 +156,30 @@ router.put('/:id', [
 
     if (!project) {
       return res.status(404).json({ msg: 'Project not found' });
+    }
+    
+    // If updating media array
+    if (req.body.media && Array.isArray(req.body.media)) {
+      // Process the media array
+      // Ensure there's at least one displayFirst item
+      let hasDisplayFirst = req.body.media.some(item => item.displayFirst);
+      
+      if (!hasDisplayFirst && req.body.media.length > 0) {
+        req.body.media[0].displayFirst = true;
+      }
+      
+      // Ensure all media items have an order value
+      req.body.media.forEach((item, index) => {
+        if (item.order === undefined) {
+          item.order = index;
+        }
+      });
+      
+      // If imageUrl is not explicitly provided, use the display first media item's URL
+      if (!req.body.imageUrl && req.body.media.length > 0) {
+        const displayFirstMedia = req.body.media.find(m => m.displayFirst) || req.body.media[0];
+        req.body.imageUrl = displayFirstMedia.url;
+      }
     }
 
     const updatedProject = await Project.findByIdAndUpdate(

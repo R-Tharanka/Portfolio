@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Video, X, UploadCloud, Check, AlertCircle } from 'lucide-react';
+import { Image, Video, X, UploadCloud, Check, AlertCircle, ArrowLeft, ArrowRight, Eye } from 'lucide-react';
 import { ProjectMedia } from '../../../types';
 import { uploadProjectMedia, deleteProjectMedia } from '../../../services/mediaService';
 import toast from 'react-hot-toast';
@@ -161,7 +161,40 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     }
   };
 
-  // Drag and drop reordering could be implemented in the future
+  // Move an item left (decrease index)
+  const moveItemLeft = (index: number) => {
+    if (index <= 0) return; // Can't move first item left
+    
+    setMediaItems(prevItems => {
+      const newItems = [...prevItems];
+      // Swap with previous item
+      [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+      return newItems;
+    });
+  };
+  
+  // Move an item right (increase index)
+  const moveItemRight = (index: number) => {
+    if (index >= mediaItems.length - 1) return; // Can't move last item right
+    
+    setMediaItems(prevItems => {
+      const newItems = [...prevItems];
+      // Swap with next item
+      [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+      return newItems;
+    });
+  };
+
+  // Preview a media item
+  const [previewItem, setPreviewItem] = useState<ProjectMedia | null>(null);
+  
+  const openPreview = (item: ProjectMedia) => {
+    setPreviewItem(item);
+  };
+  
+  const closePreview = () => {
+    setPreviewItem(null);
+  };
 
   return (
     <div className="space-y-4">
@@ -189,41 +222,83 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 src={item.url} 
                 alt={`Project media ${index + 1}`}
                 className="w-full h-full object-cover"
+                onClick={() => openPreview(item)}
+                style={{ cursor: 'pointer' }}
               />
             ) : (
-              <div className="w-full h-full flex items-center justify-center bg-black/10">
+              <div 
+                className="w-full h-full flex items-center justify-center bg-black/10"
+                onClick={() => openPreview(item)}
+                style={{ cursor: 'pointer' }}
+              >
                 <Video size={24} className="text-foreground/60" />
               </div>
             )}
             
-            {/* Display first indicator */}
+            {/* Display first indicator - Always visible, not just on hover */}
             {item.displayFirst && (
-              <div className="absolute top-1 left-1 bg-primary text-white rounded-full p-0.5">
+              <div className="absolute top-1 left-1 bg-primary text-white rounded-full p-0.5 z-20">
                 <Check size={12} />
               </div>
             )}
             
+            {/* Order indicator */}
+            <div className="absolute top-1 right-1 bg-black/70 text-white px-1.5 py-0.5 text-xs rounded-md z-20">
+              {index + 1}/{mediaItems.length}
+            </div>
+            
             {/* Actions overlay */}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-              {/* Set as display first */}
-              {!item.displayFirst && (
+            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2">
+                {/* Set as display first */}
+                {!item.displayFirst && (
+                  <button
+                    onClick={() => setDisplayFirst(index)}
+                    className="p-1.5 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors"
+                    title="Set as main display"
+                  >
+                    <Check size={14} />
+                  </button>
+                )}
+                
+                {/* Preview media */}
                 <button
-                  onClick={() => setDisplayFirst(index)}
-                  className="p-1.5 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors"
-                  title="Set as main display"
+                  onClick={() => openPreview(item)}
+                  className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                  title="Preview media"
                 >
-                  <Check size={14} />
+                  <Eye size={14} />
                 </button>
-              )}
+                
+                {/* Remove media */}
+                <button
+                  onClick={() => removeMediaItem(index)}
+                  className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                  title="Remove media"
+                >
+                  <X size={14} />
+                </button>
+              </div>
               
-              {/* Remove media */}
-              <button
-                onClick={() => removeMediaItem(index)}
-                className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                title="Remove media"
-              >
-                <X size={14} />
-              </button>
+              {/* Reordering controls */}
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <button
+                  onClick={() => moveItemLeft(index)}
+                  className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Move left"
+                  disabled={index === 0}
+                >
+                  <ArrowLeft size={14} />
+                </button>
+                <button
+                  onClick={() => moveItemRight(index)}
+                  className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Move right"
+                  disabled={index === mediaItems.length - 1}
+                >
+                  <ArrowRight size={14} />
+                </button>
+              </div>
             </div>
             
             {/* Media type indicator */}
@@ -301,7 +376,52 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         <p>Supported formats: </p>
         <p>• Images: JPG, PNG, GIF, WebP (max 5MB)</p>
         <p>• Videos: MP4, WebM, OGG (max 50MB)</p>
+        <p className="mt-1 italic">Tip: You can reorder media by using the arrow buttons that appear when hovering over an item.</p>
       </div>
+      
+      {/* Media preview modal */}
+      {previewItem && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closePreview}>
+          <div className="bg-card p-4 rounded-lg shadow-xl max-w-3xl w-full mx-4" onClick={e => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Media Preview</h3>
+              <button
+                onClick={closePreview}
+                className="p-1.5 bg-background rounded-full hover:bg-background/80"
+                aria-label="Close preview"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            
+            <div className="max-h-[70vh] overflow-hidden rounded-md">
+              {previewItem.type === 'image' ? (
+                <img 
+                  src={previewItem.url} 
+                  alt="Media preview" 
+                  className="max-w-full h-auto object-contain max-h-[70vh]"
+                />
+              ) : previewItem.type === 'video' ? (
+                <video 
+                  src={previewItem.url}
+                  controls
+                  autoPlay
+                  className="max-w-full h-auto max-h-[70vh]"
+                />
+              ) : null}
+            </div>
+            
+            <div className="mt-4 text-sm text-foreground/70">
+              {previewItem.isExternal ? 'External URL' : 'Uploaded file'}
+              {previewItem.displayFirst && (
+                <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
+                  Main display
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

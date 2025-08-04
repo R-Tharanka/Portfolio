@@ -140,8 +140,23 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes); // Password reset functionality
 app.use('/api/uploads', uploadsRoutes); // Media upload functionality
 
-// Serve uploaded files
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+// Import media CORS middleware
+const mediaCorsHeadersMiddleware = require('./middleware/mediaCorsHeaders');
+
+// Serve uploaded files with special media CORS headers
+app.use('/uploads', mediaCorsHeadersMiddleware, express.static(path.join(__dirname, 'public/uploads'), {
+  setHeaders: (res, path) => {
+    // Set appropriate headers for media files
+    if (path.endsWith('.mp4') || path.endsWith('.webm') || path.endsWith('.ogg')) {
+      // For videos
+      res.set('Accept-Ranges', 'bytes');
+      res.set('Content-Type', `video/${path.split('.').pop()}`);
+    } else if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      // For images
+      res.set('Content-Type', `image/${path.split('.').pop().replace('jpg', 'jpeg')}`);
+    }
+  }
+}));
 
 // In production, we only handle API requests
 // The client is served separately by Vercel

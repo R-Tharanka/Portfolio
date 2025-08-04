@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Video, X, UploadCloud, Check, AlertCircle, ArrowLeft, ArrowRight, Eye } from 'lucide-react';
+import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye } from 'lucide-react';
 import { ProjectMedia } from '../../../types';
 import { uploadProjectMedia, deleteProjectMedia } from '../../../services/mediaService';
 import toast from 'react-hot-toast';
@@ -92,13 +92,43 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     }
   };
 
-  // Set an item as display first
-  const setDisplayFirst = (index: number) => {
+  // Move an item left (decrease index)
+  const moveItemLeft = (index: number) => {
+    if (index <= 0) return; // Can't move first item left
+    
     setMediaItems(prevItems => {
-      return prevItems.map((item, i) => ({
-        ...item,
-        displayFirst: i === index
-      }));
+      const newItems = [...prevItems];
+      // Swap with previous item
+      [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+      // Update order property
+      newItems.forEach((item, i) => {
+        item.order = i;
+      });
+      // First item is always displayFirst
+      newItems.forEach((item, i) => {
+        item.displayFirst = i === 0;
+      });
+      return newItems;
+    });
+  };
+  
+  // Move an item right (increase index)
+  const moveItemRight = (index: number) => {
+    if (index >= mediaItems.length - 1) return; // Can't move last item right
+    
+    setMediaItems(prevItems => {
+      const newItems = [...prevItems];
+      // Swap with next item
+      [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+      // Update order property
+      newItems.forEach((item, i) => {
+        item.order = i;
+      });
+      // First item is always displayFirst
+      newItems.forEach((item, i) => {
+        item.displayFirst = i === 0;
+      });
+      return newItems;
     });
   };
 
@@ -161,29 +191,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     }
   };
 
-  // Move an item left (decrease index)
-  const moveItemLeft = (index: number) => {
-    if (index <= 0) return; // Can't move first item left
-    
-    setMediaItems(prevItems => {
-      const newItems = [...prevItems];
-      // Swap with previous item
-      [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
-      return newItems;
-    });
-  };
-  
-  // Move an item right (increase index)
-  const moveItemRight = (index: number) => {
-    if (index >= mediaItems.length - 1) return; // Can't move last item right
-    
-    setMediaItems(prevItems => {
-      const newItems = [...prevItems];
-      // Swap with next item
-      [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
-      return newItems;
-    });
-  };
+  // These functions were duplicates and have been merged with the ones above
 
   // Preview a media item
   const [previewItem, setPreviewItem] = useState<ProjectMedia | null>(null);
@@ -212,33 +220,56 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         {mediaItems.map((item, index) => (
           <div 
             key={item._id || `media-${index}`}
-            className={`relative border ${item.displayFirst 
+            className={`relative border ${index === 0
               ? 'border-primary border-2' 
               : 'border-border'} rounded-md overflow-hidden group h-24`}
           >
-            {/* Media preview */}
+            {/* Media preview with instant preview on hover */}
             {item.type === 'image' ? (
-              <img 
-                src={item.url} 
-                alt={`Project media ${index + 1}`}
-                className="w-full h-full object-cover"
-                onClick={() => openPreview(item)}
-                style={{ cursor: 'pointer' }}
-              />
+              <div className="relative w-full h-full">
+                <img 
+                  src={item.url} 
+                  alt={`Project media ${index + 1}`}
+                  className="w-full h-full object-cover"
+                  onClick={() => openPreview(item)}
+                  style={{ cursor: 'pointer' }}
+                />
+                {/* Subtle indicator for preview action */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Eye size={24} className="text-white" />
+                </div>
+              </div>
             ) : (
-              <div 
-                className="w-full h-full flex items-center justify-center bg-black/10"
-                onClick={() => openPreview(item)}
-                style={{ cursor: 'pointer' }}
-              >
-                <Video size={24} className="text-foreground/60" />
+              <div className="relative w-full h-full">
+                <div 
+                  className="w-full h-full flex items-center justify-center bg-black/10"
+                  onClick={() => openPreview(item)}
+                  style={{ cursor: 'pointer' }}
+                >
+                  <Video size={24} className="text-foreground/60" />
+                  
+                  {/* Show video preview on hover if possible */}
+                  <video 
+                    src={item.url}
+                    className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
+                    muted
+                    loop
+                    playsInline
+                    onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                    onMouseLeave={(e) => e.currentTarget.pause()}
+                  />
+                </div>
+                {/* Subtle indicator for preview action */}
+                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Eye size={24} className="text-white" />
+                </div>
               </div>
             )}
             
-            {/* Display first indicator - Always visible, not just on hover */}
-            {item.displayFirst && (
-              <div className="absolute top-1 left-1 bg-primary text-white rounded-full p-0.5 z-20">
-                <Check size={12} />
+            {/* Main display indicator for first item */}
+            {index === 0 && (
+              <div className="absolute top-1 left-1 bg-primary text-white px-1.5 py-0.5 text-xs rounded-md z-20">
+                Main
               </div>
             )}
             
@@ -250,17 +281,6 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             {/* Actions overlay */}
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
               <div className="flex items-center justify-center gap-2">
-                {/* Set as display first */}
-                {!item.displayFirst && (
-                  <button
-                    onClick={() => setDisplayFirst(index)}
-                    className="p-1.5 bg-primary text-white rounded-full hover:bg-primary-dark transition-colors"
-                    title="Set as main display"
-                  >
-                    <Check size={14} />
-                  </button>
-                )}
-                
                 {/* Preview media */}
                 <button
                   onClick={() => openPreview(item)}
@@ -413,7 +433,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             
             <div className="mt-4 text-sm text-foreground/70">
               {previewItem.isExternal ? 'External URL' : 'Uploaded file'}
-              {previewItem.displayFirst && (
+              {mediaItems.indexOf(previewItem) === 0 && (
                 <span className="ml-2 px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-full">
                   Main display
                 </span>

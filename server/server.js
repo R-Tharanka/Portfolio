@@ -145,18 +145,73 @@ const mediaCorsHeadersMiddleware = require('./middleware/mediaCorsHeaders');
 
 // Serve uploaded files with special media CORS headers
 app.use('/uploads', mediaCorsHeadersMiddleware, express.static(path.join(__dirname, 'public/uploads'), {
-  setHeaders: (res, path) => {
+  setHeaders: (res, filePath) => {
     // Set appropriate headers for media files
-    if (path.endsWith('.mp4') || path.endsWith('.webm') || path.endsWith('.ogg')) {
+    if (filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.ogg')) {
       // For videos
       res.set('Accept-Ranges', 'bytes');
-      res.set('Content-Type', `video/${path.split('.').pop()}`);
-    } else if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+      res.set('Content-Type', `video/${filePath.split('.').pop()}`);
+      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
+      res.set('Cross-Origin-Embedder-Policy', 'credentialless');
+      res.set('Cross-Origin-Opener-Policy', 'same-origin');
+    } else if (filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
       // For images
-      res.set('Content-Type', `image/${path.split('.').pop().replace('jpg', 'jpeg')}`);
+      res.set('Content-Type', `image/${filePath.split('.').pop().replace('jpg', 'jpeg')}`);
     }
   }
 }));
+
+// Add special handler for partial content requests (video streaming)
+const fs = require('fs');
+app.get('/uploads/projects/:projectId/:filename', (req, res, next) => {
+  if (!req.path.match(/\.(mp4|webm|ogg)$/i)) {
+    return next(); // Only handle video files here
+  }
+  
+  const filePath = path.join(__dirname, 'public', req.path);
+  
+  // Apply media CORS headers
+  mediaCorsHeadersMiddleware(req, res, () => {});
+  
+  fs.stat(filePath, (err, stat) => {
+    if (err) {
+      if (err.code === 'ENOENT') {
+        return res.status(404).send('File not found');
+      }
+      return res.status(500).send('Internal server error');
+    }
+    
+    const fileSize = stat.size;
+    const range = req.headers.range;
+    
+    if (range) {
+      // Handle range request for video streaming
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = (end - start) + 1;
+      
+      const fileStream = fs.createReadStream(filePath, { start, end });
+      
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': `video/${filePath.split('.').pop()}`
+      });
+      
+      fileStream.pipe(res);
+    } else {
+      // Handle normal request
+      res.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': `video/${filePath.split('.').pop()}`
+      });
+      
+      fs.createReadStream(filePath).pipe(res);
+    }
+  });
+});
 
 // In production, we only handle API requests
 // The client is served separately by Vercel

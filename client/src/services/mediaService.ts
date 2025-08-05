@@ -107,6 +107,7 @@ export const deleteProjectMedia = async (
     // Make API request to delete from Cloudinary
     // The API expects the full Cloudinary publicId, not just the filename
     // and no need to include projectId in the URL since it's part of the publicId
+    console.log('Attempting to delete file with publicId:', mediaItem.publicId);
     await api.delete(`/uploads/projects/${encodeURIComponent(mediaItem.publicId)}`, config);
     
     return {

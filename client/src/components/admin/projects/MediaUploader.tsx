@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye } from 'lucide-react';
+import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye, CloudCog } from 'lucide-react';
 import { ProjectMedia } from '../../../types';
 import { uploadProjectMedia, deleteProjectMedia } from '../../../services/mediaService';
+import { getTransformedImageUrl, getVideoThumbnail, isCloudinaryUrl } from '../../../utils/cloudinary';
 import toast from 'react-hot-toast';
 
 interface MediaUploaderProps {
@@ -36,6 +37,9 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
   // These handlers are no longer needed since we're using labels
 
+  // State for upload progress
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  
   // Handle file input change
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>, type: 'image' | 'video') => {
     if (!event.target.files || event.target.files.length === 0) return;
@@ -46,10 +50,14 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
     setUploading(true);
     setError(null);
+    setUploadProgress(0);
 
     const files = Array.from(event.target.files);
     
     try {
+      // Show toast notification for upload start
+      const toastId = toast.loading(`Uploading ${files.length} ${type}${files.length > 1 ? 's' : ''}...`);
+      
       // If we don't have a projectId yet, we'll need to use a temp ID
       const uploadId = projectId || 'temp';
       
@@ -60,7 +68,15 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         uploadData.video = files;
       }
       
-      const result = await uploadProjectMedia(uploadId, uploadData, token);
+      // Upload to Cloudinary via our service with progress tracking
+      const result = await uploadProjectMedia(
+        uploadId, 
+        uploadData, 
+        token,
+        (progress) => {
+          setUploadProgress(progress);
+        }
+      );
       
       if (result.success && result.mediaItems.length > 0) {
         // Add new media items to the list
@@ -76,10 +92,17 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           return newItems;
         });
         
-        toast.success(`${result.mediaItems.length} ${type}${result.mediaItems.length > 1 ? 's' : ''} uploaded successfully`);
+        // Update toast to success
+        toast.success(`${result.mediaItems.length} ${type}${result.mediaItems.length > 1 ? 's' : ''} uploaded to Cloudinary`, {
+          id: toastId
+        });
       } else {
         setError(result.error || `Failed to upload ${type}`);
-        toast.error(result.error || `Failed to upload ${type}`);
+        
+        // Update toast to error
+        toast.error(result.error || `Failed to upload ${type}`, {
+          id: toastId
+        });
       }
     } catch (error) {
       console.error(`Error uploading ${type}:`, error);
@@ -87,6 +110,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       toast.error(`Failed to upload ${type}`);
     } finally {
       setUploading(false);
+      setUploadProgress(0);
       // Reset the file input
       event.target.value = '';
     }
@@ -136,8 +160,8 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const removeMediaItem = async (index: number) => {
     const itemToRemove = mediaItems[index];
     
-    // If the item is from an external source or doesn't have a URL, just remove it from state
-    if (!itemToRemove.url || itemToRemove.isExternal) {
+    // If the item is from an external source, just remove it from state
+    if (itemToRemove.isExternal) {
       setMediaItems(prevItems => {
         const newItems = prevItems.filter((_, i) => i !== index);
         
@@ -151,10 +175,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       return;
     }
     
-    // Otherwise, try to delete the file from the server
+    // Otherwise, try to delete the file from Cloudinary
     if (token && projectId) {
       try {
-        const result = await deleteProjectMedia(projectId, itemToRemove.url, token);
+        const result = await deleteProjectMedia(projectId, itemToRemove, token);
         
         if (result.success) {
           setMediaItems(prevItems => {
@@ -215,6 +239,25 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         </div>
       )}
       
+      {/* Upload progress indicator */}
+      {uploading && (
+        <div className="p-3 bg-primary/10 border border-primary/30 rounded-md text-sm">
+          <div className="flex items-center mb-2">
+            <UploadCloud size={16} className="mr-2 text-primary animate-pulse" />
+            <span>Uploading to Cloudinary...</span>
+          </div>
+          <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+            <div 
+              className="bg-primary h-full rounded-full transition-all duration-300"
+              style={{ width: `${uploadProgress}%` }}
+            ></div>
+          </div>
+          <p className="text-xs mt-1 text-muted-foreground">
+            Your files are being uploaded to Cloudinary and will appear below when complete
+          </p>
+        </div>
+      )}
+      
       {/* Media items display */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
         {mediaItems.map((item, index) => (
@@ -224,11 +267,14 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
               ? 'border-primary border-2' 
               : 'border-border'} rounded-md overflow-hidden group h-24`}
           >
-            {/* Media preview with instant preview on hover */}
+            {/* Media preview with instant preview on hover - optimized for Cloudinary */}
             {item.type === 'image' ? (
               <div className="relative w-full h-full">
                 <img 
-                  src={item.url} 
+                  src={isCloudinaryUrl(item.url) 
+                    ? getTransformedImageUrl(item.url, { width: 150, height: 150, quality: 'auto' }) 
+                    : item.url
+                  } 
                   alt={`Project media ${index + 1}`}
                   className="w-full h-full object-cover"
                   onClick={() => openPreview(item)}
@@ -248,16 +294,33 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 >
                   <Video size={24} className="text-foreground/60" />
                   
-                  {/* Show video preview on hover if possible */}
-                  <video 
-                    src={item.url}
-                    className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
-                    muted
-                    loop
-                    playsInline
-                    onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                    onMouseLeave={(e) => e.currentTarget.pause()}
-                  />
+                  {/* Show video preview - either thumbnail or actual video */}
+                  {isCloudinaryUrl(item.url) ? (
+                    <>
+                      <img 
+                        src={getVideoThumbnail(item.url)}
+                        alt={`Video thumbnail ${index + 1}`}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:opacity-0 transition-opacity"
+                      />
+                      <video 
+                        src={item.url}
+                        className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
+                        muted
+                        loop
+                        playsInline
+                      />
+                    </>
+                  ) : (
+                    <video 
+                      src={item.url}
+                      className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
+                      muted
+                      loop
+                      playsInline
+                      onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                      onMouseLeave={(e) => e.currentTarget.pause()}
+                    />
+                  )}
                 </div>
                 {/* Subtle indicator for preview action */}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -417,7 +480,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             <div className="max-h-[70vh] overflow-hidden rounded-md">
               {previewItem.type === 'image' ? (
                 <img 
-                  src={previewItem.url} 
+                  src={isCloudinaryUrl(previewItem.url) 
+                    ? getTransformedImageUrl(previewItem.url, { width: 1200, height: 800, quality: 'auto' }) 
+                    : previewItem.url
+                  } 
                   alt="Media preview" 
                   className="max-w-full h-auto object-contain max-h-[70vh]"
                 />

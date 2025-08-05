@@ -18,7 +18,6 @@ const uploadsRoutes = require('./routes/uploads');
 
 // Import middleware
 const { globalLimiter, notFound, errorHandler } = require('./middleware/errorHandler');
-const corsHeadersMiddleware = require('./middleware/corsHeaders');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,8 +33,7 @@ app.use(mongoSanitize()); // Sanitize data to prevent NoSQL injection
 app.use(globalLimiter); // Rate limiting
 
 // Regular Middleware
-// Apply custom CORS headers middleware
-app.use(corsHeadersMiddleware);
+// No longer need special CORS headers for media as we're using Cloudinary
 // Configure CORS to accept requests from your frontend domain
 // Using environment variables for allowed origins
 const corsOptions = {
@@ -140,23 +138,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes); // Password reset functionality
 app.use('/api/uploads', uploadsRoutes); // Media upload functionality
 
-// Import media CORS middleware
-const mediaCorsHeadersMiddleware = require('./middleware/mediaCorsHeaders');
-
-// Serve uploaded files with special media CORS headers
-app.use('/uploads', mediaCorsHeadersMiddleware, express.static(path.join(__dirname, 'public/uploads'), {
-  setHeaders: (res, path) => {
-    // Set appropriate headers for media files
-    if (path.endsWith('.mp4') || path.endsWith('.webm') || path.endsWith('.ogg')) {
-      // For videos
-      res.set('Accept-Ranges', 'bytes');
-      res.set('Content-Type', `video/${path.split('.').pop()}`);
-    } else if (path.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-      // For images
-      res.set('Content-Type', `image/${path.split('.').pop().replace('jpg', 'jpeg')}`);
-    }
-  }
-}));
+// We've fully migrated to Cloudinary for media storage and delivery
+// This eliminates CORS issues with video playback and provides better scalability
+// Cloudinary provides:
+// 1. Automatic CDN distribution
+// 2. Video transcoding and streaming
+// 3. Image optimization
+// 4. Responsive delivery
 
 // In production, we only handle API requests
 // The client is served separately by Vercel

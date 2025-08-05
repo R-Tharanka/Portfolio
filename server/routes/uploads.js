@@ -1,44 +1,23 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
-const { v4: uuidv4 } = require('uuid');
 const { protect } = require('../middleware/auth');
+const cloudinaryService = require('../services/cloudinaryService');
 
 const router = express.Router();
 
-// Configure storage
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const projectId = req.params.projectId || 'temp';
-    const uploadDir = path.join(__dirname, '../public/uploads/projects', projectId);
-    
-    // Create directory if it doesn't exist
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    // Create unique filename with original extension
-    const fileExt = path.extname(file.originalname).toLowerCase();
-    const fileName = `${uuidv4()}${fileExt}`;
-    cb(null, fileName);
-  }
-});
+// Configure temporary storage for multer
+// We'll use multer to handle the file upload, but we won't save to disk
+const storage = multer.memoryStorage();
 
 // File type validation
 const fileFilter = (req, file, cb) => {
   // Allow only specific types of images and videos
-  const allowedImageTypes = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
-  const allowedVideoTypes = ['.mp4', '.webm', '.ogg'];
+  const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+  const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/ogg'];
   
-  const ext = path.extname(file.originalname).toLowerCase();
-  
-  if (file.fieldname === 'image' && allowedImageTypes.includes(ext)) {
+  if (file.fieldname === 'image' && allowedImageTypes.includes(file.mimetype)) {
     cb(null, true);
-  } else if (file.fieldname === 'video' && allowedVideoTypes.includes(ext)) {
+  } else if (file.fieldname === 'video' && allowedVideoTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
     cb(new Error('Invalid file type. Only JPG, JPEG, PNG, GIF, WEBP images or MP4, WEBM, OGG videos are allowed.'), false);
@@ -47,9 +26,8 @@ const fileFilter = (req, file, cb) => {
 
 // Size limits
 const limits = {
-  // 5MB for images, 50MB for videos
   fileSize: (req, file) => {
-    return file.fieldname === 'image' ? 5 * 1024 * 1024 : 50 * 1024 * 1024;
+    return file.fieldname === 'image' ? 5 * 1024 * 1024 : 50 * 1024 * 1024; // 5MB for images, 50MB for videos
   }
 };
 
@@ -61,7 +39,7 @@ const upload = multer({
 });
 
 // @route   POST /api/uploads/projects/:projectId
-// @desc    Upload project media files
+// @desc    Upload project media files to Cloudinary
 // @access  Private (Admin only)
 router.post('/projects/:projectId', protect, upload.fields([
   { name: 'image', maxCount: 5 },
@@ -70,35 +48,46 @@ router.post('/projects/:projectId', protect, upload.fields([
   try {
     const projectId = req.params.projectId;
     const files = req.files;
-    const baseUrl = `${req.protocol}://${req.get('host')}/uploads/projects/${projectId}/`;
     
     // Format response with file info
     const mediaItems = [];
     
     // Process uploaded images
     if (files.image) {
-      files.image.forEach((file, index) => {
-        mediaItems.push({
+      const imagePromises = files.image.map(async (file, index) => {
+        const result = await cloudinaryService.uploadBuffer(file.buffer, 'image', projectId);
+        
+        return {
           type: 'image',
-          url: baseUrl + file.filename,
+          url: result.secure_url, // Use the secure URL from Cloudinary
+          publicId: result.public_id, // Store Cloudinary public_id for later manipulation
           isExternal: false,
           order: index,
           displayFirst: index === 0 && !files.video // First image is display first only if no videos
-        });
+        };
       });
+      
+      const uploadedImages = await Promise.all(imagePromises);
+      mediaItems.push(...uploadedImages);
     }
     
     // Process uploaded videos
     if (files.video) {
-      files.video.forEach((file, index) => {
-        mediaItems.push({
+      const videoPromises = files.video.map(async (file, index) => {
+        const result = await cloudinaryService.uploadBuffer(file.buffer, 'video', projectId);
+        
+        return {
           type: 'video',
-          url: baseUrl + file.filename,
+          url: result.secure_url, // Use the secure URL from Cloudinary
+          publicId: result.public_id, // Store Cloudinary public_id for later manipulation
           isExternal: false,
           order: files.image ? files.image.length + index : index,
           displayFirst: index === 0 // First video is display first by default
-        });
+        };
       });
+      
+      const uploadedVideos = await Promise.all(videoPromises);
+      mediaItems.push(...uploadedVideos);
     }
     
     res.json({
@@ -107,28 +96,52 @@ router.post('/projects/:projectId', protect, upload.fields([
     });
   } catch (error) {
     console.error('Upload error:', error);
-    res.status(500).json({
-      error: 'Server Error',
-      message: error.message
-    });
+    
+    // Try to parse error details if it's from our Cloudinary service
+    let errorMessage = error.message;
+    let statusCode = 500;
+    
+    try {
+      const errorDetails = JSON.parse(error.message);
+      if (errorDetails.message) {
+        errorMessage = errorDetails.message;
+      }
+      if (errorDetails.code && typeof errorDetails.code === 'number') {
+        statusCode = errorDetails.code;
+      }
+      
+      res.status(statusCode).json({
+        error: 'Cloudinary Error',
+        message: errorMessage,
+        details: errorDetails
+      });
+    } catch (parseError) {
+      // If error is not in our JSON format, return standard error
+      res.status(500).json({
+        error: 'Server Error',
+        message: error.message
+      });
+    }
   }
 });
 
-// @route   DELETE /api/uploads/projects/:projectId/:filename
-// @desc    Delete project media file
+// @route   DELETE /api/uploads/projects/:publicId
+// @desc    Delete project media file from Cloudinary
 // @access  Private (Admin only)
-router.delete('/projects/:projectId/:filename', protect, async (req, res) => {
+router.delete('/projects/:publicId', protect, async (req, res) => {
   try {
-    const { projectId, filename } = req.params;
-    const filePath = path.join(__dirname, '../public/uploads/projects', projectId, filename);
+    const { publicId } = req.params;
     
-    // Check if file exists
-    if (fs.existsSync(filePath)) {
-      // Delete file
-      fs.unlinkSync(filePath);
+    // Check if it's an image or video based on the public_id path
+    const resourceType = publicId.includes('video') ? 'video' : 'image';
+    
+    // Delete file from Cloudinary using our service
+    const result = await cloudinaryService.deleteFile(publicId, resourceType);
+    
+    if (result.result === 'ok') {
       res.json({ success: true, message: 'File deleted successfully' });
     } else {
-      res.status(404).json({ error: 'File not found' });
+      res.status(404).json({ error: 'File not found or could not be deleted' });
     }
   } catch (error) {
     console.error('Delete file error:', error);

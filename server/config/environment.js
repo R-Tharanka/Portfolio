@@ -13,7 +13,7 @@ const environment = {
   
   // JWT settings
   JWT_SECRET: process.env.JWT_SECRET,
-  JWT_EXPIRE: process.env.JWT_EXPIRE || '7d',
+  JWT_EXPIRE: process.env.JWT_EXPIRE || '1h',
   
   // Cloudinary configuration
   CLOUDINARY: {

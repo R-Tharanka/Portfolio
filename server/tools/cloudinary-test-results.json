@@ -1,9 +1,9 @@
 {
-  "timestamp": "2025-08-05T08:04:41.675Z",
+  "timestamp": "2025-08-05T08:16:48.846Z",
   "summary": {
-    "totalTests": 3,
-    "passedTests": 1,
-    "overallSuccess": false
+    "totalTests": 4,
+    "passedTests": 4,
+    "overallSuccess": true
   },
   "results": [
     {
@@ -13,25 +13,41 @@
       "details": {
         "verified": true
       },
-      "timestamp": "2025-08-05T08:04:41.669Z"
+      "timestamp": "2025-08-05T08:16:45.200Z"
     },
     {
       "test": "Image upload",
-      "success": false,
-      "message": "Failed to upload test image",
+      "success": true,
+      "message": "Successfully uploaded test image to Cloudinary",
       "details": {
-        "error": "Must supply api_key"
+        "publicId": "portfolio/projects/test-project-1754381805200/1754381805201",
+        "url": "https://res.cloudinary.com/dqzxpoez2/image/upload/v1754381806/portfolio/projects/test-project-1754381805200/1754381805201.png"
       },
-      "timestamp": "2025-08-05T08:04:41.673Z"
+      "timestamp": "2025-08-05T08:16:48.246Z"
     },
     {
-      "test": "Test suite",
-      "success": false,
-      "message": "Test suite failed to complete",
+      "test": "URL transformations",
+      "success": true,
+      "message": "Successfully generated transformed URLs",
       "details": {
-        "error": "Cannot continue tests without successful upload"
+        "transformedUrl": "https://res.cloudinary.com/dqzxpoez2/image/upload/c_fill,h_100,q_auto,w_100/v1/portfolio/projects/test-project-1754381805200/1754381805201?_a=BAMAK+Xy0",
+        "responsiveUrls": {
+          "thumbnail": "https://res.cloudinary.com/dqzxpoez2/image/upload/c_fill,f_auto,h_150,q_auto,w_150/v1/portfolio/projects/test-project-1754381805200/1754381805201?_a=BAMAK+Xy0",
+          "small": "https://res.cloudinary.com/dqzxpoez2/image/upload/c_fill,f_auto,h_200,q_auto,w_300/v1/portfolio/projects/test-project-1754381805200/1754381805201?_a=BAMAK+Xy0",
+          "medium": "https://res.cloudinary.com/dqzxpoez2/image/upload/c_fill,f_auto,h_400,q_auto,w_600/v1/portfolio/projects/test-project-1754381805200/1754381805201?_a=BAMAK+Xy0",
+          "large": "https://res.cloudinary.com/dqzxpoez2/image/upload/c_fill,f_auto,h_800,q_auto,w_1200/v1/portfolio/projects/test-project-1754381805200/1754381805201?_a=BAMAK+Xy0"
+        }
       },
-      "timestamp": "2025-08-05T08:04:41.673Z"
+      "timestamp": "2025-08-05T08:16:48.250Z"
+    },
+    {
+      "test": "File deletion",
+      "success": true,
+      "message": "Successfully deleted test image",
+      "details": {
+        "result": "ok"
+      },
+      "timestamp": "2025-08-05T08:16:48.843Z"
     }
   ]
 }

@@ -18,7 +18,6 @@ const uploadsRoutes = require('./routes/uploads');
 
 // Import middleware
 const { globalLimiter, notFound, errorHandler } = require('./middleware/errorHandler');
-const corsHeadersMiddleware = require('./middleware/corsHeaders');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -34,8 +33,7 @@ app.use(mongoSanitize()); // Sanitize data to prevent NoSQL injection
 app.use(globalLimiter); // Rate limiting
 
 // Regular Middleware
-// Apply custom CORS headers middleware
-app.use(corsHeadersMiddleware);
+// No longer need special CORS headers for media as we're using Cloudinary
 // Configure CORS to accept requests from your frontend domain
 // Using environment variables for allowed origins
 const corsOptions = {
@@ -140,78 +138,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes); // Password reset functionality
 app.use('/api/uploads', uploadsRoutes); // Media upload functionality
 
-// Import media CORS middleware
-const mediaCorsHeadersMiddleware = require('./middleware/mediaCorsHeaders');
-
-// Serve uploaded files with special media CORS headers
-app.use('/uploads', mediaCorsHeadersMiddleware, express.static(path.join(__dirname, 'public/uploads'), {
-  setHeaders: (res, filePath) => {
-    // Set appropriate headers for media files
-    if (filePath.endsWith('.mp4') || filePath.endsWith('.webm') || filePath.endsWith('.ogg')) {
-      // For videos
-      res.set('Accept-Ranges', 'bytes');
-      res.set('Content-Type', `video/${filePath.split('.').pop()}`);
-      res.set('Cross-Origin-Resource-Policy', 'cross-origin');
-      res.set('Cross-Origin-Embedder-Policy', 'credentialless');
-      res.set('Cross-Origin-Opener-Policy', 'same-origin');
-    } else if (filePath.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-      // For images
-      res.set('Content-Type', `image/${filePath.split('.').pop().replace('jpg', 'jpeg')}`);
-    }
-  }
-}));
-
-// Add special handler for partial content requests (video streaming)
-const fs = require('fs');
-app.get('/uploads/projects/:projectId/:filename', (req, res, next) => {
-  if (!req.path.match(/\.(mp4|webm|ogg)$/i)) {
-    return next(); // Only handle video files here
-  }
-  
-  const filePath = path.join(__dirname, 'public', req.path);
-  
-  // Apply media CORS headers
-  mediaCorsHeadersMiddleware(req, res, () => {});
-  
-  fs.stat(filePath, (err, stat) => {
-    if (err) {
-      if (err.code === 'ENOENT') {
-        return res.status(404).send('File not found');
-      }
-      return res.status(500).send('Internal server error');
-    }
-    
-    const fileSize = stat.size;
-    const range = req.headers.range;
-    
-    if (range) {
-      // Handle range request for video streaming
-      const parts = range.replace(/bytes=/, '').split('-');
-      const start = parseInt(parts[0], 10);
-      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
-      const chunkSize = (end - start) + 1;
-      
-      const fileStream = fs.createReadStream(filePath, { start, end });
-      
-      res.writeHead(206, {
-        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
-        'Accept-Ranges': 'bytes',
-        'Content-Length': chunkSize,
-        'Content-Type': `video/${filePath.split('.').pop()}`
-      });
-      
-      fileStream.pipe(res);
-    } else {
-      // Handle normal request
-      res.writeHead(200, {
-        'Content-Length': fileSize,
-        'Content-Type': `video/${filePath.split('.').pop()}`
-      });
-      
-      fs.createReadStream(filePath).pipe(res);
-    }
-  });
-});
+// We've fully migrated to Cloudinary for media storage and delivery
+// This eliminates CORS issues with video playback and provides better scalability
+// Cloudinary provides:
+// 1. Automatic CDN distribution
+// 2. Video transcoding and streaming
+// 3. Image optimization
+// 4. Responsive delivery
 
 // In production, we only handle API requests
 // The client is served separately by Vercel

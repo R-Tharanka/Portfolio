@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@cloudinary/react": "^1.14.3",
+    "@cloudinary/url-gen": "^1.21.0",
     "@types/react-google-recaptcha": "^2.1.9",
     "axios": "^1.6.7",
     "cors": "^2.8.5",

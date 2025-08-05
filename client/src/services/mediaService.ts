@@ -2,7 +2,7 @@ import api from './api';
 import { ProjectMedia } from '../types';
 
 /**
- * Upload media files for a project
+ * Upload media files for a project using Cloudinary
  * @param projectId The project ID to upload media for
  * @param files The files to upload
  * @param token The auth token
@@ -14,7 +14,8 @@ export const uploadProjectMedia = async (
     image?: File[], 
     video?: File[] 
   },
-  token: string
+  token: string,
+  onProgress?: (progress: number) => void
 ): Promise<{ success: boolean; mediaItems: ProjectMedia[]; error?: string }> => {
   try {
     // Create a form data object
@@ -34,15 +35,22 @@ export const uploadProjectMedia = async (
       });
     }
     
-    // Setup config with token
+    // Setup config with token and progress tracking
     const config = {
       headers: {
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${token}`
+      },
+      onUploadProgress: (progressEvent: any) => {
+        if (onProgress && progressEvent.total) {
+          // Calculate the upload progress percentage
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          onProgress(percentCompleted);
+        }
       }
     };
     
-    // Make API request
+    // Make API request - Cloudinary handling happens server-side
     const response = await api.post(`/uploads/projects/${projectId}`, formData, config);
     
     return {
@@ -50,7 +58,7 @@ export const uploadProjectMedia = async (
       mediaItems: response.data.mediaItems
     };
   } catch (error: any) {
-    console.error('Error uploading media:', error);
+    console.error('Error uploading media to Cloudinary:', error);
     
     let errorMessage = 'Failed to upload media files';
     
@@ -68,20 +76,26 @@ export const uploadProjectMedia = async (
 };
 
 /**
- * Delete a media file from a project
+ * Delete a media file from a project using Cloudinary
  * @param projectId The project ID
- * @param filename The filename to delete
+ * @param mediaItem The media item to delete (needs publicId for Cloudinary deletion)
  * @param token The auth token
  * @returns Success status
  */
 export const deleteProjectMedia = async (
   projectId: string,
-  filename: string,
+  mediaItem: ProjectMedia,
   token: string
 ): Promise<{ success: boolean; error?: string }> => {
   try {
-    // Get filename from URL if full URL was provided
-    const filenameOnly = filename.split('/').pop() || filename;
+    // We need the publicId for Cloudinary deletion
+    if (!mediaItem.publicId) {
+      console.error('Cannot delete media: missing publicId');
+      return {
+        success: false,
+        error: 'Cannot delete media: missing identification'
+      };
+    }
     
     // Setup config with token
     const config = {
@@ -90,8 +104,8 @@ export const deleteProjectMedia = async (
       }
     };
     
-    // Make API request
-    await api.delete(`/uploads/projects/${projectId}/${filenameOnly}`, config);
+    // Make API request to delete from Cloudinary
+    await api.delete(`/uploads/projects/${mediaItem.publicId}`, config);
     
     return {
       success: true

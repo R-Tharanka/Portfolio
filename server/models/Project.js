@@ -11,6 +11,10 @@ const mediaSchema = new mongoose.Schema({
     required: [true, 'Media URL is required'],
     trim: true
   },
+  publicId: {
+    type: String,
+    trim: true
+  },
   isExternal: {
     type: Boolean,
     default: false

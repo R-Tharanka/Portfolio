@@ -25,6 +25,7 @@ export type SkillCategory =
 export interface ProjectMedia {
   type: 'image' | 'video';
   url: string;
+  publicId?: string;  // Cloudinary public ID for media management
   isExternal: boolean;
   order: number;
   displayFirst: boolean;

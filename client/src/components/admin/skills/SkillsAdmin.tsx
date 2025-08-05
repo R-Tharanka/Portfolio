@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Skill, SkillCategory } from '../../../types';
 import { getSkills, createSkill } from '../../../services/api';
 import { updateSkillFixed, deleteSkillFixed } from '../../../services/skillsService';
-import { Loader2, Plus, Pencil, Trash2, X } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, X, BarChart2, Award, Grid, PieChart } from 'lucide-react';
 import { iconMap } from '../../ui/iconMap';
 import toast from 'react-hot-toast';
 
@@ -56,6 +56,216 @@ const DeleteConfirmationDialog = ({
           >
             Delete
           </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Skills Overview component
+const SkillsOverview: React.FC<{ skills: Skill[] }> = ({ skills }) => {
+  // Calculate statistics
+  const totalSkills = skills.length;
+  const avgProficiency = totalSkills
+    ? Number((skills.reduce((sum, skill) => sum + skill.proficiency, 0) / totalSkills).toFixed(1))
+    : 0;
+
+  // Count skills by category
+  const categoryCounts = skills.reduce((acc, skill) => {
+    acc[skill.category] = (acc[skill.category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  // Find highest proficiency skills
+  const topSkills = [...skills]
+    .sort((a, b) => b.proficiency - a.proficiency)
+    .slice(0, 3)
+    .map(skill => ({ name: skill.name, proficiency: skill.proficiency }));
+
+  // Calculate proficiency distribution
+  const proficiencyDistribution = {
+    beginner: skills.filter(skill => skill.proficiency >= 1 && skill.proficiency <= 3).length,
+    intermediate: skills.filter(skill => skill.proficiency >= 4 && skill.proficiency <= 6).length,
+    advanced: skills.filter(skill => skill.proficiency >= 7 && skill.proficiency <= 9).length,
+    expert: skills.filter(skill => skill.proficiency === 10).length
+  };
+
+  // Get recently added skills (assuming the skills array is ordered by creation date)
+  // In a real app, you might want to sort by creation date if available
+  const recentSkills = [...skills].slice(-3);
+
+  return (
+    <div className="mb-8 bg-background rounded-lg border border-border p-4">
+      <h3 className="text-lg font-medium mb-4 flex items-center">
+        <BarChart2 className="mr-2 h-5 w-5 text-primary" />
+        Skills Overview
+      </h3>
+
+      {/* Skills Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {/* Total Skills Card */}
+        <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-foreground/70">Total Skills</h4>
+            <Grid className="h-5 w-5 text-primary" />
+          </div>
+          <p className="text-2xl font-bold mt-2">{totalSkills}</p>
+        </div>
+
+        {/* Average Proficiency Card */}
+        <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-foreground/70">Avg Proficiency</h4>
+            <Award className="h-5 w-5 text-primary" />
+          </div>
+          <p className="text-2xl font-bold mt-2">{avgProficiency}/10</p>
+        </div>
+
+        {/* Category Distribution Card */}
+        <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-foreground/70">Categories</h4>
+            <PieChart className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-2 space-y-1 text-sm">
+            {Object.entries(categoryCounts)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 3)
+              .map(([category, count]) => (
+                <div key={category} className="flex justify-between">
+                  <span>{category}</span>
+                  <span className="font-medium">{count}</span>
+                </div>
+              ))}
+            {Object.keys(categoryCounts).length > 3 && (
+              <div className="text-xs text-foreground/60 text-right mt-1">
+                +{Object.keys(categoryCounts).length - 3} more
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Top Skills Card */}
+        <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-medium text-foreground/70">Top Skills</h4>
+            <Award className="h-5 w-5 text-primary" />
+          </div>
+          <div className="mt-2 space-y-1 text-sm">
+            {topSkills.map(skill => (
+              <div key={skill.name} className="flex justify-between">
+                <span>{skill.name}</span>
+                <span className="font-medium">{skill.proficiency}/10</span>
+              </div>
+            ))}
+            {!topSkills.length && (
+              <p className="text-foreground/60">No skills added yet</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Detailed Analysis Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">          {/* Proficiency Distribution */}
+        <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm">
+          <h4 className="text-sm font-medium mb-3 flex items-center">
+            <BarChart2 className="mr-2 h-4 w-4 text-primary" />
+            Proficiency Distribution
+          </h4>
+          <div className="space-y-3 mt-2">
+            <div className="flex items-center gap-2">
+              <div className="w-24 text-xs">Expert (10)</div>
+              <div className="flex-1 h-3 bg-background rounded-full overflow-hidden">
+                <div
+                  className={`h-full bg-green-500 rounded-full ${totalSkills ? '' : 'w-0'}`}
+                  style={{ width: totalSkills ? `${(proficiencyDistribution.expert / totalSkills) * 100}%` : '0%' }}
+                ></div>
+              </div>
+              <div className="text-xs font-medium w-8 text-right">{proficiencyDistribution.expert}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-24 text-xs">Advanced (7-9)</div>
+              <div className="flex-1 h-3 bg-background rounded-full overflow-hidden">                <div
+                className="h-full bg-blue-500 rounded-full"
+                style={{ width: totalSkills ? `${(proficiencyDistribution.advanced / totalSkills) * 100}%` : '0%' }}
+              ></div>
+              </div>
+              <div className="text-xs font-medium w-8 text-right">{proficiencyDistribution.advanced}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-24 text-xs">Intermediate (4-6)</div>
+              <div className="flex-1 h-3 bg-background rounded-full overflow-hidden">                <div
+                className="h-full bg-yellow-500 rounded-full"
+                style={{ width: totalSkills ? `${(proficiencyDistribution.intermediate / totalSkills) * 100}%` : '0%' }}
+              ></div>
+              </div>
+              <div className="text-xs font-medium w-8 text-right">{proficiencyDistribution.intermediate}</div>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-24 text-xs">Beginner (1-3)</div>
+              <div className="flex-1 h-3 bg-background rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-orange-500 rounded-full"
+                  style={{ width: totalSkills ? `${(proficiencyDistribution.beginner / totalSkills) * 100}%` : '0%' }}
+                ></div>
+              </div>
+              <div className="text-xs font-medium w-8 text-right">{proficiencyDistribution.beginner}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Skills */}
+        <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm">
+          <h4 className="text-sm font-medium mb-3 flex items-center">
+            <Plus className="mr-2 h-4 w-4 text-primary" />
+            Recently Added Skills
+          </h4>
+          {recentSkills.length > 0 ? (
+            <div className="divide-y divide-border/50">
+              {recentSkills.map((skill, i) => (
+                <div key={skill.id || i} className="py-2 flex justify-between items-center">
+                  <div>
+                    <div className="font-medium">{skill.name}</div>
+                    <div className="text-xs text-foreground/70">{skill.category}</div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <div className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full font-medium">
+                      {skill.proficiency}/10
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-foreground/60">No skills added yet</p>
+          )}
+        </div>
+
+        {/* Category Distribution Visualization */}
+        <div className="bg-card p-4 rounded-lg border border-border/50 shadow-sm lg:col-span-2">
+          <h4 className="text-sm font-medium mb-3 flex items-center">
+            <PieChart className="mr-2 h-4 w-4 text-primary" />
+            Category Distribution
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+            {Object.entries(categoryCounts).map(([category, count]) => (
+              <div key={category} className="p-3 border border-border/50 rounded-md">
+                <div className="text-sm font-medium">{category}</div>
+                <div className="flex items-center justify-between mt-1">
+                  <div className="text-xl font-bold">{count}</div>
+                  <div className="text-xs text-foreground/70">
+                    {Math.round((count / totalSkills) * 100)}%
+                  </div>
+                </div>
+                <div className="w-full h-1 bg-background mt-2 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full"
+                    style={{ width: `${(count / totalSkills) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -382,6 +592,9 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
         </div>
       )}
 
+      {/* Overview section */}
+      <SkillsOverview skills={skills} />
+
       {/* Form for adding/editing skills */}
       {isFormOpen && (
         <div className="mb-8 p-4 bg-background rounded-lg border border-border">
@@ -572,7 +785,8 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
         </div>
       )}
 
-      {/* Delete confirmation dialog */}      <DeleteConfirmationDialog
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmationDialog
         isOpen={isDeleteDialogOpen}
         onClose={() => {
           setIsDeleteDialogOpen(false);
@@ -602,8 +816,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
               const errorMsg = 'Could not determine skill ID. Please refresh the page and try again.';
               console.error('No valid ID found in skill object:', skillToBeDeleted);
               setError(errorMsg);
-              toast.error(errorMsg);
-              setIsDeleteDialogOpen(false);
+              toast.error(errorMsg); setIsDeleteDialogOpen(false);
               setSkillToDelete(null);
               return;
             }
@@ -635,8 +848,7 @@ const SkillsAdmin: React.FC<SkillsAdminProps> = ({ token }) => {
                 setError('Failed to delete skill. Please try again.');
                 // Show error toast
                 toast.error('Failed to delete skill. Please try again.', { id: 'deleteSkill' });
-              })
-              .finally(() => {
+              }).finally(() => {
                 setLoading(false);
                 setIsDeleteDialogOpen(false);
                 setSkillToDelete(null);

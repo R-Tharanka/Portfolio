@@ -139,6 +139,7 @@ router.delete('/projects/:publicId', protect, async (req, res) => {
     const result = await cloudinaryService.deleteFile(publicId, resourceType);
     
     if (result.result === 'ok') {
+      // Success - file was deleted from Cloudinary
       res.json({ success: true, message: 'File deleted successfully' });
     } else {
       res.status(404).json({ error: 'File not found or could not be deleted' });

@@ -7,7 +7,9 @@
     "dev": "nodemon server.js",
     "check:cloudinary": "node tools/check-cloudinary.js",
     "test:cloudinary": "node tools/test-cloudinary.js",
-    "migrate:media": "node tools/migrate-media-to-cloudinary.js"
+    "migrate:media": "node tools/migrate-media-to-cloudinary.js",
+    "fix:media": "node tools/fix-media-data.js",
+    "cleanup:media": "node tools/cleanup-local-media.js"
   },
   "keywords": [
     "portfolio",

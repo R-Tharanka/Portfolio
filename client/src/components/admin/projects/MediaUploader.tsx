@@ -160,44 +160,38 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const removeMediaItem = async (index: number) => {
     const itemToRemove = mediaItems[index];
     
-    // If the item is from an external source, just remove it from state
+    // First, immediately remove from the UI state for better user experience
+    setMediaItems(prevItems => {
+      const newItems = prevItems.filter((_, i) => i !== index);
+      
+      // Ensure at least one item has displayFirst=true if we have items
+      if (newItems.length > 0 && !newItems.some(item => item.displayFirst)) {
+        newItems[0].displayFirst = true;
+      }
+      
+      return newItems;
+    });
+    
+    // If the item is from an external source, no need to delete from server
     if (itemToRemove.isExternal) {
-      setMediaItems(prevItems => {
-        const newItems = prevItems.filter((_, i) => i !== index);
-        
-        // Ensure at least one item has displayFirst=true if we have items
-        if (newItems.length > 0 && !newItems.some(item => item.displayFirst)) {
-          newItems[0].displayFirst = true;
-        }
-        
-        return newItems;
-      });
+      toast.success('External media removed successfully');
       return;
     }
     
     // Otherwise, try to delete the file from Cloudinary
-    if (token && projectId) {
+    if (token && projectId && itemToRemove.publicId) {
       try {
         const result = await deleteProjectMedia(projectId, itemToRemove, token);
         
         if (result.success) {
-          setMediaItems(prevItems => {
-            const newItems = prevItems.filter((_, i) => i !== index);
-            
-            // Ensure at least one item has displayFirst=true if we have items
-            if (newItems.length > 0 && !newItems.some(item => item.displayFirst)) {
-              newItems[0].displayFirst = true;
-            }
-            
-            return newItems;
-          });
-          
-          toast.success('Media removed successfully');
+          toast.success('Media deleted successfully from Cloudinary');
         } else {
-          toast.error(result.error || 'Failed to remove media');
+          // Even if deletion fails, we've already removed it from the UI state
+          console.warn('Media deleted from UI but server deletion failed:', result.error);
+          toast.error('Media removed from project but deletion from storage may have failed');
         }
       } catch (error) {
-        console.error('Error removing media:', error);
+        console.error('Error removing media from server:', error);
         toast.error('Failed to remove media');
       }
     } else {

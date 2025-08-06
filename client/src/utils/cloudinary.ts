@@ -14,8 +14,8 @@ export const IMAGE_SIZES = {
 
 // Constants for video transformations
 export const VIDEO_TRANSFORMS = {
-  PREVIEW: { streaming_profile: 'hd', format: 'mp4', quality: 'auto:good' },
-  HD: { streaming_profile: 'hd', format: 'mp4', quality: 'auto:best' },
+  PREVIEW: { format: 'mp4', quality: 'auto:good' },
+  HD: { format: 'mp4', quality: 'auto:best' },
   THUMB: { width: 640, height: 360, crop: 'fill', format: 'jpg' }
 };
 

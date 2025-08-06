@@ -65,7 +65,8 @@ class CloudinaryService {
       if (fileType === 'video') {
         // Enhanced video settings for better web delivery
         uploadOptions.eager = [
-          { streaming_profile: 'hd', format: 'mp4' }
+          // Use basic video optimization instead of streaming profile
+          { quality: 'auto', format: 'mp4' }
         ];
         uploadOptions.eager_async = true;
         // Add automatic audio normalization

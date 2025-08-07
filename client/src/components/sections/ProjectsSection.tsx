@@ -72,8 +72,12 @@ const ProjectsSection: React.FC = () => {
   // Open media viewer popup
   const openMediaViewer = (project: Project) => {
     if (project.media && project.media.length > 0) {
+      console.log('All project media:', project.media);
+      console.log('showInViewer values:', project.media.map(item => item.showInViewer));
+      
       // Filter media items to only show those marked for viewer
       const viewerMedia = project.media.filter(item => item.showInViewer !== false);
+      console.log('Filtered media count:', viewerMedia.length);
       
       if (viewerMedia.length > 0) {
         setSelectedProjectMedia({
@@ -280,12 +284,21 @@ const ProjectsSection: React.FC = () => {
 
       {/* Media Viewer */}
       {selectedProjectMedia && (
-        <MediaViewer
-          isOpen={mediaViewerOpen}
-          onClose={closeMediaViewer}
-          mediaItems={selectedProjectMedia.mediaItems}
-          projectTitle={selectedProjectMedia.title}
-        />
+        <>
+          <MediaViewer
+            isOpen={mediaViewerOpen}
+            onClose={closeMediaViewer}
+            mediaItems={selectedProjectMedia.mediaItems}
+            projectTitle={selectedProjectMedia.title}
+          />
+          {/* Log for debugging - will run once when component updates */}
+          {console.log("MediaViewer opened with", 
+            selectedProjectMedia.mediaItems.length, 
+            "items",
+            "showInViewer values:", 
+            selectedProjectMedia.mediaItems.map(item => item.showInViewer)
+          )}
+        </>
       )}
     </section>
   );

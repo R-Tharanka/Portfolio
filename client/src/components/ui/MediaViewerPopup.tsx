@@ -9,7 +9,7 @@ import {
   X, 
   Maximize, 
   Minimize, 
-  Eye
+  Images
 } from 'lucide-react';
 import { getTransformedImageUrl, isCloudinaryUrl } from '../../utils/cloudinary';
 
@@ -93,29 +93,64 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
     }
   }, [currentIndex, isPlaying, popupMediaItems, isOpen]);
 
-  // Handle escape key to close popup
+  // Handle keyboard navigation
   useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        if (isFullscreen) {
-          exitFullscreen();
-        } else {
-          onClose();
-        }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Don't handle keyboard events when input elements are focused
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
+      // Get the current item inside this handler to avoid dependency issues
+      const current = popupMediaItems[currentIndex];
+      
+      switch (event.key) {
+        case 'Escape':
+          if (isFullscreen) {
+            exitFullscreen();
+          } else {
+            onClose();
+          }
+          break;
+        case 'ArrowLeft':
+          event.preventDefault();
+          navigatePrev();
+          break;
+        case 'ArrowRight':
+          event.preventDefault();
+          navigateNext();
+          break;
+        case ' ':
+          event.preventDefault();
+          if (current?.type === 'video' && videoRef.current) {
+            if (videoRef.current.paused) {
+              videoRef.current.play().catch(err => console.error('Error playing video:', err));
+            } else {
+              videoRef.current.pause();
+            }
+          } else {
+            togglePlayPause();
+          }
+          break;
+        case 'f':
+        case 'F':
+          event.preventDefault();
+          isFullscreen ? exitFullscreen() : enterFullscreen();
+          break;
       }
     };
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleKeyDown);
       // Prevent body scroll when popup is open
       document.body.style.overflow = 'hidden';
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, isFullscreen, onClose]);
+  }, [isOpen, isFullscreen, onClose, popupMediaItems, currentIndex]);
 
   // Fullscreen functionality
   const enterFullscreen = () => {
@@ -174,137 +209,145 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
 
   const popup = (
     <div 
-      ref={containerRef}
-      className={`fixed inset-0 bg-black/95 backdrop-blur-sm flex items-center justify-center z-[9999] ${
-        isFullscreen ? 'bg-black' : ''
-      }`}
+      className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[9999]"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      {/* Header */}
-      <div className={`absolute top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/80 to-transparent ${
-        isFullscreen ? 'opacity-0 hover:opacity-100 transition-opacity' : ''
-      }`}>
-        <div className="flex items-center justify-between text-white">
-          <div className="flex items-center gap-3">
-            <Eye size={20} />
-            <h3 className="text-lg font-semibold">{projectTitle}</h3>
-            <span className="text-sm text-white/70">
-              {currentIndex + 1} of {popupMediaItems.length}
-            </span>
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Fullscreen toggle */}
-            <button
-              onClick={isFullscreen ? exitFullscreen : enterFullscreen}
-              className="p-2 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none"
-              aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-            >
-              {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
-            </button>
+      <div
+        ref={containerRef}
+        className={`${isFullscreen 
+          ? 'fixed inset-0 bg-black' 
+          : 'relative bg-black/90 w-11/12 max-w-4xl h-auto max-h-[85vh] rounded-lg shadow-2xl'
+        } overflow-hidden`}
+      >
+        {/* Header */}
+        <div className={`absolute top-0 left-0 right-0 z-50 p-4 bg-gradient-to-b from-black/80 to-transparent ${
+          isFullscreen ? 'opacity-0 hover:opacity-100 transition-opacity' : ''
+        }`}>
+          <div className="flex items-center justify-between text-white">
+            <div className="flex items-center gap-3">
+              <Images size={20} />
+              <h3 className="text-lg font-semibold">{projectTitle}</h3>
+              <span className="text-sm text-white/70">
+                {currentIndex + 1} of {popupMediaItems.length}
+              </span>
+            </div>
             
-            {/* Close button */}
-            <button
-              onClick={onClose}
-              className="p-2 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none"
-              aria-label="Close viewer"
-            >
-              <X size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Main content area */}
-      <div className="relative w-full h-full flex items-center justify-center p-4 pt-20 pb-20">
-        {/* Current media item */}
-        <div className="relative max-w-7xl max-h-full flex items-center justify-center">
-          {currentItem?.type === 'image' ? (
-            <img 
-              src={isCloudinaryUrl(currentItem.url) 
-                ? getTransformedImageUrl(currentItem.url, { 
-                    width: isFullscreen ? 1920 : 1200, 
-                    height: isFullscreen ? 1080 : 800, 
-                    quality: 'auto' 
-                  }) 
-                : currentItem.url
-              }
-              alt={`${projectTitle} - Media ${currentIndex + 1}`}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              onContextMenu={preventDownload}
-              onDragStart={preventDownload}
-              style={{ userSelect: 'none' }}
-            />
-          ) : currentItem?.type === 'video' ? (
-            <video 
-              ref={videoRef}
-              src={currentItem.url}
-              controls={true}
-              controlsList="nodownload"
-              disablePictureInPicture
-              onContextMenu={preventDownload}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-              style={{ userSelect: 'none' }}
-            />
-          ) : null}
-        </div>
-
-        {/* Navigation arrows (only show if multiple items) */}
-        {popupMediaItems.length > 1 && (
-          <>
-            <button 
-              onClick={navigatePrev}
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 z-40"
-              aria-label="Previous media"
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button 
-              onClick={navigateNext}
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 z-40"
-              aria-label="Next media"
-            >
-              <ChevronRight size={24} />
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Bottom controls */}
-      <div className={`absolute bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/80 to-transparent ${
-        isFullscreen ? 'opacity-0 hover:opacity-100 transition-opacity' : ''
-      }`}>
-        <div className="flex items-center justify-between">
-          {/* Media indicator dots */}
-          <div className="flex gap-2">
-            {popupMediaItems.map((_, index) => (
+            <div className="flex items-center gap-2">
+              {/* Fullscreen toggle */}
               <button
-                key={index}
-                onClick={() => setCurrentIndex(index)}
-                className={`w-3 h-3 rounded-full transition-all focus:outline-none hover:scale-125 ${
-                  index === currentIndex 
-                    ? 'bg-primary shadow-lg scale-110' 
-                    : 'bg-white/60 hover:bg-white/80'
-                }`}
-                aria-label={`Go to media ${index + 1}`}
+                onClick={isFullscreen ? exitFullscreen : enterFullscreen}
+                className="p-2 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none"
+                aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              >
+                {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
+              </button>
+              
+              {/* Close button */}
+              <button
+                onClick={onClose}
+                className="p-2 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none"
+                aria-label="Close viewer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main content area */}
+        <div className="relative w-full h-full flex items-center justify-center p-4 pt-20 pb-20">
+          {/* Current media item */}
+          <div className="relative max-w-7xl max-h-full flex items-center justify-center">
+            {currentItem?.type === 'image' ? (
+              <img 
+                src={isCloudinaryUrl(currentItem.url) 
+                  ? getTransformedImageUrl(currentItem.url, { 
+                      width: isFullscreen ? 1920 : 1200, 
+                      height: isFullscreen ? 1080 : 800, 
+                      quality: 'auto' 
+                    }) 
+                  : currentItem.url
+                }
+                alt={`${projectTitle} - Media ${currentIndex + 1}`}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                onContextMenu={preventDownload}
+                onDragStart={preventDownload}
+                style={{ userSelect: 'none' }}
               />
-            ))}
+            ) : currentItem?.type === 'video' ? (
+              <video 
+                ref={videoRef}
+                src={currentItem.url}
+                controls={true}
+                controlsList="nodownload"
+                disablePictureInPicture
+                onContextMenu={preventDownload}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                style={{ userSelect: 'none' }}
+              />
+            ) : null}
           </div>
 
-          {/* Play/Pause button (only show if multiple items) */}
+          {/* Navigation arrows (only show if multiple items) */}
           {popupMediaItems.length > 1 && (
-            <button 
-              onClick={togglePlayPause}
-              className="p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
-              aria-label={isPlaying ? "Pause slideshow" : "Start slideshow"}
-            >
-              {isPlaying ? <Pause size={20} /> : <Play size={20} />}
-            </button>
+            <>
+              <button 
+                onClick={() => navigatePrev()}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 z-40"
+                aria-label="Previous media"
+              >
+                <ChevronLeft size={24} />
+              </button>
+              <button 
+                onClick={() => navigateNext()}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 z-40"
+                aria-label="Next media"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
           )}
+        </div>
+
+        {/* Bottom controls */}
+        <div className={`absolute bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black/80 to-transparent ${
+          isFullscreen ? 'opacity-0 hover:opacity-100 transition-opacity' : ''
+        }`}>
+          <div className="flex items-center justify-between">
+            {/* Media indicator dots */}
+            <div className="flex gap-2">
+              {popupMediaItems.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => {
+                    console.log(`Setting index to ${index}`);
+                    setCurrentIndex(index);
+                  }}
+                  className={`w-3 h-3 rounded-full transition-all focus:outline-none hover:scale-125 ${
+                    index === currentIndex 
+                      ? 'bg-primary shadow-lg scale-110' 
+                      : 'bg-white/60 hover:bg-white/80'
+                  }`}
+                  aria-label={`Go to media ${index + 1}`}
+                />
+              ))}
+            </div>
+
+            {/* Play/Pause button (only show if multiple items) */}
+            {popupMediaItems.length > 1 && (
+              <button 
+                onClick={togglePlayPause}
+                className="p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
+                aria-label={isPlaying ? "Pause slideshow" : "Start slideshow"}
+              >
+                {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

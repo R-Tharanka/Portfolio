@@ -216,9 +216,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const toggleShowInViewer = (index: number) => {
     setMediaItems(prevItems => {
       const newItems = [...prevItems];
+      const newValue = !newItems[index].showInViewer;
+      console.log(`Setting showInViewer for item ${index} to ${newValue}`);
       newItems[index] = {
         ...newItems[index],
-        showInViewer: !newItems[index].showInViewer
+        showInViewer: newValue
       };
       return newItems;
     });

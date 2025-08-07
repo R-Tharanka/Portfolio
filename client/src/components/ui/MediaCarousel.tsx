@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProjectMedia } from '../../types';
-import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause, Eye } from 'lucide-react';
 
 interface MediaCarouselProps {
   mediaItems?: ProjectMedia[];
@@ -9,6 +9,8 @@ interface MediaCarouselProps {
   interval?: number; // in milliseconds
   className?: string;
   height?: string;
+  onViewMedia?: (media: ProjectMedia) => void; // Callback to open media viewer popup
+  showViewButton?: boolean; // Whether to show the view media button
 }
 
 const MediaCarousel: React.FC<MediaCarouselProps> = ({ 
@@ -17,7 +19,9 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
   autoplay = true,
   interval = 5000,
   className = '',
-  height = 'h-52'
+  height = 'h-52',
+  onViewMedia,
+  showViewButton = false
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(autoplay);
@@ -119,32 +123,37 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
             ref={videoRef}
             src={currentItem.url} 
             controls={false}
-            loop
             muted
             playsInline
             className={`w-full ${height} object-cover`}
+            onEnded={() => {
+              // Move to next item when video ends if autoplay is enabled
+              if (isPlaying && allMediaItems.length > 1) {
+                setCurrentIndex(prevIndex => (prevIndex + 1) % allMediaItems.length);
+              }
+            }}
           />
         ) : null}
         
         {/* Gradient overlay */}
-        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
+        <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none"></div>
       </div>
 
       {/* Only show navigation controls if there are multiple items */}
       {allMediaItems.length > 1 && (
         <>
           {/* Navigation arrows */}
-          <div className="absolute inset-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute inset-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
             <button 
               onClick={navigatePrev}
-              className="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
+              className="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 pointer-events-auto"
               aria-label="Previous media"
             >
               <ChevronLeft size={16} />
             </button>
             <button 
               onClick={navigateNext}
-              className="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
+              className="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 pointer-events-auto"
               aria-label="Next media"
             >
               <ChevronRight size={16} />
@@ -152,26 +161,43 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
           </div>
 
           {/* Play/Pause button - positioned higher to avoid conflict with tag row */}
-          <div className="absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <div className="absolute top-2 right-2 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
             <button 
               onClick={togglePlayPause}
-              className="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
+              className="p-2 bg-black/70 text-white rounded-full hover:bg-black/90 transition-all focus:outline-none shadow-lg hover:scale-110 backdrop-blur-sm border border-white/20"
               aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
             >
-              {isPlaying ? <Pause size={14} /> : <Play size={14} />}
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
             </button>
           </div>
+
+          {/* View Media button */}
+          {showViewButton && onViewMedia && (
+            <div className="absolute top-2 right-16 z-40 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <button 
+                onClick={() => {
+                  if (currentItem && 'type' in currentItem && (currentItem.type === 'image' || currentItem.type === 'video')) {
+                    onViewMedia(currentItem as ProjectMedia);
+                  }
+                }}
+                className="p-2 bg-black/70 text-white rounded-full hover:bg-black/90 transition-all focus:outline-none shadow-lg hover:scale-110 backdrop-blur-sm border border-white/20"
+                aria-label="View all media"
+              >
+                <Eye size={16} />
+              </button>
+            </div>
+          )}
           
           {/* Indicator dots - positioned higher to avoid conflict */}
-          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-40">
             {allMediaItems.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all focus:outline-none hover:scale-125 ${
+                className={`w-2.5 h-2.5 rounded-full transition-all focus:outline-none hover:scale-125 border ${
                   index === currentIndex 
-                    ? 'bg-primary shadow-lg scale-110' 
-                    : 'bg-white/60 hover:bg-white/80'
+                    ? 'bg-primary border-white shadow-lg scale-110' 
+                    : 'bg-white/60 hover:bg-white/80 border-white/30'
                 }`}
                 aria-label={`Go to media ${index + 1}`}
               />

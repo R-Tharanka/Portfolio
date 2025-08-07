@@ -29,6 +29,7 @@ export interface ProjectMedia {
   isExternal: boolean;
   order: number;
   displayFirst: boolean;
+  showInViewer?: boolean; // Controls whether this media appears in client-side popup viewer
   _id?: string; // MongoDB will generate this
 }
 

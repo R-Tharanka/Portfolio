@@ -10,7 +10,7 @@ import {
   Minimize2,
   Volume2,
   VolumeX,
-  Image as ImageIcon
+  Images
 } from 'lucide-react';
 import { ProjectMedia } from '../../types';
 import { getTransformedImageUrl, isCloudinaryUrl } from '../../utils/cloudinary';
@@ -50,8 +50,14 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle keyboard events when input elements are focused
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
       switch (e.key) {
         case 'Escape':
+          e.preventDefault();
           if (isFullscreen) {
             toggleFullscreen();
           } else {
@@ -74,10 +80,12 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
           break;
         case 'f':
         case 'F':
+          e.preventDefault();
           toggleFullscreen();
           break;
         case 'm':
         case 'M':
+          e.preventDefault();
           if (currentItem?.type === 'video') {
             toggleMute();
           }
@@ -87,7 +95,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, viewerMediaItems, isFullscreen]);
+  }, [isOpen, currentIndex, isFullscreen]);
 
   // Handle fullscreen events
   useEffect(() => {
@@ -116,13 +124,15 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
   const currentItem = viewerMediaItems[currentIndex];
 
-  const navigatePrev = () => {
+  const navigatePrev = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent event bubbling
     setCurrentIndex(prev => 
       prev === 0 ? viewerMediaItems.length - 1 : prev - 1
     );
   };
 
-  const navigateNext = () => {
+  const navigateNext = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent event bubbling
     setCurrentIndex(prev => 
       (prev + 1) % viewerMediaItems.length
     );
@@ -148,14 +158,17 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     setIsMuted(videoRef.current.muted);
   };
 
-  const toggleFullscreen = async () => {
+  const toggleFullscreen = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent event bubbling
     if (!containerRef.current) return;
 
     try {
       if (!document.fullscreenElement) {
         await containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
       } else {
         await document.exitFullscreen();
+        setIsFullscreen(false);
       }
     } catch (error) {
       console.error('Fullscreen error:', error);
@@ -170,7 +183,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
   return createPortal(
     <div 
-      className="fixed inset-0 bg-black/75 z-50 flex items-center justify-center"
+      className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
@@ -182,14 +195,14 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         className={`relative bg-black rounded-lg shadow-2xl ${
           isFullscreen 
             ? 'fixed inset-0 rounded-none' 
-            : 'w-11/12 max-w-5xl h-auto max-h-[90vh]'
+            : 'w-10/12 max-w-4xl h-auto max-h-[80vh]'
         }`}
       >
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <ImageIcon size={20} className="text-white/80" />
+              <Images size={20} className="text-white/80" />
               <h2 className="text-white text-lg font-semibold truncate">
                 {projectTitle}
               </h2>
@@ -212,15 +225,15 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               <img
                 src={isCloudinaryUrl(currentItem.url) 
                   ? getTransformedImageUrl(currentItem.url, { 
-                      width: isFullscreen ? 1920 : 1200, 
-                      height: isFullscreen ? 1080 : 800, 
+                      width: isFullscreen ? 1920 : 1000, 
+                      height: isFullscreen ? 1080 : 700, 
                       quality: 'auto' 
                     })
                   : currentItem.url
                 }
                 alt={`${projectTitle} media ${currentIndex + 1}`}
-                className="max-w-full max-h-full object-contain"
-                style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(80vh - 8rem)' }}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
                 onContextMenu={(e) => e.preventDefault()} // Disable right-click download
                 draggable={false} // Disable drag download
               />
@@ -228,8 +241,8 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               <video
                 ref={videoRef}
                 src={currentItem.url}
-                className="max-w-full max-h-full object-contain"
-                style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(80vh - 8rem)' }}
+                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
                 onLoadedData={handleVideoLoadedData}
                 onPlay={() => setIsPlaying(true)}
                 onPause={() => setIsPlaying(false)}
@@ -245,10 +258,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
           {viewerMediaItems.length > 1 && (
             <>
               <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent modal close
-                  navigatePrev();
-                }}
+                onClick={navigatePrev}
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20"
                 aria-label="Previous media"
               >
@@ -256,10 +266,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               </button>
               
               <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent modal close
-                  navigateNext();
-                }}
+                onClick={navigateNext}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20"
                 aria-label="Next media"
               >
@@ -281,10 +288,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
             <div className="flex items-center gap-3">
               {/* Fullscreen Toggle */}
               <button
-                onClick={(e) => {
-                  e.stopPropagation(); // Prevent modal close
-                  toggleFullscreen();
-                }}
+                onClick={toggleFullscreen}
                 className="p-2 bg-white/20 text-white rounded-full hover:bg-white/30 transition-colors"
                 aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
               >
@@ -326,6 +330,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                   <button
                     key={index}
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation(); // Prevent modal close
                       setCurrentIndex(index);
                     }}

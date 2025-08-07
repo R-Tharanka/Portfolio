@@ -134,41 +134,43 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
       {allMediaItems.length > 1 && (
         <>
           {/* Navigation arrows */}
-          <div className="absolute inset-0 flex items-center justify-between px-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute inset-0 flex items-center justify-between px-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
             <button 
               onClick={navigatePrev}
-              className="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors focus:outline-none"
+              className="p-2 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
               aria-label="Previous media"
             >
-              <ChevronLeft size={16} />
+              <ChevronLeft size={18} />
             </button>
             <button 
               onClick={navigateNext}
-              className="p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors focus:outline-none"
+              className="p-2 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
               aria-label="Next media"
             >
-              <ChevronRight size={16} />
+              <ChevronRight size={18} />
             </button>
           </div>
 
-          {/* Play/Pause button */}
-          <button 
-            onClick={togglePlayPause}
-            className="absolute bottom-2 right-2 p-1.5 bg-black/60 text-white rounded-full hover:bg-black/80 transition-colors focus:outline-none opacity-0 group-hover:opacity-100"
-            aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
-          >
-            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-          </button>
+          {/* Play/Pause button - positioned higher to avoid conflict with tag row */}
+          <div className="absolute top-2 right-2 z-30 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <button 
+              onClick={togglePlayPause}
+              className="p-2 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110"
+              aria-label={isPlaying ? "Pause autoplay" : "Start autoplay"}
+            >
+              {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+          </div>
           
-          {/* Indicator dots */}
-          <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1">
+          {/* Indicator dots - positioned higher to avoid conflict */}
+          <div className="absolute top-2 left-1/2 transform -translate-x-1/2 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30">
             {allMediaItems.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-colors focus:outline-none ${
+                className={`w-2.5 h-2.5 rounded-full transition-all focus:outline-none hover:scale-125 ${
                   index === currentIndex 
-                    ? 'bg-primary' 
+                    ? 'bg-primary shadow-lg scale-110' 
                     : 'bg-white/60 hover:bg-white/80'
                 }`}
                 aria-label={`Go to media ${index + 1}`}

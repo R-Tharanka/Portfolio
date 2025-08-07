@@ -195,7 +195,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         className={`relative bg-black rounded-lg shadow-2xl ${
           isFullscreen 
             ? 'fixed inset-0 rounded-none' 
-            : 'w-10/12 max-w-4xl h-auto max-h-[80vh]'
+            : 'w-10/12 max-w-3xl h-auto max-h-[80vh] mx-auto'
         }`}
       >
         {/* Header */}
@@ -258,16 +258,26 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
           {viewerMediaItems.length > 1 && (
             <>
               <button
-                onClick={navigatePrev}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigatePrev(e);
+                  console.log('Previous clicked, navigating to index:', 
+                    currentIndex === 0 ? viewerMediaItems.length - 1 : currentIndex - 1);
+                }}
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20 cursor-pointer"
                 aria-label="Previous media"
               >
                 <ChevronLeft size={24} />
               </button>
               
               <button
-                onClick={navigateNext}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20"
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigateNext(e);
+                  console.log('Next clicked, navigating to index:', 
+                    (currentIndex + 1) % viewerMediaItems.length);
+                }}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20 cursor-pointer"
                 aria-label="Next media"
               >
                 <ChevronRight size={24} />
@@ -332,9 +342,10 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation(); // Prevent modal close
+                      console.log('Indicator dot clicked, navigating to index:', index);
                       setCurrentIndex(index);
                     }}
-                    className={`w-3 h-3 rounded-full transition-all ${
+                    className={`w-3 h-3 rounded-full transition-all cursor-pointer ${
                       index === currentIndex 
                         ? 'bg-white' 
                         : 'bg-white/40 hover:bg-white/60'

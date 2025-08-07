@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProjectMedia } from '../../types';
-import { ChevronLeft, ChevronRight, Play, Pause, Eye } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Play, Pause, Maximize2 } from 'lucide-react';
 
 interface MediaCarouselProps {
   mediaItems?: ProjectMedia[];
@@ -183,7 +183,7 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
                 className="p-2 bg-black/70 text-white rounded-full hover:bg-black/90 transition-all focus:outline-none shadow-lg hover:scale-110 backdrop-blur-sm border border-white/20"
                 aria-label="View all media"
               >
-                <Eye size={16} />
+                <Maximize2 size={16} />
               </button>
             </div>
           )}

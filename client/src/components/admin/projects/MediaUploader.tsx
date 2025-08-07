@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye, CloudCog } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye } from 'lucide-react';
 import { ProjectMedia } from '../../../types';
 import { uploadProjectMedia, deleteProjectMedia } from '../../../services/mediaService';
 import { getTransformedImageUrl, getVideoThumbnail, isCloudinaryUrl } from '../../../utils/cloudinary';
@@ -215,7 +216,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const [previewItem, setPreviewItem] = useState<ProjectMedia | null>(null);
   
   const openPreview = (item: ProjectMedia) => {
-    setPreviewItem(item);
+    // Use a timeout to prevent event bubbling issues
+    setTimeout(() => {
+      setPreviewItem(item);
+    }, 10);
   };
   
   const closePreview = () => {
@@ -271,7 +275,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                   } 
                   alt={`Project media ${index + 1}`}
                   className="w-full h-full object-cover"
-                  onClick={() => openPreview(item)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openPreview(item);
+                  }}
                   style={{ cursor: 'pointer' }}
                 />
                 {/* Subtle indicator for preview action */}
@@ -283,7 +291,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
               <div className="relative w-full h-full">
                 <div 
                   className="w-full h-full flex items-center justify-center bg-black/10"
-                  onClick={() => openPreview(item)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openPreview(item);
+                  }}
                   style={{ cursor: 'pointer' }}
                 >
                   <Video size={24} className="text-foreground/60" />
@@ -340,7 +352,12 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
               <div className="flex items-center justify-center gap-2">
                 {/* Preview media */}
                 <button
-                  onClick={() => openPreview(item)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openPreview(item);
+                  }}
                   className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
                   title="Preview media"
                 >
@@ -349,7 +366,12 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 
                 {/* Remove media */}
                 <button
-                  onClick={() => removeMediaItem(index)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    removeMediaItem(index);
+                  }}
                   className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                   title="Remove media"
                 >
@@ -360,7 +382,12 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
               {/* Reordering controls */}
               <div className="flex items-center justify-center gap-2 mt-1">
                 <button
-                  onClick={() => moveItemLeft(index)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    moveItemLeft(index);
+                  }}
                   className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Move left"
                   disabled={index === 0}
@@ -368,7 +395,12 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                   <ArrowLeft size={14} />
                 </button>
                 <button
-                  onClick={() => moveItemRight(index)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    moveItemRight(index);
+                  }}
                   className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Move right"
                   disabled={index === mediaItems.length - 1}
@@ -456,14 +488,30 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         <p className="mt-1 italic">Tip: You can reorder media by using the arrow buttons that appear when hovering over an item.</p>
       </div>
       
-      {/* Media preview modal */}
-      {previewItem && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={closePreview}>
-          <div className="bg-card p-4 rounded-lg shadow-xl max-w-3xl w-full mx-4" onClick={e => e.stopPropagation()}>
+      {/* Media preview modal - render outside form context using portal */}
+      {previewItem && createPortal(
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" 
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            closePreview();
+          }}
+        >
+          <div className="bg-card p-4 rounded-lg shadow-xl max-w-3xl w-full mx-4" 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-medium">Media Preview</h3>
               <button
-                onClick={closePreview}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  closePreview();
+                }}
                 className="p-1.5 bg-background rounded-full hover:bg-background/80"
                 aria-label="Close preview"
               >
@@ -500,7 +548,8 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

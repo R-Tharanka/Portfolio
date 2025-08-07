@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { ExternalLink, Github, Calendar, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import MediaCarousel from '../ui/MediaCarousel';
+import MediaViewer from '../ui/MediaViewer';
 import { Project } from '../../types';
 import { useApiService } from '../../hooks/useApiService';
 import ScrollableTagRow from '../ui/ScrollableTagRow';
@@ -17,6 +18,11 @@ const ProjectsSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null); 
   const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
+  const [mediaViewerOpen, setMediaViewerOpen] = useState(false);
+  const [selectedProjectMedia, setSelectedProjectMedia] = useState<{ 
+    mediaItems: any[], 
+    title: string 
+  } | null>(null);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -61,6 +67,28 @@ const ProjectsSection: React.FC = () => {
   const truncateText = (text: string, maxLength: number) => {
     if (text.length <= maxLength) return text;
     return text.slice(0, maxLength).trim() + '...';
+  };
+
+  // Open media viewer popup
+  const openMediaViewer = (project: Project) => {
+    if (project.media && project.media.length > 0) {
+      // Filter media items to only show those marked for viewer
+      const viewerMedia = project.media.filter(item => item.showInViewer !== false);
+      
+      if (viewerMedia.length > 0) {
+        setSelectedProjectMedia({
+          mediaItems: viewerMedia,
+          title: project.title
+        });
+        setMediaViewerOpen(true);
+      }
+    }
+  };
+
+  // Close media viewer popup
+  const closeMediaViewer = () => {
+    setMediaViewerOpen(false);
+    setSelectedProjectMedia(null);
   };
 
   const filteredProjects = activeTag === 'All'
@@ -151,11 +179,13 @@ const ProjectsSection: React.FC = () => {
                   >
                     <div className="relative overflow-hidden">
                       <MediaCarousel 
-                        mediaItems={project.media}
+                        mediaItems={project.media?.filter(item => item.showInViewer !== false) || []}
                         fallbackImageUrl={project.imageUrl}
                         height="h-52 sm:h-48"
                         autoplay={true}
                         interval={5000}
+                        showViewButton={true}
+                        onViewMedia={() => openMediaViewer(project)}
                       />
                       {/* project cover image */}
                       <div className="absolute bottom-0 left-0 w-full px-4 pb-5 pt-2 z-20">
@@ -247,6 +277,16 @@ const ProjectsSection: React.FC = () => {
             </AnimatePresence>)}
         </motion.div>
       </div>
+
+      {/* Media Viewer */}
+      {selectedProjectMedia && (
+        <MediaViewer
+          isOpen={mediaViewerOpen}
+          onClose={closeMediaViewer}
+          mediaItems={selectedProjectMedia.mediaItems}
+          projectTitle={selectedProjectMedia.title}
+        />
+      )}
     </section>
   );
 };

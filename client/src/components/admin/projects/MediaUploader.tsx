@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye } from 'lucide-react';
+import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { ProjectMedia } from '../../../types';
 import { uploadProjectMedia, deleteProjectMedia } from '../../../services/mediaService';
 import { getTransformedImageUrl, getVideoThumbnail, isCloudinaryUrl } from '../../../utils/cloudinary';
@@ -212,6 +212,18 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
   // These functions were duplicates and have been merged with the ones above
 
+  // Toggle showInViewer property for a media item
+  const toggleShowInViewer = (index: number) => {
+    setMediaItems(prevItems => {
+      const newItems = [...prevItems];
+      newItems[index] = {
+        ...newItems[index],
+        showInViewer: !newItems[index].showInViewer
+      };
+      return newItems;
+    });
+  };
+
   // Preview a media item
   const [previewItem, setPreviewItem] = useState<ProjectMedia | null>(null);
   
@@ -345,6 +357,26 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
             {/* Order indicator */}
             <div className="absolute top-1 right-1 bg-black/70 text-white px-1.5 py-0.5 text-xs rounded-md z-20">
               {index + 1}/{mediaItems.length}
+            </div>
+            
+            {/* Show in viewer indicator */}
+            <div className="absolute bottom-1 left-1 z-20">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  toggleShowInViewer(index);
+                }}
+                className={`p-1 rounded text-xs transition-colors ${
+                  item.showInViewer !== false 
+                    ? 'bg-green-500 text-white hover:bg-green-600' 
+                    : 'bg-red-500 text-white hover:bg-red-600'
+                }`}
+                title={`${item.showInViewer !== false ? 'Hide from' : 'Show in'} popup viewer`}
+              >
+                {item.showInViewer !== false ? <Eye size={12} /> : <EyeOff size={12} />}
+              </button>
             </div>
             
             {/* Actions overlay */}
@@ -485,7 +517,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
         <p>Supported formats: </p>
         <p>• Images: JPG, PNG, GIF, WebP (max 5MB)</p>
         <p>• Videos: MP4, WebM, OGG (max 50MB)</p>
-        <p className="mt-1 italic">Tip: You can reorder media by using the arrow buttons that appear when hovering over an item.</p>
+        <p className="mt-1 italic">Tips:</p>
+        <p className="italic">• Reorder media using arrow buttons on hover</p>
+        <p className="italic">• Toggle eye icon to show/hide in client popup viewer</p>
+        <p className="italic">• Green eye = shows in popup viewer, Red eye = hidden from popup</p>
       </div>
       
       {/* Media preview modal - render outside form context using portal */}

@@ -63,7 +63,8 @@ router.post('/projects/:projectId', protect, upload.fields([
           publicId: result.public_id, // Store Cloudinary public_id for later manipulation
           isExternal: false,
           order: index,
-          displayFirst: index === 0 && !files.video // First image is display first only if no videos
+          displayFirst: index === 0 && !files.video, // First image is display first only if no videos
+          showInViewer: true // Default to showing in viewer, admin can change this
         };
       });
       
@@ -82,7 +83,8 @@ router.post('/projects/:projectId', protect, upload.fields([
           publicId: result.public_id, // Store Cloudinary public_id for later manipulation
           isExternal: false,
           order: files.image ? files.image.length + index : index,
-          displayFirst: index === 0 // First video is display first by default
+          displayFirst: index === 0, // First video is display first by default
+          showInViewer: true // Default to showing in viewer, admin can change this
         };
       });
       

@@ -216,12 +216,27 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const toggleShowInViewer = (index: number) => {
     setMediaItems(prevItems => {
       const newItems = [...prevItems];
-      const newValue = !newItems[index].showInViewer;
-      console.log(`Setting showInViewer for item ${index} to ${newValue}`);
+      
+      // Check current value
+      const currentValue = newItems[index].showInViewer;
+      // Calculate new value - ensuring it's explicitly true or false, not undefined
+      const newValue = currentValue === false ? true : false;
+      
+      console.log(`Setting showInViewer for item ${index} from ${currentValue} to ${newValue}`);
+      
+      // Create a new object to ensure React detects the change
       newItems[index] = {
         ...newItems[index],
         showInViewer: newValue
       };
+      
+      // Log all media items after update
+      console.log('Updated media items:', newItems.map((item, i) => ({ 
+        index: i,
+        url: item.url.substring(0, 20) + '...',
+        showInViewer: item.showInViewer
+      })));
+      
       return newItems;
     });
   };

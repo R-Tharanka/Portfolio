@@ -158,7 +158,7 @@ const ProjectsSection: React.FC = () => {
                         interval={5000}
                       />
                       {/* project cover image */}
-                      <div className="absolute bottom-0 left-0 w-full px-4 pb-5 pt-2 z-10">
+                      <div className="absolute bottom-0 left-0 w-full px-4 pb-5 pt-2 z-20">
                         {/* Scrollable tag container */}
                         <ScrollableTagRow
                           tags={project.tags}

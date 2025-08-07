@@ -38,7 +38,17 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Filter media items to only show those marked for viewer
-  const viewerMediaItems = mediaItems.filter(item => item.showInViewer !== false);
+  console.log('MediaViewer received items:', mediaItems);
+  console.log('MediaItems showInViewer values:', mediaItems.map(item => ({ 
+    url: item.url.substring(0, 30) + '...', 
+    showInViewer: item.showInViewer 
+  })));
+  
+  const viewerMediaItems = mediaItems.filter(item => {
+    const shouldShow = item.showInViewer !== false;
+    console.log(`Item ${item.url.substring(0, 30)}... showInViewer=${item.showInViewer}, shouldShow=${shouldShow}`);
+    return shouldShow;
+  });
 
   // Reset index when media items change
   useEffect(() => {
@@ -260,11 +270,13 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  navigatePrev(e);
-                  console.log('Previous clicked, navigating to index:', 
-                    currentIndex === 0 ? viewerMediaItems.length - 1 : currentIndex - 1);
+                  e.stopPropagation();
+                  console.log('Previous button clicked');
+                  const newIndex = currentIndex === 0 ? viewerMediaItems.length - 1 : currentIndex - 1;
+                  console.log(`Navigating from ${currentIndex} to ${newIndex}`);
+                  setCurrentIndex(newIndex);
                 }}
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20 cursor-pointer"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-[9999] cursor-pointer"
                 aria-label="Previous media"
               >
                 <ChevronLeft size={24} />
@@ -273,11 +285,13 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  navigateNext(e);
-                  console.log('Next clicked, navigating to index:', 
-                    (currentIndex + 1) % viewerMediaItems.length);
+                  e.stopPropagation();
+                  console.log('Next button clicked');
+                  const newIndex = (currentIndex + 1) % viewerMediaItems.length;
+                  console.log(`Navigating from ${currentIndex} to ${newIndex}`);
+                  setCurrentIndex(newIndex);
                 }}
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-20 cursor-pointer"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-[9999] cursor-pointer"
                 aria-label="Next media"
               >
                 <ChevronRight size={24} />

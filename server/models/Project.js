@@ -26,6 +26,10 @@ const mediaSchema = new mongoose.Schema({
   displayFirst: {
     type: Boolean,
     default: false
+  },
+  showInViewer: {
+    type: Boolean,
+    default: true
   }
 });
 

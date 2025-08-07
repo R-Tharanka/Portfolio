@@ -288,6 +288,13 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
           toast.error(`Failed to update project: ${response.error}`);
         } else {
           // Update projects list, ensuring we match by the correct ID
+          console.log('Project update response data:', response.data);
+          console.log('Media items in response:', response.data.media);
+          console.log('showInViewer values in response:', response.data.media?.map(item => ({
+            url: item.url.substring(0, 20) + '...',
+            showInViewer: item.showInViewer
+          })));
+          
           setProjects(prev =>
             prev.map(project => {
               const itemId = project.id || (project as any)._id;

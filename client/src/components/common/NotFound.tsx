@@ -192,7 +192,7 @@ const NotFound: React.FC = () => {
             <ArrowLeft size={14} /> You can head back home or generate a new message.
           </div>
         </div>
-        <Footer />
+        {/* <Footer /> */}
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(var(--color-primary)/0.12),transparent_60%),radial-gradient(circle_at_80%_70%,rgba(var(--color-secondary)/0.1),transparent_65%)]" />
         <div className="pointer-events-none absolute inset-0 mix-blend-overlay opacity-40 dark:opacity-30" style={{ backgroundImage: 'linear-gradient(125deg, rgba(255,255,255,0.05) 0%, transparent 60%)' }} />
       </div>

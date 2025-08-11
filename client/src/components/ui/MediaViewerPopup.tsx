@@ -40,21 +40,38 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
   // Filter media items to only show those marked for popup display
   const popupMediaItems = mediaItems.filter(item => item.showInViewer !== false);
 
-  // Navigation functions defined early to be used in useEffect hooks
-  const navigatePrev = () => {
+  // Fullscreen functionality
+  const enterFullscreen = React.useCallback(() => {
+    if (containerRef.current) {
+      if (containerRef.current.requestFullscreen) {
+        containerRef.current.requestFullscreen();
+      }
+      setIsFullscreen(true);
+    }
+  }, []);
+
+  const exitFullscreen = React.useCallback(() => {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+    setIsFullscreen(false);
+  }, []);
+
+  // Navigation functions defined as useCallback hooks to prevent recreation on every render
+  const navigatePrev = React.useCallback(() => {
     setCurrentIndex(prevIndex => {
       if (prevIndex === 0) return popupMediaItems.length - 1;
       return prevIndex - 1;
     });
-  };
+  }, [popupMediaItems.length]);
 
-  const navigateNext = () => {
+  const navigateNext = React.useCallback(() => {
     setCurrentIndex(prevIndex => (prevIndex + 1) % popupMediaItems.length);
-  };
+  }, [popupMediaItems.length]);
 
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
+  const togglePlayPause = React.useCallback(() => {
+    setIsPlaying(prev => !prev);
+  }, []);
 
   // Find the displayFirst item and use its index among popup items
   useEffect(() => {
@@ -166,24 +183,9 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = 'unset';
     };
-  }, [isOpen, isFullscreen, onClose, popupMediaItems, currentIndex]);
+  }, [isOpen, isFullscreen, onClose, popupMediaItems, currentIndex, navigatePrev, navigateNext, togglePlayPause, enterFullscreen, exitFullscreen]);
 
-  // Fullscreen functionality
-  const enterFullscreen = () => {
-    if (containerRef.current) {
-      if (containerRef.current.requestFullscreen) {
-        containerRef.current.requestFullscreen();
-      }
-      setIsFullscreen(true);
-    }
-  };
-
-  const exitFullscreen = () => {
-    if (document.fullscreenElement) {
-      document.exitFullscreen();
-    }
-    setIsFullscreen(false);
-  };
+  // Fullscreen functionality has been moved to the top of the component
 
   // Handle fullscreen change events
   useEffect(() => {

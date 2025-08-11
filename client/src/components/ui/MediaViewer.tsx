@@ -58,21 +58,27 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   // Define navigation functions as useCallback hooks to ensure stability between renders
   const navigatePrev = React.useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // Prevent event bubbling
-    setCurrentIndex(prev => 
-      prev === 0 ? viewerMediaItems.length - 1 : prev - 1
-    );
+    console.log("MediaViewer: Navigating to previous");
+    setCurrentIndex(prev => {
+      const newIndex = prev === 0 ? viewerMediaItems.length - 1 : prev - 1;
+      console.log(`MediaViewer: Going from ${prev} to ${newIndex}`);
+      return newIndex;
+    });
   }, [viewerMediaItems.length]);
 
   const navigateNext = React.useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // Prevent event bubbling
-    setCurrentIndex(prev => 
-      (prev + 1) % viewerMediaItems.length
-    );
+    console.log("MediaViewer: Navigating to next");
+    setCurrentIndex(prev => {
+      const newIndex = (prev + 1) % viewerMediaItems.length;
+      console.log(`MediaViewer: Going from ${prev} to ${newIndex}`);
+      return newIndex;
+    });
   }, [viewerMediaItems.length]);
   
   const goToIndex = React.useCallback((index: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // Prevent event bubbling
-    console.log(`Going to index: ${index}`);
+    console.log(`MediaViewer: Going directly to index: ${index}`);
     setCurrentIndex(index);
   }, []);
 
@@ -238,37 +244,43 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         <div className="relative w-full h-full flex items-center justify-center p-8 pt-16 pb-16">
           {/* Current Media */}
           <div className="relative w-full h-full flex items-center justify-center">
-            {currentItem?.type === 'image' ? (
-              <img
-                src={isCloudinaryUrl(currentItem.url) 
-                  ? getTransformedImageUrl(currentItem.url, { 
-                      width: isFullscreen ? 1920 : 1000, 
-                      height: isFullscreen ? 1080 : 700, 
-                      quality: 'auto' 
-                    })
-                  : currentItem.url
-                }
-                alt={`${projectTitle} media ${currentIndex + 1}`}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
-                onContextMenu={(e) => e.preventDefault()} // Disable right-click download
-                draggable={false} // Disable drag download
-              />
-            ) : (
-              <video
-                ref={videoRef}
-                src={currentItem.url}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
-                onLoadedData={handleVideoLoadedData}
-                onPlay={() => setIsPlaying(true)}
-                onPause={() => setIsPlaying(false)}
-                onContextMenu={(e) => e.preventDefault()} // Disable right-click download
-                controls
-                playsInline
-                controlsList="nodownload" // Disable download option in controls
-              />
-            )}
+            {/* Use a key based on currentIndex to force unmount/remount when media changes */}
+            <div 
+              key={`viewer-media-${currentIndex}`}
+              className="w-full h-full flex items-center justify-center transition-opacity duration-300"
+            >
+              {currentItem?.type === 'image' ? (
+                <img
+                  src={isCloudinaryUrl(currentItem.url) 
+                    ? getTransformedImageUrl(currentItem.url, { 
+                        width: isFullscreen ? 1920 : 1000, 
+                        height: isFullscreen ? 1080 : 700, 
+                        quality: 'auto' 
+                      })
+                    : currentItem.url
+                  }
+                  alt={`${projectTitle} media ${currentIndex + 1}`}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                  style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
+                  onContextMenu={(e) => e.preventDefault()} // Disable right-click download
+                  draggable={false} // Disable drag download
+                />
+              ) : (
+                <video
+                  ref={videoRef}
+                  src={currentItem.url}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                  style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
+                  onLoadedData={handleVideoLoadedData}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onContextMenu={(e) => e.preventDefault()} // Disable right-click download
+                  controls
+                  playsInline
+                  controlsList="nodownload" // Disable download option in controls
+                />
+              )}
+            </div>
           </div>
 
           {/* Navigation Controls */}

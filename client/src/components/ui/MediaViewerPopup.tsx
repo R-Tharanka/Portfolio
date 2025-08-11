@@ -249,7 +249,7 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
         ref={containerRef}
         className={`${isFullscreen 
           ? 'fixed inset-0 bg-black' 
-          : 'relative bg-black/90 w-11/12 max-w-4xl h-auto max-h-[85vh] rounded-lg shadow-2xl'
+          : 'relative bg-black/90 w-11/12 max-w-5xl h-auto max-h-[85vh] rounded-lg shadow-2xl'
         } overflow-hidden`}
       >
         {/* Header */}
@@ -288,9 +288,9 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
         </div>
 
         {/* Main content area */}
-        <div className="relative w-full h-full flex items-center justify-center p-4 pt-20 pb-20">
+        <div className={`relative w-full h-full flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-4 pt-20 pb-20'}`}>
           {/* Current media item */}
-          <div className="relative max-w-7xl max-h-full flex items-center justify-center">
+          <div className={`relative flex items-center justify-center ${isFullscreen ? 'w-full h-full' : 'max-w-full max-h-full'}`}>
             {/* Use a key based on the currentIndex to force React to unmount and remount the media */}
             <div 
               key={`media-item-${currentIndex}`}
@@ -307,7 +307,7 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
                     : currentItem.url
                   }
                   alt={`${projectTitle} - Media ${currentIndex + 1}`}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
                   onContextMenu={preventDownload}
                   onDragStart={preventDownload}
                   style={{ userSelect: 'none' }}
@@ -320,7 +320,7 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
                   controlsList="nodownload"
                   disablePictureInPicture
                   onContextMenu={preventDownload}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
                   style={{ userSelect: 'none' }}
                 />
               ) : null}

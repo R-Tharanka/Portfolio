@@ -234,10 +234,10 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     >
       <div 
         ref={containerRef}
-        className={`relative bg-black rounded-lg shadow-2xl ${
+        className={`relative bg-black ${
           isFullscreen 
             ? 'fixed inset-0 rounded-none' 
-            : 'w-10/12 max-w-3xl h-auto max-h-[80vh] mx-auto'
+            : 'w-10/12 max-w-4xl h-auto max-h-[85vh] mx-auto rounded-lg shadow-2xl'
         }`}
       >
         {/* Header */}
@@ -260,9 +260,9 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className="relative w-full h-full flex items-center justify-center p-8 pt-16 pb-16">
+        <div className={`relative w-full h-full flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-8 pt-16 pb-16'}`}>
           {/* Current Media */}
-          <div className="relative w-full h-full flex items-center justify-center">
+          <div className={`relative flex items-center justify-center ${isFullscreen ? 'w-full h-full' : 'w-full h-full'}`}>
             {/* Use a key based on currentIndex to force unmount/remount when media changes */}
             <div 
               key={`viewer-media-${currentIndex}`}
@@ -279,8 +279,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                     : currentItem.url
                   }
                   alt={`${projectTitle} media ${currentIndex + 1}`}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                  style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
+                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
                   onContextMenu={(e) => e.preventDefault()} // Disable right-click download
                   draggable={false} // Disable drag download
                 />
@@ -288,8 +287,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                 <video
                   ref={videoRef}
                   src={currentItem.url}
-                  className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
-                  style={{ maxHeight: isFullscreen ? 'calc(100vh - 8rem)' : 'calc(70vh - 8rem)' }}
+                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
                   onLoadedData={handleVideoLoadedData}
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}

@@ -90,17 +90,22 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
     setIsPlaying(prev => !prev);
   }, []);
 
-  // Find the displayFirst item and use its index among popup items
+  // Find the displayFirst item and use its index among popup items - only on initial render
   useEffect(() => {
     if (popupMediaItems.length > 0) {
+      // Only set the index on the first render - using a ref to track this
       const displayFirstIndex = popupMediaItems.findIndex(item => item.displayFirst);
       if (displayFirstIndex !== -1) {
+        console.log("Setting initial index to displayFirst item:", displayFirstIndex);
         setCurrentIndex(displayFirstIndex);
       } else {
+        console.log("No displayFirst item found, starting at index 0");
         setCurrentIndex(0);
       }
     }
-  }, [popupMediaItems]);
+  // Run this effect only once when popupMediaItems is first available and stable
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Handle autoplay
   useEffect(() => {

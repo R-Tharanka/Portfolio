@@ -50,10 +50,27 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     return shouldShow;
   });
 
-  // Reset index when media items change
+  // We need to track whether this is the initial render or a subsequent update
+  const isInitialRender = useRef(true);
+
+  // Reset index only on the initial render or when viewerMediaItems changes significantly
   useEffect(() => {
-    setCurrentIndex(Math.min(initialIndex, viewerMediaItems.length - 1));
+    // Only set the index if:
+    // 1. It's the first render, OR
+    // 2. The number of media items has changed (which means the content has truly changed)
+    if (isInitialRender.current || prevMediaItemsLength.current !== viewerMediaItems.length) {
+      console.log("Initial render or media items count changed, resetting index");
+      setCurrentIndex(Math.min(initialIndex, viewerMediaItems.length - 1));
+      isInitialRender.current = false;
+    }
+    
+    // Update our reference of the previous length
+    prevMediaItemsLength.current = viewerMediaItems.length;
+  // eslint-disable-next-line react-hooks/exhaustive-deps  
   }, [viewerMediaItems, initialIndex]);
+  
+  // Keep track of previous media items length to detect real changes
+  const prevMediaItemsLength = useRef(viewerMediaItems.length);
 
   // Define navigation functions as useCallback hooks to ensure stability between renders
   const navigatePrev = React.useCallback((e?: React.MouseEvent) => {

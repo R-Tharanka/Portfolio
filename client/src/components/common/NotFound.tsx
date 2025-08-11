@@ -157,7 +157,7 @@ const NotFound: React.FC = () => {
         description="The page you are looking for does not exist or has been moved. Return to the portfolio home to continue exploring projects, skills, and contact information."
         ogUrl={typeof window !== 'undefined' ? window.location.href : undefined}
       />
-      <Header />
+      {/* <Header /> */}
       <div className="min-h-screen flex flex-col relative overflow-hidden">
         <ParticleField />
         <div className="flex-1 flex flex-col items-center justify-center px-6 pt-56 pb-24 text-center">

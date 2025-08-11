@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link as ScrollLink } from 'react-scroll';
 import { motion, useMotionValue, useTransform, AnimatePresence } from 'framer-motion';
 import SEO from './SEO';
 import Header from '../layout/Header';
@@ -154,22 +153,8 @@ const NotFound: React.FC = () => {
               <Sparkles size={18} /> New Message
             </button>
           </div>
-          <div className="mt-12 grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm text-foreground/60 max-w-xl">
-            {['hero','about','skills','projects','education','contact'].map(anchor => (
-              <ScrollLink
-                key={anchor}
-                to={anchor}
-                smooth
-                duration={600}
-                offset={-80}
-                className="cursor-pointer px-3 py-2 rounded-md bg-background/40 dark:bg-background/30 hover:bg-background/70 dark:hover:bg-background/60 border border-border/30 backdrop-blur-md hover:text-primary transition-colors"
-              >
-                #{anchor}
-              </ScrollLink>
-            ))}
-          </div>
-          <div className="mt-10 flex items-center gap-2 text-xs text-foreground/40">
-            <ArrowLeft size={14} /> Try the links above or return home
+          <div className="mt-12 flex items-center gap-2 text-xs text-foreground/40">
+            <ArrowLeft size={14} /> You can head back home or generate a new message.
           </div>
         </div>
         <Footer />

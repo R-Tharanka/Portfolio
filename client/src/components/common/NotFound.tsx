@@ -125,7 +125,7 @@ const NotFound: React.FC = () => {
       <Header />
       <div className="min-h-screen flex flex-col pt-36 md:pt-40 relative overflow-hidden">
         <ParticleField />
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-16 pb-24 text-center">
           <Floating404 />
           <AnimatePresence mode="wait">
             <motion.p

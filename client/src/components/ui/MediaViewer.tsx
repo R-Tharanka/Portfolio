@@ -55,22 +55,28 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     setCurrentIndex(Math.min(initialIndex, viewerMediaItems.length - 1));
   }, [viewerMediaItems, initialIndex]);
 
-  // Define navigation functions early to be used in useEffect hooks
-  const navigatePrev = (e?: React.MouseEvent) => {
+  // Define navigation functions as useCallback hooks to ensure stability between renders
+  const navigatePrev = React.useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // Prevent event bubbling
     setCurrentIndex(prev => 
       prev === 0 ? viewerMediaItems.length - 1 : prev - 1
     );
-  };
+  }, [viewerMediaItems.length]);
 
-  const navigateNext = (e?: React.MouseEvent) => {
+  const navigateNext = React.useCallback((e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // Prevent event bubbling
     setCurrentIndex(prev => 
       (prev + 1) % viewerMediaItems.length
     );
-  };
+  }, [viewerMediaItems.length]);
+  
+  const goToIndex = React.useCallback((index: number, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent event bubbling
+    console.log(`Going to index: ${index}`);
+    setCurrentIndex(index);
+  }, []);
 
-  const togglePlayPause = () => {
+  const togglePlayPause = React.useCallback(() => {
     if (!videoRef.current) return;
     
     if (isPlaying) {
@@ -81,16 +87,16 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
       });
     }
     setIsPlaying(!isPlaying);
-  };
+  }, [isPlaying]);
 
-  const toggleMute = () => {
+  const toggleMute = React.useCallback(() => {
     if (!videoRef.current) return;
     
     videoRef.current.muted = !videoRef.current.muted;
     setIsMuted(videoRef.current.muted);
-  };
+  }, []);
 
-  const toggleFullscreen = async (e?: React.MouseEvent) => {
+  const toggleFullscreen = React.useCallback(async (e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // Prevent event bubbling
     if (!containerRef.current) return;
 
@@ -105,7 +111,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     } catch (error) {
       console.error('Fullscreen error:', error);
     }
-  };
+  }, []);
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -157,7 +163,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, isFullscreen]);
+  }, [isOpen, currentIndex, isFullscreen, navigatePrev, navigateNext, togglePlayPause, toggleMute, toggleFullscreen, onClose, viewerMediaItems]);
 
   // Handle fullscreen events
   useEffect(() => {
@@ -354,7 +360,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                       e.preventDefault();
                       e.stopPropagation(); // Prevent modal close
                       console.log('Indicator dot clicked, navigating to index:', index);
-                      setCurrentIndex(index);
+                      goToIndex(index, e);
                     }}
                     className={`w-3 h-3 rounded-full transition-all cursor-pointer ${
                       index === currentIndex 

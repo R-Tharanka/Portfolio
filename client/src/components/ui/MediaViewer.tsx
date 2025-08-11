@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ProjectMedia } from '../../types';
 import { getTransformedImageUrl, isCloudinaryUrl } from '../../utils/cloudinary';
+import KeyboardShortcutsHelp from './KeyboardShortcutsHelp';
 
 interface MediaViewerProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -336,8 +338,31 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         <div className="absolute bottom-0 left-0 right-0 z-50 bg-gradient-to-t from-black/80 to-transparent p-4">
           <div className="flex items-center justify-between">
             {/* Media Counter */}
-            <div className="text-white text-sm">
-              {currentIndex + 1} of {viewerMediaItems.length}
+            <div className="text-white text-sm flex items-center gap-2">
+              <span>{currentIndex + 1} of {viewerMediaItems.length}</span>
+              
+              {/* Keyboard shortcuts help button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowKeyboardShortcuts(prev => !prev);
+                }}
+                className="ml-1 p-1 text-white/60 hover:text-white/90 rounded-full transition-colors flex items-center text-xs"
+                aria-label="Show keyboard shortcuts"
+                title="Keyboard Shortcuts"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                  <path d="M6 8h.01"></path>
+                  <path d="M10 8h.01"></path>
+                  <path d="M14 8h.01"></path>
+                  <path d="M18 8h.01"></path>
+                  <path d="M8 12h.01"></path>
+                  <path d="M12 12h.01"></path>
+                  <path d="M16 12h.01"></path>
+                  <path d="M7 16h10"></path>
+                </svg>
+              </button>
             </div>
 
             {/* Controls */}
@@ -404,17 +429,8 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
           </div>
         </div>
 
-        {/* Keyboard shortcuts help */}
-        <div className="absolute top-16 right-4 text-white/70 text-xs max-w-xs">
-          <div className="bg-black/60 rounded-lg p-3 backdrop-blur-sm">
-            <div className="font-semibold mb-2">Keyboard Shortcuts</div>
-            <div>← → Arrow Keys: Navigate</div>
-            <div>Space: Play/Pause</div>
-            <div>F: Fullscreen</div>
-            <div>M: Mute/Unmute</div>
-            <div>Esc: Close</div>
-          </div>
-        </div>
+        {/* Keyboard shortcuts help - shown conditionally */}
+        <KeyboardShortcutsHelp isVisible={showKeyboardShortcuts} />
       </div>
     </div>,
     document.body

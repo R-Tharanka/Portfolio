@@ -55,6 +55,58 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     setCurrentIndex(Math.min(initialIndex, viewerMediaItems.length - 1));
   }, [viewerMediaItems, initialIndex]);
 
+  // Define navigation functions early to be used in useEffect hooks
+  const navigatePrev = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent event bubbling
+    setCurrentIndex(prev => 
+      prev === 0 ? viewerMediaItems.length - 1 : prev - 1
+    );
+  };
+
+  const navigateNext = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent event bubbling
+    setCurrentIndex(prev => 
+      (prev + 1) % viewerMediaItems.length
+    );
+  };
+
+  const togglePlayPause = () => {
+    if (!videoRef.current) return;
+    
+    if (isPlaying) {
+      videoRef.current.pause();
+    } else {
+      videoRef.current.play().catch(err => {
+        console.error('Error playing video:', err);
+      });
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const toggleMute = () => {
+    if (!videoRef.current) return;
+    
+    videoRef.current.muted = !videoRef.current.muted;
+    setIsMuted(videoRef.current.muted);
+  };
+
+  const toggleFullscreen = async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation(); // Prevent event bubbling
+    if (!containerRef.current) return;
+
+    try {
+      if (!document.fullscreenElement) {
+        await containerRef.current.requestFullscreen();
+        setIsFullscreen(true);
+      } else {
+        await document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    } catch (error) {
+      console.error('Fullscreen error:', error);
+    }
+  };
+
   // Handle keyboard navigation
   useEffect(() => {
     if (!isOpen) return;
@@ -133,57 +185,6 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   if (!isOpen || viewerMediaItems.length === 0) return null;
 
   const currentItem = viewerMediaItems[currentIndex];
-
-  const navigatePrev = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation(); // Prevent event bubbling
-    setCurrentIndex(prev => 
-      prev === 0 ? viewerMediaItems.length - 1 : prev - 1
-    );
-  };
-
-  const navigateNext = (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation(); // Prevent event bubbling
-    setCurrentIndex(prev => 
-      (prev + 1) % viewerMediaItems.length
-    );
-  };
-
-  const togglePlayPause = () => {
-    if (!videoRef.current) return;
-    
-    if (isPlaying) {
-      videoRef.current.pause();
-    } else {
-      videoRef.current.play().catch(err => {
-        console.error('Error playing video:', err);
-      });
-    }
-    setIsPlaying(!isPlaying);
-  };
-
-  const toggleMute = () => {
-    if (!videoRef.current) return;
-    
-    videoRef.current.muted = !videoRef.current.muted;
-    setIsMuted(videoRef.current.muted);
-  };
-
-  const toggleFullscreen = async (e?: React.MouseEvent) => {
-    if (e) e.stopPropagation(); // Prevent event bubbling
-    if (!containerRef.current) return;
-
-    try {
-      if (!document.fullscreenElement) {
-        await containerRef.current.requestFullscreen();
-        setIsFullscreen(true);
-      } else {
-        await document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    } catch (error) {
-      console.error('Fullscreen error:', error);
-    }
-  };
 
   const handleVideoLoadedData = () => {
     if (videoRef.current) {
@@ -272,9 +273,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Previous button clicked');
-                  const newIndex = currentIndex === 0 ? viewerMediaItems.length - 1 : currentIndex - 1;
-                  console.log(`Navigating from ${currentIndex} to ${newIndex}`);
-                  setCurrentIndex(newIndex);
+                  navigatePrev(e);
                 }}
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-[9999] cursor-pointer"
                 aria-label="Previous media"
@@ -287,9 +286,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                   e.preventDefault();
                   e.stopPropagation();
                   console.log('Next button clicked');
-                  const newIndex = (currentIndex + 1) % viewerMediaItems.length;
-                  console.log(`Navigating from ${currentIndex} to ${newIndex}`);
-                  setCurrentIndex(newIndex);
+                  navigateNext(e);
                 }}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all z-[9999] cursor-pointer"
                 aria-label="Next media"

@@ -40,6 +40,22 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
   // Filter media items to only show those marked for popup display
   const popupMediaItems = mediaItems.filter(item => item.showInViewer !== false);
 
+  // Navigation functions defined early to be used in useEffect hooks
+  const navigatePrev = () => {
+    setCurrentIndex(prevIndex => {
+      if (prevIndex === 0) return popupMediaItems.length - 1;
+      return prevIndex - 1;
+    });
+  };
+
+  const navigateNext = () => {
+    setCurrentIndex(prevIndex => (prevIndex + 1) % popupMediaItems.length);
+  };
+
+  const togglePlayPause = () => {
+    setIsPlaying(!isPlaying);
+  };
+
   // Find the displayFirst item and use its index among popup items
   useEffect(() => {
     if (popupMediaItems.length > 0) {
@@ -185,21 +201,6 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
   }
 
   const currentItem = popupMediaItems[currentIndex];
-
-  const navigatePrev = () => {
-    setCurrentIndex(prevIndex => {
-      if (prevIndex === 0) return popupMediaItems.length - 1;
-      return prevIndex - 1;
-    });
-  };
-
-  const navigateNext = () => {
-    setCurrentIndex(prevIndex => (prevIndex + 1) % popupMediaItems.length);
-  };
-
-  const togglePlayPause = () => {
-    setIsPlaying(!isPlaying);
-  };
 
   // Prevent download by disabling right-click and drag
   const preventDownload = (e: React.MouseEvent | React.DragEvent) => {

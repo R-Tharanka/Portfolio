@@ -21,6 +21,7 @@ import ResetPassword from './components/admin/auth/ResetPassword';
 import ForgotPassword from './components/admin/auth/ForgotPassword';
 import SEO from './components/common/SEO';
 import DevelopmentBanner from './components/ui/DevelopmentBanner';
+import NotFound from './components/common/NotFound';
 
 const MainPage = () => {
   return (
@@ -70,6 +71,7 @@ function App() {
                   <Route path="/admin" element={<AdminPanel />} />
                   <Route path="/admin/forgot-password" element={<ForgotPassword />} />
                   <Route path="/admin/reset-password" element={<ResetPassword />} />
+                  <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
             </div>

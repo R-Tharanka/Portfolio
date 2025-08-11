@@ -38,7 +38,11 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Filter media items to only show those marked for popup display
-  const popupMediaItems = mediaItems.filter(item => item.showInViewer !== false);
+  // Use useMemo to prevent recreation of the array on every render
+  const popupMediaItems = React.useMemo(() => {
+    console.log("Filtering media items, count:", mediaItems.length);
+    return mediaItems.filter(item => item.showInViewer !== false);
+  }, [mediaItems]);
 
   // Fullscreen functionality
   const enterFullscreen = React.useCallback(() => {
@@ -57,16 +61,29 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
     setIsFullscreen(false);
   }, []);
 
-  // Navigation functions defined as useCallback hooks to prevent recreation on every render
+  // Define a stable reference to the goToIndex function to prevent recreation
+  const goToIndex = React.useCallback((index: number) => {
+    console.log(`Setting index directly to: ${index}`);
+    setCurrentIndex(index);
+  }, []);
+  
+  // Navigation functions defined as useCallback hooks with better state handling
   const navigatePrev = React.useCallback(() => {
+    console.log("Navigating to previous item");
     setCurrentIndex(prevIndex => {
-      if (prevIndex === 0) return popupMediaItems.length - 1;
-      return prevIndex - 1;
+      const newIndex = prevIndex === 0 ? popupMediaItems.length - 1 : prevIndex - 1;
+      console.log(`Previous: Going from ${prevIndex} to ${newIndex}`);
+      return newIndex;
     });
   }, [popupMediaItems.length]);
 
   const navigateNext = React.useCallback(() => {
-    setCurrentIndex(prevIndex => (prevIndex + 1) % popupMediaItems.length);
+    console.log("Navigating to next item");
+    setCurrentIndex(prevIndex => {
+      const newIndex = (prevIndex + 1) % popupMediaItems.length;
+      console.log(`Next: Going from ${prevIndex} to ${newIndex}`);
+      return newIndex;
+    });
   }, [popupMediaItems.length]);
 
   const togglePlayPause = React.useCallback(() => {
@@ -147,10 +164,12 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
           break;
         case 'ArrowLeft':
           event.preventDefault();
+          console.log('ArrowLeft key pressed');
           navigatePrev();
           break;
         case 'ArrowRight':
           event.preventDefault();
+          console.log('ArrowRight key pressed');
           navigateNext();
           break;
         case ' ':
@@ -265,48 +284,62 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
         <div className="relative w-full h-full flex items-center justify-center p-4 pt-20 pb-20">
           {/* Current media item */}
           <div className="relative max-w-7xl max-h-full flex items-center justify-center">
-            {currentItem?.type === 'image' ? (
-              <img 
-                src={isCloudinaryUrl(currentItem.url) 
-                  ? getTransformedImageUrl(currentItem.url, { 
-                      width: isFullscreen ? 1920 : 1200, 
-                      height: isFullscreen ? 1080 : 800, 
-                      quality: 'auto' 
-                    }) 
-                  : currentItem.url
-                }
-                alt={`${projectTitle} - Media ${currentIndex + 1}`}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                onContextMenu={preventDownload}
-                onDragStart={preventDownload}
-                style={{ userSelect: 'none' }}
-              />
-            ) : currentItem?.type === 'video' ? (
-              <video 
-                ref={videoRef}
-                src={currentItem.url}
-                controls={true}
-                controlsList="nodownload"
-                disablePictureInPicture
-                onContextMenu={preventDownload}
-                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
-                style={{ userSelect: 'none' }}
-              />
-            ) : null}
+            {/* Use a key based on the currentIndex to force React to unmount and remount the media */}
+            <div 
+              key={`media-item-${currentIndex}`}
+              className="w-full h-full flex items-center justify-center transition-opacity duration-300"
+            >
+              {currentItem?.type === 'image' ? (
+                <img 
+                  src={isCloudinaryUrl(currentItem.url) 
+                    ? getTransformedImageUrl(currentItem.url, { 
+                        width: isFullscreen ? 1920 : 1200, 
+                        height: isFullscreen ? 1080 : 800, 
+                        quality: 'auto' 
+                      }) 
+                    : currentItem.url
+                  }
+                  alt={`${projectTitle} - Media ${currentIndex + 1}`}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  onContextMenu={preventDownload}
+                  onDragStart={preventDownload}
+                  style={{ userSelect: 'none' }}
+                />
+              ) : currentItem?.type === 'video' ? (
+                <video 
+                  ref={videoRef}
+                  src={currentItem.url}
+                  controls={true}
+                  controlsList="nodownload"
+                  disablePictureInPicture
+                  onContextMenu={preventDownload}
+                  className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                  style={{ userSelect: 'none' }}
+                />
+              ) : null}
+            </div>
           </div>
 
           {/* Navigation arrows (only show if multiple items) */}
           {popupMediaItems.length > 1 && (
             <>
               <button 
-                onClick={() => navigatePrev()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("Previous button clicked");
+                  navigatePrev();
+                }}
                 className="absolute left-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 z-40"
                 aria-label="Previous media"
               >
                 <ChevronLeft size={24} />
               </button>
               <button 
-                onClick={() => navigateNext()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("Next button clicked");
+                  navigateNext();
+                }}
                 className="absolute right-4 top-1/2 transform -translate-y-1/2 p-3 bg-black/60 text-white rounded-full hover:bg-black/80 transition-all focus:outline-none shadow-lg hover:scale-110 z-40"
                 aria-label="Next media"
               >
@@ -327,8 +360,8 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
                 <button
                   key={index}
                   onClick={() => {
-                    console.log(`Setting index to ${index}`);
-                    setCurrentIndex(index);
+                    console.log(`Dot clicked: Setting index to ${index}`);
+                    goToIndex(index);
                   }}
                   className={`w-3 h-3 rounded-full transition-all focus:outline-none hover:scale-125 ${
                     index === currentIndex 

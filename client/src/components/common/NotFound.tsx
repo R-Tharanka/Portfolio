@@ -15,43 +15,78 @@ import { ArrowLeft, Home, Sparkles } from 'lucide-react';
 
 const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
-const ParticleField: React.FC<{ count?: number }> = ({ count = 24 }) => {
+const ParticleField: React.FC<{ count?: number }> = ({ count = 48 }) => {
   const particles = Array.from({ length: count }, (_, i) => ({
     id: i,
-    size: randomInRange(4, 10),
-    duration: randomInRange(12, 28),
-    delay: randomInRange(-20, 0),
-    distance: randomInRange(40, 140),
+    size: randomInRange(3, 7),
+    duration: randomInRange(10, 26),
+    delay: randomInRange(-15, 0),
+    // Position across viewport (percentage)
+    x: randomInRange(0, 100),
+    y: randomInRange(0, 100),
+    driftX: randomInRange(20, 120),
+    driftY: randomInRange(15, 90),
+    phase: Math.random() * Math.PI * 2,
+  opacityPeak: randomInRange(0.35, 0.8),
+  glowColor: Math.random() > 0.5 ? '#5d6bf3' : '#fb923c',
+  glowCycle: randomInRange(8, 16)
   }));
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
-      {particles.map(p => (
-        <motion.span
-          key={p.id}
-          className="absolute left-1/2 top-1/2 rounded-full bg-primary/30 dark:bg-primary/40 blur-[1px]"
-          style={{ width: p.size, height: p.size }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 1, 1, 0] }}
-          transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
-        >
+      {particles.map(p => {
+        // Generate looping keyframes for organic drifting (elliptical-ish)
+        const steps = 5;
+        const xKeyframes: number[] = [];
+        const yKeyframes: number[] = [];
+        for (let s = 0; s < steps; s++) {
+          const t = (s / (steps - 1)) * Math.PI * 2;
+            // elliptical path with individual phase offset
+          xKeyframes.push(Math.cos(t + p.phase) * p.driftX);
+          yKeyframes.push(Math.sin(t + p.phase) * p.driftY * 0.6);
+        }
+        // ensure seamless loop by repeating first coordinate implicitly
+        const glowTimes = [0, 0.65, 0.7, 1]; // brief glow window
+        const baseBg = 'rgba(59,130,246,0.30)'; // Tailwind primary 500
+        const glowBg = p.glowColor + 'CC'; // add alpha
+        return (
           <motion.span
-            className="absolute inset-0"
+            key={p.id}
+            className="absolute rounded-full blur-[1px] will-change-transform"
             style={{
               width: p.size,
               height: p.size,
-              left: -p.size / 2,
-              top: -p.size / 2,
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              marginLeft: -p.size / 2,
+              marginTop: -p.size / 2,
+              backgroundColor: baseBg
             }}
+            initial={{ opacity: 0, scale: 1 }}
             animate={{
-              rotate: 360,
-              x: [p.distance, -p.distance, p.distance],
-              y: [-p.distance, p.distance, -p.distance]
+              opacity: [0, p.opacityPeak, p.opacityPeak, 0],
+              x: xKeyframes,
+              y: yKeyframes,
+              backgroundColor: [baseBg, baseBg, glowBg, baseBg],
+              boxShadow: [
+                '0 0 0px rgba(0,0,0,0)',
+                '0 0 0px rgba(0,0,0,0)',
+                `0 0 14px ${p.glowColor}AA, 0 0 22px ${p.glowColor}66`,
+                '0 0 0px rgba(0,0,0,0)'
+              ],
+              scale: [1, 1, 1.35, 1]
             }}
-            transition={{ duration: p.duration, repeat: Infinity, ease: 'linear' }}
+            transition={{
+              opacity: { repeat: Infinity, duration: p.duration, delay: p.delay, ease: 'linear' },
+              x: { repeat: Infinity, duration: p.duration, delay: p.delay, ease: 'linear' },
+              y: { repeat: Infinity, duration: p.duration, delay: p.delay, ease: 'linear' },
+              backgroundColor: { repeat: Infinity, duration: p.glowCycle, delay: p.delay, ease: 'easeInOut', times: glowTimes },
+              boxShadow: { repeat: Infinity, duration: p.glowCycle, delay: p.delay, ease: 'easeInOut', times: glowTimes },
+              scale: { repeat: Infinity, duration: p.glowCycle, delay: p.delay, ease: 'easeInOut', times: glowTimes }
+            }}
           />
-        </motion.span>
-      ))}
+        );
+      })}
     </div>
   );
 };
@@ -123,9 +158,9 @@ const NotFound: React.FC = () => {
         ogUrl={typeof window !== 'undefined' ? window.location.href : undefined}
       />
       <Header />
-      <div className="min-h-screen flex flex-col pt-36 md:pt-40 relative overflow-hidden">
+      <div className="min-h-screen flex flex-col relative overflow-hidden">
         <ParticleField />
-        <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
+        <div className="flex-1 flex flex-col items-center justify-center px-6 pt-56 pb-24 text-center">
           <Floating404 />
           <AnimatePresence mode="wait">
             <motion.p

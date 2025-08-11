@@ -12,6 +12,7 @@ import {
   Images
 } from 'lucide-react';
 import { getTransformedImageUrl, isCloudinaryUrl } from '../../utils/cloudinary';
+import KeyboardShortcutsHelp from './KeyboardShortcutsHelp';
 
 interface MediaViewerPopupProps {
   mediaItems: ProjectMedia[];
@@ -33,6 +34,7 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(autoplay);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const autoplayTimerRef = useRef<NodeJS.Timeout | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -359,23 +361,54 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
           isFullscreen ? 'opacity-0 hover:opacity-100 transition-opacity' : ''
         }`}>
           <div className="flex items-center justify-between">
-            {/* Media indicator dots */}
-            <div className="flex gap-2">
-              {popupMediaItems.map((_, index) => (
+            {/* Media indicator dots and counter */}
+            <div className="flex items-center gap-3">
+              {/* Counter and keyboard shortcut toggle */}
+              <div className="text-white text-sm flex items-center gap-2 mr-2">
+                <span>{currentIndex + 1} of {popupMediaItems.length}</span>
+                
+                {/* Keyboard shortcuts help button */}
                 <button
-                  key={index}
-                  onClick={() => {
-                    console.log(`Dot clicked: Setting index to ${index}`);
-                    goToIndex(index);
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowKeyboardShortcuts(prev => !prev);
                   }}
-                  className={`w-3 h-3 rounded-full transition-all focus:outline-none hover:scale-125 ${
-                    index === currentIndex 
-                      ? 'bg-primary shadow-lg scale-110' 
-                      : 'bg-white/60 hover:bg-white/80'
-                  }`}
-                  aria-label={`Go to media ${index + 1}`}
-                />
-              ))}
+                  className="p-1 text-white/60 hover:text-white/90 rounded-full transition-colors flex items-center text-xs"
+                  aria-label="Show keyboard shortcuts"
+                  title="Keyboard Shortcuts"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                    <path d="M6 8h.01"></path>
+                    <path d="M10 8h.01"></path>
+                    <path d="M14 8h.01"></path>
+                    <path d="M18 8h.01"></path>
+                    <path d="M8 12h.01"></path>
+                    <path d="M12 12h.01"></path>
+                    <path d="M16 12h.01"></path>
+                    <path d="M7 16h10"></path>
+                  </svg>
+                </button>
+              </div>
+              
+              {/* Media indicator dots */}
+              <div className="flex gap-2">
+                {popupMediaItems.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      console.log(`Dot clicked: Setting index to ${index}`);
+                      goToIndex(index);
+                    }}
+                    className={`w-3 h-3 rounded-full transition-all focus:outline-none hover:scale-125 ${
+                      index === currentIndex 
+                        ? 'bg-primary shadow-lg scale-110' 
+                        : 'bg-white/60 hover:bg-white/80'
+                    }`}
+                    aria-label={`Go to media ${index + 1}`}
+                  />
+                ))}
+              </div>
             </div>
 
             {/* Play/Pause button (only show if multiple items) */}
@@ -390,6 +423,9 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
             )}
           </div>
         </div>
+        
+        {/* Keyboard shortcuts help - shown conditionally */}
+        <KeyboardShortcutsHelp isVisible={showKeyboardShortcuts} />
       </div>
     </div>
   );

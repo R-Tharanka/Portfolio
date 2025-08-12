@@ -183,7 +183,7 @@ const ProjectsSection: React.FC = () => {
                   >
                     <div className="relative overflow-hidden">
                       <MediaCarousel 
-                        mediaItems={project.media?.filter(item => item.showInViewer !== false) || []}
+                        mediaItems={project.media || []}
                         fallbackImageUrl={project.imageUrl}
                         height="h-52 sm:h-48"
                         autoplay={true}

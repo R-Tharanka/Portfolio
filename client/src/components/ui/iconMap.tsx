@@ -4,7 +4,7 @@ import {
     SiMongodb, SiMysql, SiCanva, SiFigma, SiAdobeillustrator, SiAdobephotoshop,
     SiVercel, SiRailway, SiTailwindcss, SiJavascript, SiChartdotjs,
     SiC, SiCplusplus, SiSharp, SiKotlin,
-    SiPostman, SiWordpress, SiTwilio
+    SiPostman, SiWordpress, SiTwilio, SiNetlify
 } from 'react-icons/si';
 
 import {
@@ -29,6 +29,7 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     github: FaGithub,
     vercel: SiVercel,
     railway: SiRailway,
+    netlify: SiNetlify,
     docker: FaDocker,
     html: FaHtml5,
     css: SiCss3,

@@ -17,7 +17,7 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
   mediaItems = [], 
   fallbackImageUrl,
   autoplay = true,
-  interval = 5000,
+  interval = 7000,
   className = '',
   height = 'h-52',
   onViewMedia,

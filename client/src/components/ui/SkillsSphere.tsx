@@ -83,26 +83,21 @@ const SkillNode: React.FC<SkillNodeProps> = ({
         distanceFactor={15}
         position={[0, 0, 0]} // Centered since no sphere background
         style={{
+          color: 'white',
           fontSize: '10px',
           fontWeight: 'bold',
           textAlign: 'center',
           pointerEvents: 'none',
           userSelect: 'none',
+          textShadow: '0 0 4px rgba(0,0,0,0.8)',
           filter: isFiltered ? 'opacity(0.4)' : 'opacity(1)',
           transition: 'filter 0.3s ease',
           transform: `scale(${Math.max(skill.proficiency * 0.15, 0.8)})` // Use proficiency for icon scaling
         }}
       >
-        <div 
-          className="flex flex-col items-center justify-center px-3 py-2 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30 bg-card/90 backdrop-blur-sm"
-          style={{
-            color: 'hsl(var(--foreground))',
-            minWidth: '60px',
-            minHeight: '60px'
-          }}
-        >
+        <div className="flex flex-col items-center">
           <IconComponent className="text-lg mb-1" />
-          <span className="text-xs font-medium text-center">{skill.name}</span>
+          <span className="text-xs">{skill.name}</span>
         </div>
       </Html>
     </mesh>

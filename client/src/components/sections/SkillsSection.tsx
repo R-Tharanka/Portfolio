@@ -1,9 +1,62 @@
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, Component, ErrorInfo, ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Skill, SkillCategory } from '../../types';
 import { useApiService } from '../../hooks/useApiService';
 import { Loader2 } from 'lucide-react';
+
+// Error boundary component to catch Three.js errors
+class ErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  state = { hasError: false };
+  
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("Three.js error:", error, errorInfo);
+  }
+  
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    
+    return this.props.children;
+  }
+}
+
+// A simple 2D grid as fallback for the 3D sphere
+const FallbackSkillsGrid: React.FC<{
+  skills: Skill[];
+  activeCategory: SkillCategory | null;
+  onCategoryChange: (category: SkillCategory | null) => void;
+}> = ({ skills, activeCategory }) => {
+  // Filter skills based on category
+  const filteredSkills = !activeCategory 
+    ? skills 
+    : skills.filter(skill => skill.category === activeCategory);
+    
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
+      {filteredSkills.map(skill => (
+        <div 
+          key={skill.id}
+          className="p-4 bg-card rounded-xl flex flex-col items-center justify-center text-center"
+          style={{
+            minHeight: `${Math.max(skill.proficiency * 10, 60)}px`,
+          }}
+        >
+          <div className="text-lg font-medium mb-2">{skill.name}</div>
+          <div className="text-xs opacity-70">{skill.category}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
 
 // Lazy load the 3D component to improve initial page load performance
 const SkillsSphere = React.lazy(() => import('../ui/SkillsSphere'));
@@ -14,6 +67,7 @@ const SkillsSection: React.FC = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [use3D, setUse3D] = useState(true);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -80,13 +134,36 @@ const SkillsSection: React.FC = () => {
                   <Loader2 className="animate-spin h-10 w-10 text-primary" />
                 </div>
               }>
-                <SkillsSphere 
-                  skills={skills} 
-                  activeCategory={activeCategory} 
-                  onCategoryChange={(category) => setActiveCategory(
-                    category === activeCategory ? null : category
-                  )} 
-                />
+                {use3D ? (
+                  <ErrorBoundary fallback={
+                    <div className="text-center p-4">
+                      <p>Could not load 3D visualization. 
+                        <button 
+                          className="text-primary underline ml-2"
+                          onClick={() => setUse3D(false)}
+                        >
+                          Show 2D version
+                        </button>
+                      </p>
+                    </div>
+                  }>
+                    <SkillsSphere 
+                      skills={skills} 
+                      activeCategory={activeCategory} 
+                      onCategoryChange={(category) => setActiveCategory(
+                        category === activeCategory ? null : category
+                      )} 
+                    />
+                  </ErrorBoundary>
+                ) : (
+                  <FallbackSkillsGrid 
+                    skills={skills} 
+                    activeCategory={activeCategory}
+                    onCategoryChange={(category) => setActiveCategory(
+                      category === activeCategory ? null : category
+                    )} 
+                  />
+                )}
               </Suspense>
             )}
           </div>

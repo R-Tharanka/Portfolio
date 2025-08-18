@@ -128,7 +128,7 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
   // Generate positions on a sphere using Fibonacci spiral
   const skillPositions = useMemo(() => {
     const positions: Array<{ skill: Skill; position: [number, number, number] }> = [];
-    const radius = 6;
+    const radius = 4.5; // Reduced from 6 to make sphere smaller
     const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle in radians
     
     skills.forEach((skill, index) => {
@@ -152,14 +152,14 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
   const separatedPositions = useMemo(() => {
     const positions: Array<{ skill: Skill; position: [number, number, number] }> = [];
     const gridSize = Math.ceil(Math.sqrt(filteredSkills.length));
-    const spacing = 2.5;
+    const spacing = 2; // Reduced spacing to match smaller sphere
     
     filteredSkills.forEach((skill, index) => {
       const row = Math.floor(index / gridSize);
       const col = index % gridSize;
       const x = (col - (gridSize - 1) / 2) * spacing;
       const y = (row - (gridSize - 1) / 2) * spacing;
-      const z = 10; // Move forward
+      const z = 8; // Reduced from 10 to move closer
       
       positions.push({
         skill,
@@ -254,7 +254,7 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
   return (
     <div className="w-full h-[600px] relative">
       <Canvas
-        camera={{ position: [0, 0, 15], fov: 50 }}
+        camera={{ position: [0, 0, 12], fov: 50 }} // Moved camera closer from 15 to 12
         style={{ background: 'transparent' }}
         dpr={[1, 2]} // Responsive pixel ratio for performance
         performance={{ min: 0.5 }} // Performance monitoring

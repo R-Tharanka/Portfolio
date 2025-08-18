@@ -65,9 +65,6 @@ const SkillNode: React.FC<SkillNodeProps> = ({
   const meshRef = useRef<THREE.Mesh>(null);
   const IconComponent = getIconComponent(skill.icon);
   
-  // Size based on proficiency (minimum 0.3, maximum 1.2)
-  const size = Math.max(skill.proficiency * 0.1, 0.3);
-  
   useFrame(() => {
     if (meshRef.current && !isFiltered) {
       // Gentle rotation for visual interest
@@ -80,18 +77,11 @@ const SkillNode: React.FC<SkillNodeProps> = ({
 
   return (
     <mesh ref={meshRef} position={position}>
-      <sphereGeometry args={[size, 12, 12]} />
-      <meshStandardMaterial 
-        color={isFiltered ? "#64748b" : "#6366f1"} 
-        transparent
-        opacity={isFiltered ? 0.3 : 0.8}
-        emissive={isFiltered ? "#334155" : "#4338ca"}
-        emissiveIntensity={0.1}
-      />
+      {/* Removed the sphere geometry and material to eliminate blue circles */}
       <Html
         center
         distanceFactor={15}
-        position={[0, 0, size + 0.3]}
+        position={[0, 0, 0]} // Centered since no sphere background
         style={{
           color: 'white',
           fontSize: '10px',
@@ -99,7 +89,10 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           textAlign: 'center',
           pointerEvents: 'none',
           userSelect: 'none',
-          textShadow: '0 0 4px rgba(0,0,0,0.8)'
+          textShadow: '0 0 4px rgba(0,0,0,0.8)',
+          filter: isFiltered ? 'opacity(0.4)' : 'opacity(1)',
+          transition: 'filter 0.3s ease',
+          transform: `scale(${Math.max(skill.proficiency * 0.15, 0.8)})` // Use proficiency for icon scaling
         }}
       >
         <div className="flex flex-col items-center">
@@ -128,7 +121,7 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
   // Generate positions on a sphere using Fibonacci spiral
   const skillPositions = useMemo(() => {
     const positions: Array<{ skill: Skill; position: [number, number, number] }> = [];
-    const radius = 4.5; // Reduced from 6 to make sphere smaller
+    const radius = 3.5; // Further reduced from 4.5 to 3.5
     const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle in radians
     
     skills.forEach((skill, index) => {
@@ -252,10 +245,10 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
   }
 
   return (
-    <div className="w-full h-[600px] relative">
+    <div className="w-full h-[600px] relative" style={{ zIndex: 1 }}>
       <Canvas
-        camera={{ position: [0, 0, 12], fov: 50 }} // Moved camera closer from 15 to 12
-        style={{ background: 'transparent' }}
+        camera={{ position: [0, 0, 10], fov: 50 }} // Moved closer from 12 to 10 for smaller sphere
+        style={{ background: 'transparent', zIndex: 1 }}
         dpr={[1, 2]} // Responsive pixel ratio for performance
         performance={{ min: 0.5 }} // Performance monitoring
       >

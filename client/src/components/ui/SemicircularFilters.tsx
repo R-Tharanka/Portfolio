@@ -13,23 +13,23 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
-  const radius = 200; // Increased radius for more height
-  const centerX = 0;
-  const centerY = 0;
+  const radius = 180; // Increased from 150 to utilize more space
 
-  // Calculate positions for each button with equal spacing along an arc
+  // Calculate positions for each button with equal vertical spacing
   const getButtonPosition = (index: number, total: number) => {
-    // Create an arc that's taller than a semicircle for better spacing
-    const startAngle = Math.PI / 3; // Start at 60 degrees instead of 90
-    const endAngle = (2 * Math.PI) / 3; // End at 120 degrees instead of 90
-    const totalAngle = endAngle - startAngle; // Total arc span
+    // Create equal vertical spacing instead of a perfect semicircle
+    const totalHeight = radius * 1.6; // Increased height for more vertical spacing
+    const verticalStep = totalHeight / (total - 1);
     
-    // Distribute buttons evenly along this arc
-    const angle = startAngle + (totalAngle * index) / (total - 1);
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
+    // Calculate y position with equal spacing
+    const y = (index * verticalStep) - (totalHeight / 2);
     
-    return { x, y, angle };
+    // Calculate x position to create a curved effect (but not a perfect semicircle)
+    const normalizedY = y / (totalHeight / 2); // -1 to 1
+    const curveIntensity = 0.7; // How much curve (0 = straight line, 1 = full semicircle)
+    const x = Math.sqrt(Math.max(0, 1 - (normalizedY * normalizedY))) * radius * curveIntensity;
+    
+    return { x, y, angle: 0 };
   };
 
   const handleCategoryClick = (category: SkillCategory) => {
@@ -44,7 +44,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative" style={{ width: Math.min(radius + 120, 380), height: Math.min(radius * 1.8 + 120, 500) }}>
+      <div className="relative" style={{ width: Math.min(radius + 120, 350), height: Math.min(radius * 2.2 + 120, 550) }}>
         {categories.map((category, index) => {
           const { x, y } = getButtonPosition(index, categories.length);
           const isActive = activeCategory === category;
@@ -58,8 +58,8 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                   : 'bg-card hover:bg-card/80 text-foreground hover:scale-105'
               }`}
               style={{
-                left: x + radius / 2 + 60,
-                top: y + radius / 3 + 60, // Adjusted positioning for the new arc
+                left: x + radius * 0.6 + 60,
+                top: y + radius * 1.1 + 100,
               }}
               onClick={() => handleCategoryClick(category)}
               initial={{ scale: 0, opacity: 0 }}
@@ -89,7 +89,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           );
         })}
         
-        {/* Visible arc circumference line */}
+        {/* Visible curved line following the button arrangement */}
         <svg
           className="absolute inset-0 pointer-events-none"
           width="100%"
@@ -97,31 +97,31 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           style={{ left: 0, top: 0 }}
         >
           <defs>
-            <linearGradient id="semicircleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id="curvedLineGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="currentColor" stopOpacity="0.6" />
               <stop offset="50%" stopColor="currentColor" stopOpacity="0.8" />
               <stop offset="100%" stopColor="currentColor" stopOpacity="0.6" />
             </linearGradient>
           </defs>
-          {/* Create an arc that follows the button positions */}
+          {/* Create a curved path that follows the button positions */}
           <path
-            d={`M ${radius * 0.25 + 60} ${radius * 0.4 + 60} A ${radius} ${radius} 0 0 1 ${radius * 0.75 + 60} ${radius * 0.4 + 60}`}
-            stroke="url(#semicircleGradient)"
+            d={`M ${radius * 0.6 + 60} ${100} Q ${radius * 0.9 + 60} ${radius * 1.1 + 100} ${radius * 0.6 + 60} ${radius * 2.2 + 100}`}
+            stroke="url(#curvedLineGradient)"
             strokeWidth="2"
             fill="none"
             className="text-primary"
           />
           {/* Add small dots at the endpoints */}
           <circle 
-            cx={radius * 0.25 + 60} 
-            cy={radius * 0.4 + 60} 
+            cx={radius * 0.6 + 60} 
+            cy={100} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"
           />
           <circle 
-            cx={radius * 0.75 + 60} 
-            cy={radius * 0.4 + 60} 
+            cx={radius * 0.6 + 60} 
+            cy={radius * 2.2 + 100} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"

@@ -1,73 +1,63 @@
-import React, { useState, useEffect, Suspense, Component, ErrorInfo, ReactNode } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
 import { Skill, SkillCategory } from '../../types';
 import { useApiService } from '../../hooks/useApiService';
 import { Loader2 } from 'lucide-react';
+import { iconMap } from '../ui/iconMap';
 
-// Error boundary component to catch Three.js errors
-class ErrorBoundary extends Component<
-  { children: ReactNode; fallback: ReactNode },
-  { hasError: boolean }
-> {
-  state = { hasError: false };
-  
-  static getDerivedStateFromError() {
-    return { hasError: true };
+// Function to get the closest matching icon component
+const getIconComponent = (iconName: string) => {
+  if (!iconName) return iconMap['default'];
+
+  // Normalize the icon name (lowercase, trim whitespace)
+  const normalizedName = iconName.toLowerCase().trim();
+
+  // Direct match
+  if (iconMap[normalizedName]) return iconMap[normalizedName];
+
+  // Check common variations
+  const commonVariations: Record<string, string> = {
+    'apache tomcat': 'tomcat',
+    'express.js': 'express',
+    'express js': 'express',
+    'node.js': 'node',
+    'nodejs': 'node',
+    'spring boot': 'springboot',
+    'tailwind': 'tailwind',
+    'tailwindcss': 'tailwind',
+    'tailwind css': 'tailwind',
+    'chart.js': 'chartjs',
+    'c++': 'c++',
+    'c#': 'c#',
+    'c sharp': 'c#',
+    'js': 'javascript'
+  };
+
+  if (commonVariations[normalizedName] && iconMap[commonVariations[normalizedName]]) {
+    return iconMap[commonVariations[normalizedName]];
   }
-  
-  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error("Three.js error:", error, errorInfo);
-  }
-  
-  render() {
-    if (this.state.hasError) {
-      return this.props.fallback;
+
+  // Try to find partial match
+  const iconKeys = Object.keys(iconMap);
+  for (const key of iconKeys) {
+    if (normalizedName.includes(key) || key.includes(normalizedName)) {
+      return iconMap[key];
     }
-    
-    return this.props.children;
   }
-}
 
-// A simple 2D grid as fallback for the 3D sphere
-const FallbackSkillsGrid: React.FC<{
-  skills: Skill[];
-  activeCategory: SkillCategory | null;
-  onCategoryChange: (category: SkillCategory | null) => void;
-}> = ({ skills, activeCategory }) => {
-  // Filter skills based on category
-  const filteredSkills = !activeCategory 
-    ? skills 
-    : skills.filter(skill => skill.category === activeCategory);
-    
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
-      {filteredSkills.map(skill => (
-        <div 
-          key={skill.id}
-          className="p-4 bg-card rounded-xl flex flex-col items-center justify-center text-center"
-          style={{
-            minHeight: `${Math.max(skill.proficiency * 10, 60)}px`,
-          }}
-        >
-          <div className="text-lg font-medium mb-2">{skill.name}</div>
-          <div className="text-xs opacity-70">{skill.category}</div>
-        </div>
-      ))}
-    </div>
-  );
+  // Return default icon if no match found
+  return iconMap['default'];
 };
 
-// Lazy load the 3D component to improve initial page load performance
-const SkillsSphere = React.lazy(() => import('../ui/SkillsSphere'));
+const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps', 'Languages', 'Design', 'Other'];
 
 const SkillsSection: React.FC = () => {
   const { getSkills } = useApiService();
-  const [activeCategory, setActiveCategory] = useState<SkillCategory | null>(null);
+  const [activeCategory, setActiveCategory] = useState<SkillCategory | 'All'>('All');
   const [skills, setSkills] = useState<Skill[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [use3D, setUse3D] = useState(true);
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
@@ -97,6 +87,10 @@ const SkillsSection: React.FC = () => {
     fetchSkills();
   }, []);
 
+  const filteredSkills = activeCategory === 'All'
+    ? skills
+    : skills.filter(skill => skill.category === activeCategory);
+
   return (
     <section id="skills" className=" bg-background/50 relative">
       <div className="section-container">
@@ -111,60 +105,91 @@ const SkillsSection: React.FC = () => {
             Here are the technologies I work with to bring ideas to life
           </p>
 
-          {/* 3D Skills Sphere */}
-          <div className="relative min-h-[600px]">
+          {/* Category Filter Bar */}
+          <div className="flex flex-wrap justify-center gap-2 mb-12">
+            <button
+              onClick={() => setActiveCategory('All')}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === 'All'
+                ? 'bg-primary text-white'
+                : 'bg-card hover:bg-card/80 text-foreground'
+                }`}
+            >
+              All
+            </button>
+
+            {categories.map(category => (
+              <button
+                key={category}
+                onClick={() => setActiveCategory(category)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeCategory === category
+                  ? 'bg-primary text-white'
+                  : 'bg-card hover:bg-card/80 text-foreground'
+                  }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+
+          {/* Skills Cloud */}
+          <div className="relative min-h-[400px] bg-card/30 rounded-xl p-8 flex items-center justify-center">
             {loading ? (
-              <div className="flex items-center justify-center h-[600px] bg-card/30 rounded-xl">
-                <Loader2 className="animate-spin h-10 w-10 text-primary" />
-              </div>
+              <Loader2 className="animate-spin h-10 w-10 text-primary" />
             ) : error ? (
-              <div className="text-center text-foreground/70 p-8 bg-card/30 rounded-xl h-[600px] flex items-center justify-center">
-                <div>
-                  <p className="text-xl mb-2">Could Not Load Skills</p>
-                  <p>{error}</p>
-                </div>
+              <div className="text-center text-foreground/70 p-8">
+                <p className="text-xl mb-2">Could Not Load Skills</p>
+                <p>{error}</p>
               </div>
-            ) : skills.length === 0 ? (
-              <div className="text-center text-foreground/70 bg-card/30 rounded-xl h-[600px] flex items-center justify-center">
-                <p>No skills data available.</p>
+            ) : filteredSkills.length === 0 ? (
+              <div className="text-center text-foreground/70">
+                <p>No skills data available for the selected category.</p>
               </div>
             ) : (
-              <Suspense fallback={
-                <div className="flex items-center justify-center h-[600px] bg-card/30 rounded-xl">
-                  <Loader2 className="animate-spin h-10 w-10 text-primary" />
-                </div>
-              }>
-                {use3D ? (
-                  <ErrorBoundary fallback={
-                    <div className="text-center p-4">
-                      <p>Could not load 3D visualization. 
-                        <button 
-                          className="text-primary underline ml-2"
-                          onClick={() => setUse3D(false)}
-                        >
-                          Show 2D version
-                        </button>
-                      </p>
-                    </div>
-                  }>
-                    <SkillsSphere 
-                      skills={skills} 
-                      activeCategory={activeCategory} 
-                      onCategoryChange={(category) => setActiveCategory(
-                        category === activeCategory ? null : category
-                      )} 
-                    />
-                  </ErrorBoundary>
-                ) : (
-                  <FallbackSkillsGrid 
-                    skills={skills} 
-                    activeCategory={activeCategory}
-                    onCategoryChange={(category) => setActiveCategory(
-                      category === activeCategory ? null : category
-                    )} 
-                  />
-                )}
-              </Suspense>
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeCategory}
+                  className="w-full h-full flex flex-wrap justify-center items-center gap-4 md:gap-8"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  {filteredSkills.map((skill) => (
+                    <motion.div
+                      key={skill.id}
+                      className="relative group"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{
+                        type: 'spring',
+                        stiffness: 260,
+                        damping: 20,
+                        delay: Math.random() * 0.3
+                      }}
+                      whileHover={{ scale: 1.1 }}
+                    >
+                      <div
+                        className={`flex flex-col items-center justify-center p-4 bg-card rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30`}
+                        style={{
+                          width: `${Math.max(skill.proficiency * 12, 80)}px`,
+                          height: `${Math.max(skill.proficiency * 12, 80)}px`,
+                        }}
+                      >
+                        <div className="text-4xl mb-2">
+                          {React.createElement(getIconComponent(skill.icon), { className: "text-4xl mb-2" })}
+                        </div>
+                        <span className="text-xs font-medium text-center">{skill.name}</span>
+
+                        {/* Tooltip */}
+                        <div className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-card text-foreground text-xs rounded px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-lg border border-border/50">
+                          {/*{skill.name} - {skill.proficiency}/10 */}
+                          {skill.name}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </AnimatePresence>
             )}
           </div>
         </motion.div>

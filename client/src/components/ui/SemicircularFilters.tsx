@@ -13,7 +13,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
-  const radius = 150; // Radius of the semicircle
+  const radius = 180; // Increased from 150 to utilize more space
   const centerX = 0;
   const centerY = 0;
 
@@ -40,7 +40,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative" style={{ width: Math.min(radius + 100, 300), height: Math.min(radius * 2 + 100, 400) }}>
+      <div className="relative" style={{ width: Math.min(radius + 120, 350), height: Math.min(radius * 2 + 120, 480) }}>
         {categories.map((category, index) => {
           const { x, y } = getButtonPosition(index, categories.length);
           const isActive = activeCategory === category;
@@ -48,14 +48,14 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           return (
             <motion.button
               key={category}
-              className={`absolute px-3 py-2 lg:px-4 lg:py-2 rounded-full text-xs lg:text-sm font-medium transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 ${
+              className={`absolute px-4 py-3 lg:px-5 lg:py-3 rounded-full text-sm lg:text-base font-medium transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 ${
                 isActive
                   ? 'bg-primary text-white shadow-lg scale-110'
                   : 'bg-card hover:bg-card/80 text-foreground hover:scale-105'
               }`}
               style={{
-                left: x + radius / 2 + 50,
-                top: y + radius + 50,
+                left: x + radius / 2 + 60,
+                top: y + radius + 60,
               }}
               onClick={() => handleCategoryClick(category)}
               initial={{ scale: 0, opacity: 0 }}
@@ -100,7 +100,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
             </linearGradient>
           </defs>
           <path
-            d={`M ${radius / 2 + 50} ${50} A ${radius} ${radius} 0 0 0 ${radius / 2 + 50} ${radius * 2 + 50}`}
+            d={`M ${radius / 2 + 60} ${60} A ${radius} ${radius} 0 0 0 ${radius / 2 + 60} ${radius * 2 + 60}`}
             stroke="url(#semicircleGradient)"
             strokeWidth="2"
             fill="none"
@@ -108,15 +108,15 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           />
           {/* Add small dots at the endpoints */}
           <circle 
-            cx={radius / 2 + 50} 
-            cy={50} 
+            cx={radius / 2 + 60} 
+            cy={60} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"
           />
           <circle 
-            cx={radius / 2 + 50} 
-            cy={radius * 2 + 50} 
+            cx={radius / 2 + 60} 
+            cy={radius * 2 + 60} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"

@@ -261,11 +261,9 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
       >
         <SphereScene {...props} />
         <OrbitControls 
-          enableZoom={true}
+          enableZoom={false}
           enablePan={false}
           autoRotate={false}
-          maxDistance={25}
-          minDistance={8}
           maxPolarAngle={Math.PI}
           minPolarAngle={0}
           dampingFactor={0.05}
@@ -273,9 +271,9 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
         />
       </Canvas>
       
-      {/* Loading overlay for better UX */}
-      <div className="absolute top-4 right-4 text-xs text-foreground/50">
-        Drag to rotate • Scroll to zoom
+      {/* User guidance */}
+      <div className="absolute top-4 left-4 text-xs text-foreground/50">
+        Drag to rotate
       </div>
     </div>
   );

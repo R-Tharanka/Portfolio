@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build --legacy-peer-deps",
+    "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -29,7 +29,8 @@
     "react-router-dom": "^7.6.1",
     "react-scroll": "^1.9.0",
     "react-toastify": "^10.0.4",
-    "react-type-animation": "^3.2.0"
+    "react-type-animation": "^3.2.0",
+    "three": "^0.150.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",

@@ -83,26 +83,31 @@ const SkillsSection: React.FC = () => {
             </div>
           ) : (
             <>
-              {/* Semicircular Category Filters */}
-              <SemicircularFilters
-                categories={categories}
-                activeCategory={activeCategory}
-                onCategorySelect={handleCategorySelect}
-              />
+              {/* Main Content Container */}
+              <div className="relative min-h-[600px] bg-card/30 rounded-xl overflow-hidden flex flex-col lg:flex-row">
+                {/* 3D Skills Sphere */}
+                <div className="flex-1 lg:flex-1">
+                  <Suspense fallback={
+                    <div className="flex justify-center items-center h-full">
+                      <Loader2 className="animate-spin h-10 w-10 text-primary" />
+                    </div>
+                  }>
+                    <SkillsSphere
+                      skills={skills}
+                      filteredSkills={filteredSkills}
+                      activeCategory={activeCategory}
+                    />
+                  </Suspense>
+                </div>
 
-              {/* 3D Skills Sphere */}
-              <div className="relative min-h-[600px] bg-card/30 rounded-xl overflow-hidden">
-                <Suspense fallback={
-                  <div className="flex justify-center items-center h-full">
-                    <Loader2 className="animate-spin h-10 w-10 text-primary" />
-                  </div>
-                }>
-                  <SkillsSphere
-                    skills={skills}
-                    filteredSkills={filteredSkills}
+                {/* Semicircular Category Filters - Right Side on Desktop, Bottom on Mobile */}
+                <div className="w-full lg:w-80 flex items-center justify-center lg:justify-start lg:pl-4 py-4 lg:py-0">
+                  <SemicircularFilters
+                    categories={categories}
                     activeCategory={activeCategory}
+                    onCategorySelect={handleCategorySelect}
                   />
-                </Suspense>
+                </div>
               </div>
             </>
           )}

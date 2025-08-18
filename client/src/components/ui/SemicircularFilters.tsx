@@ -17,11 +17,11 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   const centerX = 0;
   const centerY = 0;
 
-  // Calculate positions for each button along the semicircle pointing right
+  // Calculate positions for each button along the semicircle pointing left
   const getButtonPosition = (index: number, total: number) => {
-    // Distribute buttons along a semicircle (180 degrees) starting from top going to bottom
-    // Rotate the semicircle to point to the right (open side towards page border)
-    const angle = (Math.PI * index) / (total - 1) - Math.PI / 2; // -90 to +90 degrees
+    // Distribute buttons along a semicircle (180 degrees) with open side pointing left
+    // This creates a semicircle that opens towards the 3D sphere
+    const angle = (Math.PI * index) / (total - 1) + Math.PI / 2; // +90 to +270 degrees (or -90 to +90)
     const x = centerX + radius * Math.cos(angle);
     const y = centerY + radius * Math.sin(angle);
     
@@ -100,7 +100,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
             </linearGradient>
           </defs>
           <path
-            d={`M ${radius / 2 + 50} ${50} A ${radius} ${radius} 0 0 1 ${radius / 2 + 50} ${radius * 2 + 50}`}
+            d={`M ${radius / 2 + 50} ${50} A ${radius} ${radius} 0 0 0 ${radius / 2 + 50} ${radius * 2 + 50}`}
             stroke="url(#semicircleGradient)"
             strokeWidth="2"
             fill="none"

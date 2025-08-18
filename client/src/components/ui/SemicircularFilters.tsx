@@ -13,15 +13,19 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
-  const radius = 180; // Increased from 150 to utilize more space
+  const radius = 200; // Increased radius for more height
   const centerX = 0;
   const centerY = 0;
 
-  // Calculate positions for each button along the semicircle pointing left
+  // Calculate positions for each button with equal spacing along an arc
   const getButtonPosition = (index: number, total: number) => {
-    // Distribute buttons along a semicircle (180 degrees) with open side pointing left
-    // This creates a semicircle that opens towards the 3D sphere
-    const angle = (Math.PI * index) / (total - 1) + Math.PI / 2; // +90 to +270 degrees (or -90 to +90)
+    // Create an arc that's taller than a semicircle for better spacing
+    const startAngle = Math.PI / 3; // Start at 60 degrees instead of 90
+    const endAngle = (2 * Math.PI) / 3; // End at 120 degrees instead of 90
+    const totalAngle = endAngle - startAngle; // Total arc span
+    
+    // Distribute buttons evenly along this arc
+    const angle = startAngle + (totalAngle * index) / (total - 1);
     const x = centerX + radius * Math.cos(angle);
     const y = centerY + radius * Math.sin(angle);
     
@@ -40,7 +44,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative" style={{ width: Math.min(radius + 120, 350), height: Math.min(radius * 2 + 120, 480) }}>
+      <div className="relative" style={{ width: Math.min(radius + 120, 380), height: Math.min(radius * 1.8 + 120, 500) }}>
         {categories.map((category, index) => {
           const { x, y } = getButtonPosition(index, categories.length);
           const isActive = activeCategory === category;
@@ -55,7 +59,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               }`}
               style={{
                 left: x + radius / 2 + 60,
-                top: y + radius + 60,
+                top: y + radius / 3 + 60, // Adjusted positioning for the new arc
               }}
               onClick={() => handleCategoryClick(category)}
               initial={{ scale: 0, opacity: 0 }}
@@ -85,7 +89,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           );
         })}
         
-        {/* Visible semicircle circumference line */}
+        {/* Visible arc circumference line */}
         <svg
           className="absolute inset-0 pointer-events-none"
           width="100%"
@@ -99,8 +103,9 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               <stop offset="100%" stopColor="currentColor" stopOpacity="0.6" />
             </linearGradient>
           </defs>
+          {/* Create an arc that follows the button positions */}
           <path
-            d={`M ${radius / 2 + 60} ${60} A ${radius} ${radius} 0 0 0 ${radius / 2 + 60} ${radius * 2 + 60}`}
+            d={`M ${radius * 0.25 + 60} ${radius * 0.4 + 60} A ${radius} ${radius} 0 0 1 ${radius * 0.75 + 60} ${radius * 0.4 + 60}`}
             stroke="url(#semicircleGradient)"
             strokeWidth="2"
             fill="none"
@@ -108,15 +113,15 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           />
           {/* Add small dots at the endpoints */}
           <circle 
-            cx={radius / 2 + 60} 
-            cy={60} 
+            cx={radius * 0.25 + 60} 
+            cy={radius * 0.4 + 60} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"
           />
           <circle 
-            cx={radius / 2 + 60} 
-            cy={radius * 2 + 60} 
+            cx={radius * 0.75 + 60} 
+            cy={radius * 0.4 + 60} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"

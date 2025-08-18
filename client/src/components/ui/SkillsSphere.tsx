@@ -95,9 +95,17 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           transform: `scale(${Math.max(skill.proficiency * 0.15, 0.8)})` // Use proficiency for icon scaling
         }}
       >
-        <div className="flex flex-col items-center">
-          <IconComponent className="text-lg mb-1" />
-          <span className="text-xs">{skill.name}</span>
+        <div 
+          className="flex flex-col items-center justify-center p-3 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg border border-border/50 hover:border-primary/30"
+          style={{
+            backgroundColor: 'rgba(51, 65, 85, 0.8)', // Dark background similar to your image
+            backdropFilter: 'blur(8px)',
+            minWidth: '80px',
+            minHeight: '80px',
+          }}
+        >
+          <IconComponent className="text-2xl mb-2" />
+          <span className="text-xs font-medium text-center">{skill.name}</span>
         </div>
       </Html>
     </mesh>

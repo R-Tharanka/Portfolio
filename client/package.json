@@ -5,15 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --legacy-peer-deps",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
     "@cloudinary/react": "^1.14.3",
     "@cloudinary/url-gen": "^1.21.0",
-    "@react-three/drei": "^10.7.3",
-    "@react-three/fiber": "^9.3.0",
+    "@react-three/drei": "^8.20.2",
+    "@react-three/fiber": "^8.13.3",
     "@types/react-google-recaptcha": "^2.1.9",
     "axios": "^1.6.7",
     "cors": "^2.8.5",

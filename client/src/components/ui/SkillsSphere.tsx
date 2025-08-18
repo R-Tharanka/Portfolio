@@ -1,6 +1,6 @@
 import { useRef, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Text, Preload } from '@react-three/drei';
+import { Preload } from '@react-three/drei';
 import * as THREE from 'three';
 import { Skill, SkillCategory } from '../../types';
 import SemicircularFiltersComponent from './SemicircularFilters';
@@ -17,12 +17,12 @@ interface SkillItemProps {
   index: number;
   total: number;
   radius: number;
-  isActive: boolean;
   isFiltered: boolean;
   activeCategory: SkillCategory | null;
 }
 
-const SkillsItem = ({ 
+// THIS COMPONENT MUST BE USED ONLY INSIDE THE CANVAS
+const SkillItem = ({ 
   skill, 
   index, 
   total, 
@@ -31,27 +31,27 @@ const SkillsItem = ({
   activeCategory 
 }: SkillItemProps) => {
   const meshRef = useRef<THREE.Mesh>(null);
-  const textRef = useRef<any>(null);
   
   // Calculate position on the sphere using spherical coordinates
   const phi = Math.acos(-1 + (2 * index) / total);
   const theta = Math.sqrt(total * Math.PI) * phi;
   
   // Base position on the sphere
-  const basePosition = [
+  const basePosition = useMemo(() => [
     radius * Math.cos(theta) * Math.sin(phi),
     radius * Math.sin(theta) * Math.sin(phi),
     radius * Math.cos(phi)
-  ];
+  ], [radius, theta, phi]);
   
-  // Base position calculated above
-  
-  // If this skill is being filtered and it matches the active category
-  const filteredPosition = isFiltered ? 
-    [basePosition[0] * 1.5, basePosition[1] * 1.5, basePosition[2] + radius * 0.5] : 
-    basePosition;
+  // Target position when filtered out
+  const filteredPosition = useMemo(() => 
+    isFiltered ? 
+      [basePosition[0] * 1.5, basePosition[1] * 1.5, basePosition[2] + radius * 0.5] : 
+      basePosition,
+    [basePosition, isFiltered, radius]
+  );
     
-  // Scale based on skill proficiency (as you had in your original code)
+  // Scale based on skill proficiency
   const scale = Math.max(skill.proficiency / 10, 0.6);
   
   // Animation parameters
@@ -104,16 +104,10 @@ const SkillsItem = ({
     );
     
     meshRef.current.scale.setScalar(animParams.current.scale);
-    
-    // Make the text always face the camera
-    if (textRef.current) {
-      textRef.current.lookAt(state.camera.position);
-      textRef.current.material.opacity = animParams.current.opacity;
-    }
   });
   
   // Color based on category
-  const categoryColors = {
+  const categoryColors: Record<SkillCategory, THREE.Color> = {
     Frontend: new THREE.Color('#3b82f6'), // blue
     Backend: new THREE.Color('#10b981'), // green
     Database: new THREE.Color('#f59e0b'), // yellow
@@ -126,7 +120,7 @@ const SkillsItem = ({
   const color = categoryColors[skill.category] || new THREE.Color('#6b7280');
   
   return (
-    <mesh ref={meshRef} position={basePosition as [number, number, number]}>
+    <mesh ref={meshRef} position={basePosition as unknown as THREE.Vector3}>
       <sphereGeometry args={[0.4 * scale, 16, 16]} />
       <meshStandardMaterial 
         color={color} 
@@ -135,23 +129,14 @@ const SkillsItem = ({
         transparent
         opacity={1}
       />
-      <Text 
-        ref={textRef}
-        position={[0, 0, 0.5]} 
-        fontSize={0.3}
-        color="white"
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {skill.name}
-      </Text>
+      {/* Simplified approach - just show the sphere without text */}
     </mesh>
   );
 };
 
-const SkillsSphereCanvas = ({ skills, activeCategory }: {
+// This component includes the rotating sphere group
+// MUST BE USED INSIDE THE CANVAS
+const SkillsScene = ({ skills, activeCategory }: {
   skills: Skill[];
   activeCategory: SkillCategory | null;
 }) => {
@@ -172,6 +157,28 @@ const SkillsSphereCanvas = ({ skills, activeCategory }: {
   }, [skills, activeCategory]);
   
   return (
+    <group ref={groupRef}>
+      {skills.map((skill, i) => (
+        <SkillItem 
+          key={skill.id}
+          skill={skill}
+          index={i}
+          total={skills.length}
+          radius={5}
+          isFiltered={filteredSkills[i]}
+          activeCategory={activeCategory}
+        />
+      ))}
+    </group>
+  );
+};
+
+// The 3D Canvas component - this wraps everything in a Canvas
+const SkillsSphereCanvas = ({ skills, activeCategory }: {
+  skills: Skill[];
+  activeCategory: SkillCategory | null;
+}) => {
+  return (
     <Canvas 
       camera={{ position: [0, 0, 15], fov: 60 }}
       style={{ height: '600px' }}
@@ -181,29 +188,14 @@ const SkillsSphereCanvas = ({ skills, activeCategory }: {
       <directionalLight position={[10, 10, 5]} intensity={1} />
       <directionalLight position={[-10, -10, -5]} intensity={0.5} />
       
-      <group ref={groupRef}>
-        {skills.map((skill, i) => (
-          <SkillsItem 
-            key={skill.id}
-            skill={skill}
-            index={i}
-            total={skills.length}
-            radius={5}
-            isActive={!!activeCategory}
-            isFiltered={filteredSkills[i]}
-            activeCategory={activeCategory}
-          />
-        ))}
-      </group>
+      <SkillsScene skills={skills} activeCategory={activeCategory} />
       
       <Preload all />
     </Canvas>
   );
 };
 
-// Component to create semicircular filter buttons
-// Component to create semicircular filter buttons is now imported from SemicircularFilters.tsx
-
+// Main component combining the filters and canvas
 const SkillsSphere = ({ skills, activeCategory, onCategoryChange }: SkillsSphereProps) => {
   return (
     <div className="w-full">

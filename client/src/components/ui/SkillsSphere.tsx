@@ -64,23 +64,19 @@ const SkillNode: React.FC<SkillNodeProps> = ({
 }) => {
   const meshRef = useRef<THREE.Mesh>(null);
   const IconComponent = getIconComponent(skill.icon);
-  
   useFrame(() => {
     if (meshRef.current && !isFiltered) {
-      // Gentle rotation for visual interest
       meshRef.current.rotation.y += 0.005;
       meshRef.current.rotation.x += 0.003;
     }
   });
-
   if (!isVisible) return null;
-
-  const minSize = 20;
-  const maxSize = 32;
-  // Assume proficiency is 0-100, normalize to 0-1
+  // Use much smaller size for separated (filtered) skills
+  const isSeparated = position[2] === 6; // z=6 is the front grid
+  const minSize = isSeparated ? 10 : 20;
+  const maxSize = isSeparated ? 16 : 32;
   const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
   const iconSize = minSize + (maxSize - minSize) * normalized;
-
   return (
     <mesh ref={meshRef} position={position}>
       <Html
@@ -103,7 +99,7 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconComponent className="mb-1 w-full h-full" />
           </div>
-          <span className="text-xs" style={{ fontSize: Math.min(12, 8 + 4 * normalized) }}>{skill.name}</span>
+          <span className="text-xs" style={{ fontSize: isSeparated ? 7 : Math.min(12, 8 + 4 * normalized) }}>{skill.name}</span>
         </div>
       </Html>
     </mesh>
@@ -157,8 +153,8 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     const maxCols = count <= 4 ? count : count <= 8 ? 4 : 6;
     const cols = Math.min(maxCols, count);
     const rows = Math.ceil(count / cols);
-  const spacingX = 0.7; // Horizontal spacing between icons (tighter)
-  const spacingY = 0.9; // Vertical spacing between rows (tighter)
+  const spacingX = 0.9; // Horizontal spacing between icons (tighter)
+  const spacingY = 1.1; // Vertical spacing between rows (tighter)
     for (let i = 0; i < count; i++) {
       const row = Math.floor(i / cols);
       const col = i % cols;

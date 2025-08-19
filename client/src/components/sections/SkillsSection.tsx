@@ -102,7 +102,7 @@ const SkillsSection: React.FC = () => {
                     </Suspense>
                   </div>
                   {/* Filtered Grid Overlay */}
-                  {activeCategory && (
+                  {/* {activeCategory && (
                     <motion.div
                       initial={{ opacity: 0, y: 40 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -126,7 +126,7 @@ const SkillsSection: React.FC = () => {
                         })}
                       </div>
                     </motion.div>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Semicircular Category Filters - Increased width */}

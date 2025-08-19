@@ -13,15 +13,18 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
-  const radius = 180; // Increased from 150 to utilize more space
-  const centerX = 0;
-  const centerY = 0;
+  const radius = 200;
+  const centerX = radius + 50;
+  const centerY = radius + 50;
 
-  // Calculate positions for each button along the semicircle pointing left
-  const getButtonPosition = (index: number, total: number) => {
-    // Distribute buttons along a semicircle (180 degrees) with open side pointing left
-    // This creates a semicircle that opens towards the 3D sphere
-    const angle = (Math.PI * index) / (total - 1) + Math.PI / 2; // +90 to +270 degrees (or -90 to +90)
+  // Calculate positions for dots along a proper semicircle from top to bottom
+  const getDotPosition = (index: number, total: number) => {
+    // Create a semicircle from -90° to +90° (top to bottom, curving left)
+    const startAngle = -Math.PI / 2; // Start at top (-90 degrees)
+    const endAngle = Math.PI / 2;    // End at bottom (90 degrees)
+    const angle = startAngle + (index / (total - 1)) * (endAngle - startAngle);
+    
+    // Calculate position on the semicircle
     const x = centerX + radius * Math.cos(angle);
     const y = centerY + radius * Math.sin(angle);
     
@@ -39,89 +42,91 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative" style={{ width: Math.min(radius + 120, 350), height: Math.min(radius * 2 + 120, 480) }}>
-        {categories.map((category, index) => {
-          const { x, y } = getButtonPosition(index, categories.length);
-          const isActive = activeCategory === category;
-          
-          return (
-            <motion.button
-              key={category}
-              className={`absolute px-4 py-3 lg:px-5 lg:py-3 rounded-full text-sm lg:text-base font-medium transition-all duration-300 transform -translate-x-1/2 -translate-y-1/2 ${
-                isActive
-                  ? 'bg-primary text-white shadow-lg scale-110'
-                  : 'bg-card hover:bg-card/80 text-foreground hover:scale-105'
-              }`}
-              style={{
-                left: x + radius / 2 + 60,
-                top: y + radius + 60,
-              }}
-              onClick={() => handleCategoryClick(category)}
-              initial={{ scale: 0, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{
-                type: 'spring',
-                stiffness: 300,
-                damping: 20,
-                delay: index * 0.1,
-              }}
-              whileHover={{ 
-                scale: isActive ? 1.1 : 1.05,
-                transition: { duration: 0.2 }
-              }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {category}
-              {isActive && (
-                <motion.div
-                  className="absolute inset-0 rounded-full border-2 border-white/30"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ duration: 0.3 }}
-                />
-              )}
-            </motion.button>
-          );
-        })}
+    <div className="relative w-full h-full flex items-center justify-start">
+      <div className="relative" style={{ width: radius * 2 + 200, height: radius * 2 + 100 }}>
         
-        {/* Visible semicircle circumference line */}
+        {/* Semicircle Arc Line */}
         <svg
           className="absolute inset-0 pointer-events-none"
           width="100%"
           height="100%"
-          style={{ left: 0, top: 0 }}
         >
           <defs>
-            <linearGradient id="semicircleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="currentColor" stopOpacity="0.6" />
-              <stop offset="50%" stopColor="currentColor" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="currentColor" stopOpacity="0.6" />
+            <linearGradient id="arcGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.8" />
+              <stop offset="50%" stopColor="#3b82f6" stopOpacity="1" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.8" />
             </linearGradient>
           </defs>
+          
+          {/* Main semicircle arc */}
           <path
-            d={`M ${radius / 2 + 60} ${60} A ${radius} ${radius} 0 0 0 ${radius / 2 + 60} ${radius * 2 + 60}`}
-            stroke="url(#semicircleGradient)"
+            d={`M ${centerX} ${centerY - radius} A ${radius} ${radius} 0 0 0 ${centerX} ${centerY + radius}`}
+            stroke="url(#arcGradient)"
             strokeWidth="2"
             fill="none"
-            className="text-primary"
-          />
-          {/* Add small dots at the endpoints */}
-          <circle 
-            cx={radius / 2 + 60} 
-            cy={60} 
-            r="3" 
-            fill="currentColor" 
-            className="text-primary opacity-60"
-          />
-          <circle 
-            cx={radius / 2 + 60} 
-            cy={radius * 2 + 60} 
-            r="3" 
-            fill="currentColor" 
-            className="text-primary opacity-60"
           />
         </svg>
+
+        {/* Category Dots and Labels */}
+        {categories.map((category, index) => {
+          const { x, y } = getDotPosition(index, categories.length);
+          const isActive = activeCategory === category;
+          
+          return (
+            <div key={category} className="absolute" style={{ left: x, top: y }}>
+              {/* Clickable Area (includes dot and label) */}
+              <motion.div
+                className="flex items-center cursor-pointer group"
+                style={{ transform: 'translate(-100%, -50%)' }} // Position label to the left of dot
+                onClick={() => handleCategoryClick(category)}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{
+                  delay: index * 0.1,
+                  type: 'spring',
+                  stiffness: 300,
+                  damping: 25
+                }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                
+                {/* Category Label */}
+                <motion.span
+                  className={`text-sm font-medium mr-3 transition-all duration-300 select-none ${
+                    isActive 
+                      ? 'text-primary font-semibold' 
+                      : 'text-foreground/80 group-hover:text-foreground'
+                  }`}
+                  animate={{
+                    scale: isActive ? 1.05 : 1,
+                    fontWeight: isActive ? 600 : 500
+                  }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {category}
+                </motion.span>
+                
+                {/* Dot */}
+                <motion.div
+                  className={`w-3 h-3 rounded-full border-2 transition-all duration-300 ${
+                    isActive
+                      ? 'bg-primary border-primary shadow-lg shadow-primary/30'
+                      : 'bg-card border-primary/60 group-hover:border-primary group-hover:bg-primary/10'
+                  }`}
+                  animate={{
+                    scale: isActive ? 1.2 : 1,
+                    boxShadow: isActive 
+                      ? '0 0 12px rgba(59, 130, 246, 0.4)' 
+                      : '0 0 0px rgba(59, 130, 246, 0)'
+                  }}
+                  transition={{ duration: 0.2 }}
+                />
+              </motion.div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

@@ -157,8 +157,8 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     const maxCols = count <= 4 ? count : count <= 8 ? 4 : 6;
     const cols = Math.min(maxCols, count);
     const rows = Math.ceil(count / cols);
-    const spacingX = 2.2; // Horizontal spacing between icons
-    const spacingY = 2.2; // Vertical spacing between rows
+  const spacingX = 1.2; // Horizontal spacing between icons (reduced)
+  const spacingY = 1.4; // Vertical spacing between rows (reduced)
     for (let i = 0; i < count; i++) {
       const row = Math.floor(i / cols);
       const col = i % cols;

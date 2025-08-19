@@ -75,13 +75,19 @@ const SkillNode: React.FC<SkillNodeProps> = ({
 
   if (!isVisible) return null;
 
+  // Calculate icon size based on proficiency (min 32px, max 80px)
+  const minSize = 32;
+  const maxSize = 80;
+  // Assume proficiency is 0-100, normalize to 0-1
+  const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
+  const iconSize = minSize + (maxSize - minSize) * normalized;
+
   return (
     <mesh ref={meshRef} position={position}>
-      {/* Removed the sphere geometry and material to eliminate blue circles */}
       <Html
         center
         distanceFactor={15}
-        position={[0, 0, 0]} // Centered since no sphere background
+        position={[0, 0, 0]}
         style={{
           color: 'white',
           fontSize: '10px',
@@ -92,12 +98,13 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           textShadow: '0 0 4px rgba(0,0,0,0.8)',
           filter: isFiltered ? 'opacity(0.4)' : 'opacity(1)',
           transition: 'filter 0.3s ease',
-          transform: `scale(${Math.min(Math.max(skill.proficiency * 0.08, 0.6), 1)})` // Proficiency scaling with max size cap
         }}
       >
         <div className="flex flex-col items-center">
-          <div className="w-12 h-12 flex items-center justify-center">
-            <IconComponent className="w-full h-full max-w-[80px] max-h-[80px] mb-1" />
+          <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <IconComponent 
+              className={`mb-1 w-[${iconSize}px] h-[${iconSize}px] max-w-[80px] max-h-[80px]`}
+            />
           </div>
           <span className="text-xs">{skill.name}</span>
         </div>

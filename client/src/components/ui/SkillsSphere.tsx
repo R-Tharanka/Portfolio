@@ -92,11 +92,13 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           textShadow: '0 0 4px rgba(0,0,0,0.8)',
           filter: isFiltered ? 'opacity(0.4)' : 'opacity(1)',
           transition: 'filter 0.3s ease',
-          transform: `scale(${Math.max(skill.proficiency * 0.15, 0.8)})` // Use proficiency for icon scaling
+          transform: `scale(${Math.min(Math.max(skill.proficiency * 0.08, 0.6), 1)})` // Proficiency scaling with max size cap
         }}
       >
         <div className="flex flex-col items-center">
-          <IconComponent className="text-lg mb-1" />
+          <div className="w-12 h-12 flex items-center justify-center">
+            <IconComponent className="w-full h-full max-w-[80px] max-h-[80px] mb-1" />
+          </div>
           <span className="text-xs">{skill.name}</span>
         </div>
       </Html>

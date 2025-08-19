@@ -75,9 +75,8 @@ const SkillNode: React.FC<SkillNodeProps> = ({
 
   if (!isVisible) return null;
 
-  // Calculate icon size based on proficiency (min 32px, max 80px)
   const minSize = 40;
-  const maxSize = 80;
+  const maxSize = 60;
   // Assume proficiency is 0-100, normalize to 0-1
   const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
   const iconSize = minSize + (maxSize - minSize) * normalized;

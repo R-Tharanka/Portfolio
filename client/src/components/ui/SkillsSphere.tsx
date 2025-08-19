@@ -157,8 +157,8 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     const maxCols = count <= 4 ? count : count <= 8 ? 4 : 6;
     const cols = Math.min(maxCols, count);
     const rows = Math.ceil(count / cols);
-  const spacingX = 1.2; // Horizontal spacing between icons (reduced)
-  const spacingY = 1.4; // Vertical spacing between rows (reduced)
+  const spacingX = 0.7; // Horizontal spacing between icons (tighter)
+  const spacingY = 0.9; // Vertical spacing between rows (tighter)
     for (let i = 0; i < count; i++) {
       const row = Math.floor(i / cols);
       const col = i % cols;
@@ -225,7 +225,7 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
         {activeCategory && separatedPositions.map(({ skill, position }) => (
           <SkillNode
             key={`separated-${skill.id}`}
-            skill={skill}
+            skill={{ ...skill, proficiency: 0 }} // force minimum size for filtered icons
             position={position}
             isFiltered={false}
           />

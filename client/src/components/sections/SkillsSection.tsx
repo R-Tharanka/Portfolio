@@ -87,8 +87,8 @@ const SkillsSection: React.FC = () => {
               {/* Main Content Container */}
               <div className="relative min-h-[600px] bg-card/30 rounded-xl overflow-hidden flex flex-col lg:flex-row" style={{ zIndex: 1 }}>
                 {/* 3D Skills Sphere - Reduced width */}
-                <div className="flex-1 lg:flex-none lg:w-2/3 relative" style={{ zIndex: 1 }}>
-                  <div className={activeCategory ? "transition-all duration-500 blur-sm opacity-40 pointer-events-none" : "transition-all duration-500"}>
+                <div className="flex-1 lg:flex-none lg:w-2/3 relative m-auto" style={{ zIndex: 1 }}>
+                  <div className={activeCategory ? "transition-all duration-500 opacity-80" : "transition-all duration-500"}>
                     <Suspense fallback={
                       <div className="flex justify-center items-center h-full">
                         <Loader2 className="animate-spin h-10 w-10 text-primary" />
@@ -109,7 +109,7 @@ const SkillsSection: React.FC = () => {
                       exit={{ opacity: 0, y: 40 }}
                       transition={{ duration: 0.5 }}
                       className="absolute inset-0 flex flex-col items-center justify-center z-20"
-                      style={{ background: 'rgba(16,20,30,0.85)', borderRadius: 'inherit' }}
+                      style={{ background: 'rgba(16,20,30,0.35)', borderRadius: 'inherit', pointerEvents: 'auto' }}
                     >
                       <h3 className="text-xl font-semibold mb-4 text-primary">{activeCategory} Skills & Tech</h3>
                       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full max-w-2xl mx-auto">

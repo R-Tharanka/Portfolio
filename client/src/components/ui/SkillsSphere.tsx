@@ -76,8 +76,8 @@ const SkillNode: React.FC<SkillNodeProps> = ({
   if (!isVisible) return null;
 
   // Calculate icon size based on proficiency (min 32px, max 80px)
-  const minSize = 32;
-  const maxSize = 80;
+  const minSize = 40;
+  const maxSize = 96;
   // Assume proficiency is 0-100, normalize to 0-1
   const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
   const iconSize = minSize + (maxSize - minSize) * normalized;
@@ -102,11 +102,9 @@ const SkillNode: React.FC<SkillNodeProps> = ({
       >
         <div className="flex flex-col items-center">
           <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <IconComponent 
-              className={`mb-1 w-[${iconSize}px] h-[${iconSize}px] max-w-[80px] max-h-[80px]`}
-            />
+            <IconComponent className="mb-1 w-full h-full" />
           </div>
-          <span className="text-xs">{skill.name}</span>
+          <span className="text-xs" style={{ fontSize: Math.min(20, 12 + 8 * normalized) }}>{skill.name}</span>
         </div>
       </Html>
     </mesh>

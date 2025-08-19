@@ -98,7 +98,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               
               {/* Label */}
               <motion.text
-                className="cursor-pointer select-none"
+                className={`cursor-pointer select-none ${isActive ? 'filter drop-shadow-lg' : ''}`}
                 x={labelX}
                 y={labelY}
                 textAnchor="end"
@@ -106,10 +106,13 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 style={{
                   fontSize: '18px',
                   fill: isActive ? cssVars.accent : cssVars.text,
-                  fontWeight: isActive ? 600 : 500
+                  fontWeight: isActive ? 600 : 500,
+                  paintOrder: 'stroke',
+                  stroke: isActive ? cssVars.accent : 'none',
+                  strokeWidth: isActive ? 0.5 : 0
                 }}
                 onClick={() => handleCategoryClick(category)}
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.08 }}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ 
                   opacity: 1, 

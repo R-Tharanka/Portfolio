@@ -13,17 +13,21 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
-  const radius = 180; // Increased from 150 to utilize more space
-  const centerX = 0;
-  const centerY = 0;
+  const radius = 200; // Increased radius for better arc
 
-  // Calculate positions for each button along the semicircle pointing left
+  // Calculate positions for each button along a proper arc like in your Figma design
   const getButtonPosition = (index: number, total: number) => {
-    // Distribute buttons along a semicircle (180 degrees) with open side pointing left
-    // This creates a semicircle that opens towards the 3D sphere
-    const angle = (Math.PI * index) / (total - 1) + Math.PI / 2; // +90 to +270 degrees (or -90 to +90)
-    const x = centerX + radius * Math.cos(angle);
-    const y = centerY + radius * Math.sin(angle);
+    // Create an arc from top-right to bottom-right (like your design)
+    const startAngle = -Math.PI / 2.2; // Start angle (about -82 degrees)
+    const endAngle = Math.PI / 2.2; // End angle (about +82 degrees)
+    
+    // Distribute buttons evenly along the arc
+    const angleStep = (endAngle - startAngle) / (total - 1);
+    const angle = startAngle + (index * angleStep);
+    
+    // Calculate position on the arc (opening towards the left/sphere)
+    const x = -Math.cos(angle) * radius; // Negative to open towards left
+    const y = Math.sin(angle) * radius;
     
     return { x, y, angle };
   };
@@ -40,7 +44,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
 
   return (
     <div className="relative w-full h-full flex items-center justify-center">
-      <div className="relative" style={{ width: Math.min(radius + 120, 350), height: Math.min(radius * 2 + 120, 480) }}>
+      <div className="relative" style={{ width: 350, height: 500 }}>
         {categories.map((category, index) => {
           const { x, y } = getButtonPosition(index, categories.length);
           const isActive = activeCategory === category;
@@ -54,8 +58,8 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                   : 'bg-card hover:bg-card/80 text-foreground hover:scale-105'
               }`}
               style={{
-                left: x + radius / 2 + 60,
-                top: y + radius + 60,
+                left: x + 250, // Center horizontally with offset
+                top: y + 250, // Center vertically
               }}
               onClick={() => handleCategoryClick(category)}
               initial={{ scale: 0, opacity: 0 }}
@@ -85,38 +89,38 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           );
         })}
         
-        {/* Visible semicircle circumference line */}
+        {/* Visible arc circumference line matching the button positions */}
         <svg
           className="absolute inset-0 pointer-events-none"
-          width="100%"
-          height="100%"
-          style={{ left: 0, top: 0 }}
+          width="350"
+          height="500"
+          viewBox="0 0 350 500"
         >
           <defs>
-            <linearGradient id="semicircleGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <linearGradient id="arcGradient" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="currentColor" stopOpacity="0.6" />
               <stop offset="50%" stopColor="currentColor" stopOpacity="0.8" />
               <stop offset="100%" stopColor="currentColor" stopOpacity="0.6" />
             </linearGradient>
           </defs>
           <path
-            d={`M ${radius / 2 + 60} ${60} A ${radius} ${radius} 0 0 0 ${radius / 2 + 60} ${radius * 2 + 60}`}
-            stroke="url(#semicircleGradient)"
+            d={`M ${250 + (-Math.cos(-Math.PI / 2.2) * radius)} ${250 + (Math.sin(-Math.PI / 2.2) * radius)} A ${radius} ${radius} 0 0 1 ${250 + (-Math.cos(Math.PI / 2.2) * radius)} ${250 + (Math.sin(Math.PI / 2.2) * radius)}`}
+            stroke="url(#arcGradient)"
             strokeWidth="2"
             fill="none"
             className="text-primary"
           />
           {/* Add small dots at the endpoints */}
           <circle 
-            cx={radius / 2 + 60} 
-            cy={60} 
+            cx={250 + (-Math.cos(-Math.PI / 2.2) * radius)} 
+            cy={250 + (Math.sin(-Math.PI / 2.2) * radius)} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"
           />
           <circle 
-            cx={radius / 2 + 60} 
-            cy={radius * 2 + 60} 
+            cx={250 + (-Math.cos(Math.PI / 2.2) * radius)} 
+            cy={250 + (Math.sin(Math.PI / 2.2) * radius)} 
             r="3" 
             fill="currentColor" 
             className="text-primary opacity-60"

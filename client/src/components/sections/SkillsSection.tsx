@@ -6,6 +6,7 @@ import { useApiService } from '../../hooks/useApiService';
 import { Loader2 } from 'lucide-react';
 import SkillsSphere from '../ui/SkillsSphere';
 import SemicircularFilters from '../ui/SemicircularFilters';
+import { iconMap } from '../ui/iconMap';
 
 const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps', 'Languages', 'Design', 'Other'];
 
@@ -86,18 +87,46 @@ const SkillsSection: React.FC = () => {
               {/* Main Content Container */}
               <div className="relative min-h-[600px] bg-card/30 rounded-xl overflow-hidden flex flex-col lg:flex-row" style={{ zIndex: 1 }}>
                 {/* 3D Skills Sphere - Reduced width */}
-                <div className="flex-1 lg:flex-none lg:w-2/3" style={{ zIndex: 1 }}>
-                  <Suspense fallback={
-                    <div className="flex justify-center items-center h-full">
-                      <Loader2 className="animate-spin h-10 w-10 text-primary" />
-                    </div>
-                  }>
-                    <SkillsSphere
-                      skills={skills}
-                      filteredSkills={filteredSkills}
-                      activeCategory={activeCategory}
-                    />
-                  </Suspense>
+                <div className="flex-1 lg:flex-none lg:w-2/3 relative" style={{ zIndex: 1 }}>
+                  <div className={activeCategory ? "transition-all duration-500 blur-sm opacity-40 pointer-events-none" : "transition-all duration-500"}>
+                    <Suspense fallback={
+                      <div className="flex justify-center items-center h-full">
+                        <Loader2 className="animate-spin h-10 w-10 text-primary" />
+                      </div>
+                    }>
+                      <SkillsSphere
+                        skills={skills}
+                        filteredSkills={filteredSkills}
+                        activeCategory={activeCategory}
+                      />
+                    </Suspense>
+                  </div>
+                  {/* Filtered Grid Overlay */}
+                  {activeCategory && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 40 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 40 }}
+                      transition={{ duration: 0.5 }}
+                      className="absolute inset-0 flex flex-col items-center justify-center z-20"
+                      style={{ background: 'rgba(16,20,30,0.85)', borderRadius: 'inherit' }}
+                    >
+                      <h3 className="text-xl font-semibold mb-4 text-primary">{activeCategory} Skills & Tech</h3>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full max-w-2xl mx-auto">
+                        {filteredSkills.map(skill => {
+                          const IconComponent = skill.icon && skill.icon in iconMap ? iconMap[skill.icon] : iconMap['default'];
+                          return (
+                            <div key={skill.name} className="flex flex-col items-center justify-center bg-card/60 rounded-lg p-3 shadow-md">
+                              <div className="mb-2 flex items-center justify-center" style={{ width: 40, height: 40 }}>
+                                <IconComponent className="w-full h-full text-primary" />
+                              </div>
+                              <span className="text-xs text-center font-medium text-foreground/90">{skill.name}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
 
                 {/* Semicircular Category Filters - Increased width */}

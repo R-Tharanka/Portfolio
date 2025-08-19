@@ -147,23 +147,25 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     return positions;
   }, [skills]);
 
-  // Arrange filtered skills in a horizontal arc in front of the sphere
+  // Arrange filtered skills in centered horizontal rows (grid) in front of the sphere
   const separatedPositions = useMemo(() => {
     const positions: Array<{ skill: Skill; position: [number, number, number] }> = [];
-    const arcRadius = 3.5; // Distance from center (same as sphere radius)
     const z = 6; // Fixed Z in front of sphere
     const count = filteredSkills.length;
-    if (count === 1) {
-      positions.push({ skill: filteredSkills[0], position: [0, 0, z] });
-    } else {
-      const arcAngle = Math.PI / 1.3; // Spread arc (radians), adjust for more/less spread
-      const startAngle = -arcAngle / 2;
-      filteredSkills.forEach((skill, i) => {
-        const angle = startAngle + (arcAngle * (i / (count - 1)));
-        const x = Math.sin(angle) * arcRadius;
-        const y = Math.cos(angle) * arcRadius * -0.5; // Slight vertical curve
-        positions.push({ skill, position: [x, y, z] });
-      });
+    if (count === 0) return positions;
+    // Choose columns per row based on count (4-6 for desktop)
+    const maxCols = count <= 4 ? count : count <= 8 ? 4 : 6;
+    const cols = Math.min(maxCols, count);
+    const rows = Math.ceil(count / cols);
+    const spacingX = 2.2; // Horizontal spacing between icons
+    const spacingY = 2.2; // Vertical spacing between rows
+    for (let i = 0; i < count; i++) {
+      const row = Math.floor(i / cols);
+      const col = i % cols;
+      // Center the grid horizontally and vertically
+      const x = (col - (cols - 1) / 2) * spacingX;
+      const y = (row - (rows - 1) / 2) * -spacingY;
+      positions.push({ skill: filteredSkills[i], position: [x, y, z] });
     }
     return positions;
   }, [filteredSkills]);

@@ -5,7 +5,7 @@ import { Skill, SkillCategory } from '../../types';
 import { useApiService } from '../../hooks/useApiService';
 import { Loader2 } from 'lucide-react';
 import SkillsSphere from '../ui/SkillsSphere';
-import SemicircularFilters from '../ui/SemicircularFiltersNew';
+import SemicircularFilters from '../ui/SemicircularFilters';
 
 const categories: SkillCategory[] = ['Frontend', 'Backend', 'Database', 'DevOps', 'Languages', 'Design', 'Other'];
 

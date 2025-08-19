@@ -95,7 +95,7 @@ const SkillsSection: React.FC = () => {
                       </div>
                     }>
                       <SkillsSphere
-                        skills={skills}
+                        skills={activeCategory ? skills.filter(skill => !filteredSkills.includes(skill)) : skills}
                         filteredSkills={filteredSkills}
                         activeCategory={activeCategory}
                       />

@@ -147,25 +147,24 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     return positions;
   }, [skills]);
 
-  // Generate positions for separated skills (in front)
+  // Arrange filtered skills in a horizontal arc in front of the sphere
   const separatedPositions = useMemo(() => {
     const positions: Array<{ skill: Skill; position: [number, number, number] }> = [];
-    const gridSize = Math.ceil(Math.sqrt(filteredSkills.length));
-    const spacing = 2; // Reduced spacing to match smaller sphere
-    
-    filteredSkills.forEach((skill, index) => {
-      const row = Math.floor(index / gridSize);
-      const col = index % gridSize;
-      const x = (col - (gridSize - 1) / 2) * spacing;
-      const y = (row - (gridSize - 1) / 2) * spacing;
-      const z = 8; // Reduced from 10 to move closer
-      
-      positions.push({
-        skill,
-        position: [x, y, z]
+    const arcRadius = 3.5; // Distance from center (same as sphere radius)
+    const z = 6; // Fixed Z in front of sphere
+    const count = filteredSkills.length;
+    if (count === 1) {
+      positions.push({ skill: filteredSkills[0], position: [0, 0, z] });
+    } else {
+      const arcAngle = Math.PI / 1.3; // Spread arc (radians), adjust for more/less spread
+      const startAngle = -arcAngle / 2;
+      filteredSkills.forEach((skill, i) => {
+        const angle = startAngle + (arcAngle * (i / (count - 1)));
+        const x = Math.sin(angle) * arcRadius;
+        const y = Math.cos(angle) * arcRadius * -0.5; // Slight vertical curve
+        positions.push({ skill, position: [x, y, z] });
       });
-    });
-    
+    }
     return positions;
   }, [filteredSkills]);
 

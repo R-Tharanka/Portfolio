@@ -77,6 +77,11 @@ const SkillNode: React.FC<SkillNodeProps> = ({
   const maxSize = isSeparated ? 16 : 32;
   const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
   const iconSize = minSize + (maxSize - minSize) * normalized;
+  
+  // Add padding for background
+  const paddingSize = isSeparated ? 5 : 0;
+  const containerSize = iconSize + (paddingSize * 2);
+  
   return (
     <mesh ref={meshRef} position={position}>
       <Html
@@ -96,10 +101,27 @@ const SkillNode: React.FC<SkillNodeProps> = ({
         }}
       >
         <div className="flex flex-col items-center">
-          <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div 
+            style={{ 
+              width: containerSize,
+              height: containerSize,
+              padding: paddingSize,
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent', // Background color for filtered skills
+              borderRadius: '50%', // Round background
+            }}
+          >
             <IconComponent className="mb-1 w-full h-full" />
           </div>
-          <span className="text-xs" style={{ fontSize: isSeparated ? 5 : Math.min(12, 8 + 4 * normalized), lineHeight: isSeparated ? '1.15em' : undefined }}>{skill.name}</span>
+          <span className="text-xs" style={{ 
+            fontSize: isSeparated ? 5 : Math.min(12, 8 + 4 * normalized), 
+            lineHeight: isSeparated ? '1.15em' : undefined,
+            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent',
+            padding: isSeparated ? '2px 4px' : 0,
+            borderRadius: isSeparated ? '4px' : 0
+          }}>{skill.name}</span>
         </div>
       </Html>
     </mesh>

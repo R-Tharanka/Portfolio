@@ -99,9 +99,9 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               {/* Background for active label */}
               {isActive && (
                 <rect
-                  x={labelX - (category.length * 9 + 16)} // Dynamic width based on text length
+                  x={labelX - (category.length * 9 + 22)} // Adjusted position (+6) to move rectangle rightward
                   y={labelY - 14} // Center vertically
-                  width={category.length * 9 + 16} // Dynamic width: ~9px per character + padding
+                  width={category.length * 9 + 24} // Increased width by 8px for better text containment
                   height={28} // Height of the background
                   rx={10} // Rounded corners
                   ry={10}

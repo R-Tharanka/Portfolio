@@ -98,10 +98,10 @@ const SkillNode: React.FC<SkillNodeProps> = ({
         <div 
           className="flex flex-col items-center"
           style={{
-            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent',
-            borderRadius: isSeparated ? '6px' : '0',
-            padding: isSeparated ? '4px' : '0',
-            border: isSeparated ? '1px solid rgba(100, 116, 139, 0.3)' : 'none',
+            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'rgba(30, 41, 59, 0.3)', // Added subtle bg for sphere skills
+            borderRadius: isSeparated ? '6px' : '4px', // Slightly smaller radius for sphere skills
+            padding: isSeparated ? '4px' : '2px', // Smaller padding for sphere skills
+            border: isSeparated ? '1px solid rgba(100, 116, 139, 0.3)' : '1px solid rgba(100, 116, 139, 0.15)', // More subtle border for sphere skills
           }}
         >
           <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

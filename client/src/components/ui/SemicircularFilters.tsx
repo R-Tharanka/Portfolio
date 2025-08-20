@@ -98,20 +98,23 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               
               {/* Background for active label */}
               {isActive && (
-                <rect
-                  x={labelX - 70} // Adjust position as needed
-                  y={labelY - 14} // Center vertically
-                  width={70} // Width of the background
-                  height={28} // Height of the background
-                  rx={10} // Rounded corners
-                  ry={10}
-                  style={{
-                    fill: 'rgba(47, 123, 255, 0.15)',
-                    stroke: 'rgba(47, 123, 255, 0.4)',
-                    strokeWidth: 1,
-                    pointerEvents: 'none'
-                  }}
-                />
+                <motion.g>
+                  {/* We use a dynamic width calculation based on text length */}
+                  <rect
+                    x={labelX - (category.length * 8 + 16)} // Dynamic width based on text length
+                    y={labelY - 14} // Center vertically
+                    width={category.length * 8 + 16} // Dynamic width: ~8px per character + padding
+                    height={28} // Height of the background
+                    rx={10} // Rounded corners
+                    ry={10}
+                    style={{
+                      fill: 'rgba(47, 123, 255, 0.15)',
+                      stroke: 'rgba(47, 123, 255, 0.4)',
+                      strokeWidth: 1,
+                      pointerEvents: 'none'
+                    }}
+                  />
+                </motion.g>
               )}
               
               {/* Label */}

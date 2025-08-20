@@ -259,7 +259,8 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
     <div className="w-full h-[600px] relative" style={{ zIndex: 1 }}>
       <Canvas
         camera={{ position: [0, 0, 10], fov: 50 }} // Moved closer from 12 to 10 for smaller sphere
-        style={{ background: 'transparent', zIndex: 1 }}
+        className="bg-card/30" // Using Tailwind bg-card class with 30% opacity
+        style={{ zIndex: 1 }}
         dpr={[1, 2]} // Responsive pixel ratio for performance
         performance={{ min: 0.5 }} // Performance monitoring
       >

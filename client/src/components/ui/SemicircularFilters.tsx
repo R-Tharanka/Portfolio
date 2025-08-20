@@ -13,15 +13,15 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
-  // Define the exact coordinates from your HTML structure
+  // Define the exact coordinates from your HTML structure - scaled down
   const coordinates = [
-    { x: 327.91, y: 54.56, labelX: 300, labelY: 54.56 },    // Frontend
-    { x: 200.85, y: 109.36, labelX: 175, labelY: 109.36 },  // Backend
-    { x: 111.91, y: 215.36, labelX: 90, labelY: 215.36 },   // DevOps
-    { x: 80.00, y: 350.00, labelX: 60, labelY: 350.00 },    // Languages
-    { x: 111.91, y: 484.64, labelX: 90, labelY: 484.64 },   // Database
-    { x: 200.85, y: 590.64, labelX: 175, labelY: 590.64 },  // Design
-    { x: 327.91, y: 645.44, labelX: 300, labelY: 645.44 }   // Other
+    { x: 327.91, y: 44.56, labelX: 300, labelY: 44.56 },    // Frontend
+    { x: 210.85, y: 89.36, labelX: 185, labelY: 89.36 },    // Backend
+    { x: 131.91, y: 175.36, labelX: 110, labelY: 175.36 },  // DevOps
+    { x: 100.00, y: 280.00, labelX: 80, labelY: 280.00 },   // Languages
+    { x: 131.91, y: 384.64, labelX: 110, labelY: 384.64 },  // Database
+    { x: 210.85, y: 470.64, labelX: 185, labelY: 470.64 },  // Design
+    { x: 327.91, y: 515.44, labelX: 300, labelY: 515.44 }   // Other
   ];
 
   const handleCategoryClick = (category: SkillCategory) => {
@@ -39,28 +39,28 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full" style={{ height: '720px', overflow: 'hidden' }}>
-      <svg className="w-full h-full block" viewBox="0 0 360 720">
+    <div className="relative w-full h-full" style={{ height: '560px', overflow: 'hidden' }}>
+      <svg className="w-full h-full block" viewBox="0 0 360 560">
         {/* Arc with glow effect */}
         <g className="arc-group">
           <path 
             className="arc-glow" 
-            d="M 327.91 54.56 A 300 300 0 0 0 327.91 645.44" 
+            d="M 327.91 44.56 A 240 240 0 0 0 327.91 515.44" 
             style={{
               fill: 'none',
               stroke: `rgba(47,123,255,0.12)`,
-              strokeWidth: 10,
+              strokeWidth: 8,
               strokeLinecap: 'round',
               strokeLinejoin: 'round'
             }}
           />
           <path 
             className="arc" 
-            d="M 327.91 54.56 A 300 300 0 0 0 327.91 645.44" 
+            d="M 327.91 44.56 A 240 240 0 0 0 327.91 515.44" 
             style={{
               fill: 'none',
               stroke: cssVars.accent,
-              strokeWidth: 3,
+              strokeWidth: 2.5,
               strokeLinecap: 'round',
               strokeLinejoin: 'round'
             }}
@@ -81,14 +81,14 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 className="cursor-pointer"
                 cx={x}
                 cy={y}
-                r={isActive ? 5.5 : 4.5}
+                r={isActive ? 4.5 : 3.5}
                 style={{
                   fill: isActive ? cssVars.accent : `${cssVars.accent}`,
                   stroke: 'rgba(255,255,255,0.06)',
                   strokeWidth: 1
                 }}
                 onClick={() => handleCategoryClick(category)}
-                whileHover={{ scale: 1.2, r: 5.5 }}
+                whileHover={{ scale: 1.2, r: 4.5 }}
                 animate={{
                   fill: isActive ? cssVars.accent : `${cssVars.accent}`,
                   boxShadow: isActive ? '0 0 10px rgba(47,123,255,0.6)' : 'none'
@@ -104,7 +104,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 textAnchor="end"
                 dominantBaseline="middle"
                 style={{
-                  fontSize: '18px',
+                  fontSize: '16px',
                   fill: isActive ? cssVars.accent : cssVars.text,
                   fontWeight: isActive ? 600 : 500,
                   paintOrder: 'stroke',
@@ -135,7 +135,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 <motion.circle
                   cx={x}
                   cy={y}
-                  r={4.5}
+                  r={3.5}
                   style={{
                     fill: 'transparent',
                     stroke: cssVars.accent,
@@ -143,7 +143,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                     pointerEvents: 'none'
                   }}
                   animate={{
-                    r: [4.5, 12, 4.5],
+                    r: [3.5, 9, 3.5],
                     opacity: [0.8, 0, 0.8]
                   }}
                   transition={{

@@ -101,32 +101,6 @@ const SkillsSection: React.FC = () => {
                       />
                     </Suspense>
                   </div>
-                  {/* Filtered Grid Overlay */}
-                  {/* {activeCategory && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 40 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 40 }}
-                      transition={{ duration: 0.5 }}
-                      className="absolute inset-0 flex flex-col items-center justify-center z-20"
-                      style={{ background: 'rgba(16,20,30,0.35)', borderRadius: 'inherit', pointerEvents: 'auto' }}
-                    >
-                      <h3 className="text-xl font-semibold mb-4 text-primary">{activeCategory} Skills & Tech</h3>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 w-full max-w-2xl mx-auto">
-                        {filteredSkills.map(skill => {
-                          const IconComponent = skill.icon && skill.icon in iconMap ? iconMap[skill.icon] : iconMap['default'];
-                          return (
-                            <div key={skill.name} className="flex flex-col items-center justify-center bg-card/60 rounded-lg p-3 shadow-md">
-                              <div className="mb-2 flex items-center justify-center" style={{ width: 40, height: 40 }}>
-                                <IconComponent className="w-full h-full text-primary" />
-                              </div>
-                              <span className="text-xs text-center font-medium text-foreground/90">{skill.name}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </motion.div>
-                  )} */}
                 </div>
 
                 {/* Semicircular Category Filters - Increased width */}

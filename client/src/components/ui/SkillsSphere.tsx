@@ -95,7 +95,15 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           transition: 'filter 0.3s ease',
         }}
       >
-        <div className="flex flex-col items-center">
+        <div 
+          className="flex flex-col items-center"
+          style={{
+            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent',
+            borderRadius: isSeparated ? '12px' : '0',
+            padding: isSeparated ? '8px' : '0',
+            border: isSeparated ? '1px solid rgba(100, 116, 139, 0.3)' : 'none',
+          }}
+        >
           <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconComponent className="mb-1 w-full h-full" />
           </div>

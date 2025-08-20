@@ -218,6 +218,23 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
       
       {/* Separated filtered skills */}
       <group ref={separatedGroupRef}>
+        {/* Background panel for filtered skills */}
+        {activeCategory && filteredSkills.length > 0 && (
+          <mesh position={[0, 0, 5.9]}>
+            <planeGeometry args={[
+              // Width and height based on grid size
+              (Math.min(6, Math.max(4, filteredSkills.length)) * 0.9) + 1.2, 
+              (Math.ceil(filteredSkills.length / (filteredSkills.length <= 8 ? 4 : 6)) * 1.1) + 1.2
+            ]} />
+            <meshBasicMaterial 
+              color="#1e293b" 
+              transparent={true} 
+              opacity={0.7} 
+              side={THREE.DoubleSide} 
+            />
+          </mesh>
+        )}
+        
         {activeCategory && separatedPositions.map(({ skill, position }) => (
           <SkillNode
             key={`separated-${skill.id}`}

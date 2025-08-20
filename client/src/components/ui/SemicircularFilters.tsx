@@ -17,10 +17,10 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   const coordinates = [
     { x: 327.91, y: 44.56, labelX: 300, labelY: 44.56 },    // Frontend
     { x: 228.2, y: 89.36, labelX: 202.35, labelY: 89.36 },    // Backend
-    { x: 158.7, y: 175.36, labelX: 185, labelY: 175.36 },  // DevOps
+    { x: 158.7, y: 175.36, labelX: 136.79, labelY: 175.36 },  // DevOps
     { x: 134.5, y: 280.00, labelX: 114.5, labelY: 280.00 },   // Languages
-    { x: 158.5, y: 384.64, labelX: 136.59, labelY: 384.64 },  // Database
-    { x: 228.4, y: 470.64, labelX: 202.55, labelY: 470.64 },  // Design
+    { x: 158.7, y: 384.64, labelX: 136.79, labelY: 384.64 },  // Database
+    { x: 228.2, y: 470.64, labelX: 202.55, labelY: 470.64 },  // Design
     { x: 327.91, y: 515.44, labelX: 300, labelY: 515.44 }   // Other
   ];
 

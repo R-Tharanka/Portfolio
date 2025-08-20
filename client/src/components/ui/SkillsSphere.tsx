@@ -99,8 +99,8 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           className="flex flex-col items-center"
           style={{
             backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent',
-            borderRadius: isSeparated ? '12px' : '0',
-            padding: isSeparated ? '8px' : '0',
+            borderRadius: isSeparated ? '6px' : '0',
+            padding: isSeparated ? '4px' : '0',
             border: isSeparated ? '1px solid rgba(100, 116, 139, 0.3)' : 'none',
           }}
         >

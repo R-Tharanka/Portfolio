@@ -96,28 +96,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 transition={{ duration: 0.2 }}
               />
               
-              {/* Background for active label */}
-              {isActive && (
-                <motion.g>
-                  {/* We use a dynamic width calculation based on text length */}
-                  <rect
-                    x={labelX - (category.length * 8 + 16)} // Dynamic width based on text length
-                    y={labelY - 14} // Center vertically
-                    width={category.length * 8 + 16} // Dynamic width: ~8px per character + padding
-                    height={28} // Height of the background
-                    rx={10} // Rounded corners
-                    ry={10}
-                    style={{
-                      fill: 'rgba(47, 123, 255, 0.15)',
-                      stroke: 'rgba(47, 123, 255, 0.4)',
-                      strokeWidth: 1,
-                      pointerEvents: 'none'
-                    }}
-                  />
-                </motion.g>
-              )}
-              
-              {/* Label */}
+              {/* Label with dynamic background for active state */}
               <motion.text
                 className={`cursor-pointer select-none ${isActive ? 'filter drop-shadow-lg' : ''}`}
                 x={labelX}
@@ -130,7 +109,11 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                   fontWeight: isActive ? 600 : 500,
                   paintOrder: 'stroke',
                   stroke: isActive ? cssVars.accent : 'none',
-                  strokeWidth: isActive ? 0.5 : 0
+                  strokeWidth: isActive ? 0.5 : 0,
+                  padding: isActive ? '6px 12px' : '0',
+                  background: isActive ? 'rgba(47, 123, 255, 0.15)' : 'transparent',
+                  borderRadius: isActive ? '10px' : '0',
+                  border: isActive ? '1px solid rgba(47, 123, 255, 0.4)' : 'none',
                 }}
                 onClick={() => handleCategoryClick(category)}
                 whileHover={{ scale: 1.08 }}

@@ -107,7 +107,10 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconComponent className="mb-1 w-full h-full" />
           </div>
-          <span className="text-xs" style={{ fontSize: isSeparated ? 5 : Math.min(12, 8 + 4 * normalized), lineHeight: isSeparated ? '1.15em' : undefined }}>{skill.name}</span>
+          <span className="text-xs" style={{ 
+            fontSize: isSeparated ? 5 : Math.min(12, 8 + 4 * normalized), 
+            lineHeight: isSeparated ? '1.15em' : '1.1em' 
+          }}>{skill.name}</span>
         </div>
       </Html>
     </mesh>

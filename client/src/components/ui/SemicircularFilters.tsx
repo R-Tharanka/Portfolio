@@ -99,7 +99,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               {/* Background for active label */}
               {isActive && (
                 <rect
-                  x={labelX - (category.length * 9 + 10)} // Reduced offset to move rectangle rightward
+                  x={labelX - (category.length * 9 + 12)} // Reduced offset to move rectangle rightward
                   y={labelY - 14} // Center vertically
                   width={category.length * 9 + 20} // Width based on text length plus padding
                   height={28} // Height of the background

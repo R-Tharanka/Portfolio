@@ -96,6 +96,24 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 transition={{ duration: 0.2 }}
               />
               
+              {/* Background for active label */}
+              {isActive && (
+                <rect
+                  x={labelX - 70} // Adjust position as needed
+                  y={labelY - 14} // Center vertically
+                  width={70} // Width of the background
+                  height={28} // Height of the background
+                  rx={10} // Rounded corners
+                  ry={10}
+                  style={{
+                    fill: 'rgba(47, 123, 255, 0.15)',
+                    stroke: 'rgba(47, 123, 255, 0.4)',
+                    strokeWidth: 1,
+                    pointerEvents: 'none'
+                  }}
+                />
+              )}
+              
               {/* Label */}
               <motion.text
                 className={`cursor-pointer select-none ${isActive ? 'filter drop-shadow-lg' : ''}`}
@@ -104,7 +122,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 textAnchor="end"
                 dominantBaseline="middle"
                 style={{
-                  fontSize: '16px',
+                  fontSize: isActive ? '17px' : '16px', // Slightly larger font for active
                   fill: isActive ? cssVars.accent : cssVars.text,
                   fontWeight: isActive ? 600 : 500,
                   paintOrder: 'stroke',
@@ -117,6 +135,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 animate={{ 
                   opacity: 1, 
                   x: 0,
+                  scale: isActive ? 1.05 : 1, // Slight scale for active buttons
                   fill: isActive ? cssVars.accent : cssVars.text,
                   fontWeight: isActive ? 600 : 500
                 }}

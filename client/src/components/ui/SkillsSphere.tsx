@@ -77,11 +77,6 @@ const SkillNode: React.FC<SkillNodeProps> = ({
   const maxSize = isSeparated ? 16 : 32;
   const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
   const iconSize = minSize + (maxSize - minSize) * normalized;
-  
-  // Add padding for background
-  const paddingSize = isSeparated ? 5 : 0;
-  const containerSize = iconSize + (paddingSize * 2);
-  
   return (
     <mesh ref={meshRef} position={position}>
       <Html
@@ -100,28 +95,19 @@ const SkillNode: React.FC<SkillNodeProps> = ({
           transition: 'filter 0.3s ease',
         }}
       >
-        <div className="flex flex-col items-center">
-          <div 
-            style={{ 
-              width: containerSize,
-              height: containerSize,
-              padding: paddingSize,
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent', // Background color for filtered skills
-              borderRadius: '50%', // Round background
-            }}
-          >
+        <div 
+          className="flex flex-col items-center"
+          style={{
+            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent',
+            borderRadius: isSeparated ? '12px' : '0',
+            padding: isSeparated ? '8px' : '0',
+            border: isSeparated ? '1px solid rgba(100, 116, 139, 0.3)' : 'none',
+          }}
+        >
+          <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <IconComponent className="mb-1 w-full h-full" />
           </div>
-          <span className="text-xs" style={{ 
-            fontSize: isSeparated ? 5 : Math.min(12, 8 + 4 * normalized), 
-            lineHeight: isSeparated ? '1.15em' : undefined,
-            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent',
-            padding: isSeparated ? '2px 4px' : 0,
-            borderRadius: isSeparated ? '4px' : 0
-          }}>{skill.name}</span>
+          <span className="text-xs" style={{ fontSize: isSeparated ? 5 : Math.min(12, 8 + 4 * normalized), lineHeight: isSeparated ? '1.15em' : undefined }}>{skill.name}</span>
         </div>
       </Html>
     </mesh>

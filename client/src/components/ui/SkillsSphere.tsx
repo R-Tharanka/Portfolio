@@ -98,12 +98,10 @@ const SkillNode: React.FC<SkillNodeProps> = ({
         <div 
           className="flex flex-col items-center"
           style={{
-            backgroundColor: isSeparated ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'transparent',
             borderRadius: isSeparated ? '6px' : '0',
             padding: isSeparated ? '4px' : '0',
-            border: isSeparated ? '1px solid rgba(255, 255, 255, 0.25)' : 'none',
-            backdropFilter: isSeparated ? 'blur(8px)' : 'none',
-            boxShadow: isSeparated ? '0 4px 6px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1)' : 'none',
+            border: isSeparated ? '1px solid rgba(100, 116, 139, 0.3)' : 'none',
           }}
         >
           <div style={{ width: iconSize, height: iconSize, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

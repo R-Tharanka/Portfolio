@@ -98,7 +98,7 @@ const SkillNode: React.FC<SkillNodeProps> = ({
         <div 
           className="flex flex-col items-center"
           style={{
-            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'rgba(30, 41, 59, 0.4)', // Added subtle bg for sphere skills
+            backgroundColor: isSeparated ? 'rgba(30, 41, 59, 0.7)' : 'rgba(30, 41, 59, 0.45)', // Added subtle bg for sphere skills
             borderRadius: isSeparated ? '6px' : '4px', // Slightly smaller radius for sphere skills
             padding: isSeparated ? '4px' : '3px', // Smaller padding for sphere skills
             border: isSeparated ? '1px solid rgba(100, 116, 139, 0.3)' : '1px solid rgba(100, 116, 139, 0.15)', // More subtle border for sphere skills

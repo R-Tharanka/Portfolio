@@ -169,8 +169,22 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     
     // Function to determine if a name needs extra spacing
     const needsExtraSpacing = (name: string): boolean => {
-      // Check if it's a single long word (no spaces and longer than 8 chars)
-      return !name.includes(' ') && name.length > 8;
+      // For single words, check length
+      if (!name.includes(' ') && name.length > 8) {
+        return true;
+      }
+      
+      // For multi-word names, check if any individual word is long
+      if (name.includes(' ')) {
+        const words = name.split(' ');
+        for (const word of words) {
+          if (word.length > 8) {
+            return true;
+          }
+        }
+      }
+      
+      return false;
     };
     
     // Calculate custom spacings for each column in each row

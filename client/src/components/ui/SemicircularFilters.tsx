@@ -13,15 +13,15 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   activeCategory,
   onCategorySelect,
 }) => {
-  // Define the exact coordinates from your HTML structure - scaled down
+  // Define the exact coordinates from your HTML structure - scaled down for reduced height
   const coordinates = [
-    { x: 327.91, y: 44.56, labelX: 300, labelY: 44.56 },    // Frontend
-    { x: 228.2, y: 89.36, labelX: 202.35, labelY: 89.36 },    // Backend
-    { x: 158.7, y: 175.36, labelX: 136.79, labelY: 175.36 },  // DevOps
-    { x: 134.5, y: 280.00, labelX: 114.5, labelY: 280.00 },   // Languages
-    { x: 158.7, y: 384.64, labelX: 136.79, labelY: 384.64 },  // Database
-    { x: 228.2, y: 470.64, labelX: 202.55, labelY: 470.64 },  // Design
-    { x: 327.91, y: 515.44, labelX: 300, labelY: 515.44 }   // Other
+    { x: 327.91, y: 44.56, labelX: 300, labelY: 44.56 },      // Frontend
+    { x: 240.0, y: 84.36, labelX: 214.0, labelY: 84.36 },     // Backend
+    { x: 178.0, y: 154.36, labelX: 156.0, labelY: 154.36 },   // DevOps
+    { x: 154.0, y: 230.00, labelX: 134.0, labelY: 230.00 },   // Languages
+    { x: 178.0, y: 305.64, labelX: 156.0, labelY: 305.64 },   // Database
+    { x: 240.0, y: 375.64, labelX: 214.0, labelY: 375.64 },   // Design
+    { x: 327.91, y: 415.44, labelX: 300, labelY: 415.44 }     // Other
   ];
 
   const handleCategoryClick = (category: SkillCategory) => {
@@ -39,13 +39,13 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full" style={{ height: '560px', overflow: 'hidden' }}>
-      <svg className="w-full h-full block" viewBox="0 0 360 560">
+    <div className="relative w-full h-full" style={{ height: '460px', overflow: 'hidden' }}>
+      <svg className="w-full h-full block" viewBox="0 0 360 460">
         {/* Arc with glow effect */}
         <g className="arc-group">
           <path 
             className="arc-glow" 
-            d="M 327.91 44.56 A 240 240 0 0 0 327.91 515.44" 
+            d="M 327.91 44.56 A 200 200 0 0 0 327.91 415.44" 
             style={{
               fill: 'none',
               stroke: `rgba(47,123,255,0.12)`,
@@ -56,7 +56,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
           />
           <path 
             className="arc" 
-            d="M 327.91 44.56 A 240 240 0 0 0 327.91 515.44" 
+            d="M 327.91 44.56 A 200 200 0 0 0 327.91 415.44" 
             style={{
               fill: 'none',
               stroke: cssVars.accent,

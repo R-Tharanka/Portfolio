@@ -85,7 +85,7 @@ const SkillsSection: React.FC = () => {
           ) : (
             <>
               {/* Main Content Container */}
-              <div className="relative min-h-[470px] bg-card rounded-xl shadow-lg p-5 md:p-7 overflow-hidden flex flex-col lg:flex-row" style={{ zIndex: 1 }}>
+              <div className="relative min-h-[450px] bg-card rounded-xl shadow-lg p-4 md:p-6 overflow-hidden flex flex-col lg:flex-row" style={{ zIndex: 1 }}>
                 {/* 3D Skills Sphere - Reduced width */}
                 <div className="flex-1 lg:flex-none lg:w-2/3 relative m-auto" style={{ zIndex: 1 }}>
                   <div className={activeCategory ? "transition-all duration-500 opacity-80" : "transition-all duration-500"}>

@@ -252,14 +252,14 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
   
   if (skills.length === 0) {
     return (
-      <div className="w-full h-[470px] flex items-center justify-center text-foreground/70">
+      <div className="w-full h-[450px] flex items-center justify-center text-foreground/70">
         <p>No skills available to display</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[470px] relative" style={{ zIndex: 1 }}>
+    <div className="w-full h-[450px] relative" style={{ zIndex: 1 }}>
       <Canvas
         camera={{ position: [0, 0, 10], fov: 50 }} // Moved closer from 12 to 10 for smaller sphere
         style={{ background: 'transparent', zIndex: 1 }}

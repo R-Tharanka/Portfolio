@@ -39,8 +39,8 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full bg-card/30 rounded-xl" style={{ height: '430px', overflow: 'hidden' }}>
-      <svg className="w-full h-full block" viewBox="0 0 360 430">
+    <div className="relative w-full h-full bg-card/30 rounded-xl flex items-center justify-center" style={{ height: '430px', overflow: 'hidden' }}>
+      <svg className="w-full h-full block" viewBox="0 0 360 430" preserveAspectRatio="xMidYMid meet">
         {/* Arc with glow effect */}
         <g className="arc-group">
           <path 

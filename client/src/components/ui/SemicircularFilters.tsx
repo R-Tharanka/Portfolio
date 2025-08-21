@@ -99,10 +99,10 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               {/* Background for active label */}
               {isActive && (
                 <rect
-                  x={labelX - (category.length * 9 + 12)} // Reduced offset to move rectangle rightward
-                  y={labelY - 14} // Center vertically
-                  width={category.length * 9 + 20} // Width based on text length plus padding
-                  height={28} // Height of the background
+                  x={labelX - (category.length * 10.5 + 14)} // Adjusted for larger font size
+                  y={labelY - 16} // Increased vertical space
+                  width={category.length * 10.5 + 24} // Wider to accommodate larger font
+                  height={32} // Taller to accommodate larger font
                   rx={10} // Rounded corners
                   ry={10}
                   style={{
@@ -122,7 +122,7 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
                 textAnchor="end"
                 dominantBaseline="middle"
                 style={{
-                  fontSize: isActive ? '17px' : '16px', // Slightly larger font for active
+                  fontSize: isActive ? '19px' : '18px', // Slightly larger font for active
                   fill: isActive ? cssVars.accent : cssVars.text,
                   fontWeight: isActive ? 600 : 500,
                   paintOrder: 'stroke',

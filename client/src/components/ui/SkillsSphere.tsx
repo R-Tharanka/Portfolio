@@ -164,71 +164,13 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     const maxCols = count <= 4 ? count : count <= 8 ? 4 : 6;
     const cols = Math.min(maxCols, count);
     const rows = Math.ceil(count / cols);
-    const baseSpacingX = 0.9; // Base horizontal spacing between icons
-    const spacingY = 1.1; // Vertical spacing between rows
-    
-    // Function to determine if a name needs extra spacing
-    const needsExtraSpacing = (name: string): boolean => {
-      // For single words, check length
-      if (!name.includes(' ') && name.length > 8) {
-        return true;
-      }
-      
-      // For multi-word names, check if any individual word is long
-      if (name.includes(' ')) {
-        const words = name.split(' ');
-        for (const word of words) {
-          if (word.length > 8) {
-            return true;
-          }
-        }
-      }
-      
-      return false;
-    };
-    
-    // Calculate custom spacings for each column in each row
-    const rowSpacings: number[][] = [];
-    for (let row = 0; row < rows; row++) {
-      const rowStart = row * cols;
-      const rowEnd = Math.min(rowStart + cols, count);
-      
-      // Initialize spacing for this row
-      const spacings: number[] = [];
-      for (let i = rowStart; i < rowEnd; i++) {
-        const name = filteredSkills[i].name;
-        // Add 0.15 extra spacing for long names
-        spacings.push(needsExtraSpacing(name) ? baseSpacingX * 1.15 : baseSpacingX);
-      }
-      rowSpacings.push(spacings);
-    }
-    
-    // Position calculation with custom spacings
+  const spacingX = 1.0; // Horizontal spacing between icons (tighter)
+  const spacingY = 1.15; // Vertical spacing between rows (tighter)
     for (let i = 0; i < count; i++) {
       const row = Math.floor(i / cols);
       const col = i % cols;
-      const rowSpacing = rowSpacings[row];
-      
-      // Calculate custom x position based on varied spacings
-      let x = 0;
-      // For first half of items, subtract cumulative spacing from center
-      if (col < Math.floor(rowSpacing.length / 2)) {
-        let totalSpacing = 0;
-        for (let j = Math.floor(rowSpacing.length / 2) - 1; j >= col; j--) {
-          totalSpacing += rowSpacing[j];
-        }
-        x = -totalSpacing;
-      } 
-      // For second half, add cumulative spacing from center
-      else if (col > Math.floor(rowSpacing.length / 2)) {
-        let totalSpacing = 0;
-        for (let j = Math.floor(rowSpacing.length / 2); j < col; j++) {
-          totalSpacing += rowSpacing[j];
-        }
-        x = totalSpacing;
-      }
-      // Center item stays at x=0
-      
+      // Center the grid horizontally and vertically
+      const x = (col - (cols - 1) / 2) * spacingX;
       const y = (row - (rows - 1) / 2) * -spacingY;
       positions.push({ skill: filteredSkills[i], position: [x, y, z] });
     }

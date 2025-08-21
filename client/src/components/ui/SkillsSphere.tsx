@@ -164,8 +164,8 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     const maxCols = count <= 4 ? count : count <= 8 ? 4 : 6;
     const cols = Math.min(maxCols, count);
     const rows = Math.ceil(count / cols);
-    const baseSpacingX = 1.0; // Base horizontal spacing between icons
-    const spacingY = 1.15; // Vertical spacing between rows
+    const baseSpacingX = 0.9; // Base horizontal spacing between icons
+    const spacingY = 1.1; // Vertical spacing between rows
     
     // Function to determine if a name needs extra spacing
     const needsExtraSpacing = (name: string): boolean => {

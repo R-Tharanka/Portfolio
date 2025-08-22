@@ -99,10 +99,10 @@ const SemicircularFilters: React.FC<SemicircularFiltersProps> = ({
               {/* Background for active label */}
               {isActive && (
                 <rect
-                  x={labelX - (category.length * 10.5 + 14)} // Adjusted for larger font size
-                  y={labelY - 16} // Increased vertical space
-                  width={category.length * 10.5 + 24} // Wider to accommodate larger font
-                  height={32} // Taller to accommodate larger font
+                  x={labelX - (category.length * 9 + 10)} // Reduced width and better right alignment
+                  y={labelY - 16} // Keep same vertical space
+                  width={category.length * 9 + 16} // More precise width calculation
+                  height={32} // Keep same height
                   rx={10} // Rounded corners
                   ry={10}
                   style={{

@@ -71,10 +71,21 @@ const SkillNode: React.FC<SkillNodeProps> = ({
     }
   });
   if (!isVisible) return null;
-  // Use much smaller size for separated (filtered) skills
+  
+  // Use responsive sizes based on screen width and filtered state
   const isSeparated = position[2] === 6; // z=6 is the front grid
-  const minSize = isSeparated ? 10 : 20;
-  const maxSize = isSeparated ? 16 : 32;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+  const isTablet = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 1024;
+  
+  // Adjust sizes for different screen sizes
+  const minSize = isSeparated 
+    ? (isMobile ? 8 : 10) 
+    : (isMobile ? 14 : isTablet ? 16 : 20);
+  
+  const maxSize = isSeparated 
+    ? (isMobile ? 12 : 16) 
+    : (isMobile ? 22 : isTablet ? 28 : 32);
+  
   const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
   const iconSize = minSize + (maxSize - minSize) * normalized;
   return (
@@ -134,7 +145,10 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
   // Generate positions on a sphere using Fibonacci spiral
   const skillPositions = useMemo(() => {
     const positions: Array<{ skill: Skill; position: [number, number, number] }> = [];
-    const radius = 3.5; // Further reduced from 4.5 to 3.5
+    // Use responsive radius based on skills count
+    const baseRadius = typeof window !== 'undefined' && window.innerWidth < 640 ? 2.8 : 3.5;
+    // Adjust radius based on number of skills to prevent overcrowding on small screens
+    const radius = Math.min(baseRadius, baseRadius * (20 / Math.max(skills.length, 1)));
     const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle in radians
     
     skills.forEach((skill, index) => {
@@ -160,12 +174,28 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
     const z = 6; // Fixed Z in front of sphere
     const count = filteredSkills.length;
     if (count === 0) return positions;
-    // Choose columns per row based on count (4-6 for desktop)
-    const maxCols = count <= 4 ? count : count <= 8 ? 4 : 6;
+    
+    // Responsive grid layout based on screen size
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+    const isTablet = typeof window !== 'undefined' && window.innerWidth >= 640 && window.innerWidth < 1024;
+    
+    // Choose columns per row based on device and count
+    let maxCols;
+    if (isMobile) {
+      maxCols = count <= 3 ? count : 3; // Max 3 columns on mobile
+    } else if (isTablet) {
+      maxCols = count <= 4 ? count : 4; // Max 4 columns on tablet
+    } else {
+      maxCols = count <= 4 ? count : count <= 8 ? 4 : 6; // 4-6 on desktop
+    }
+    
     const cols = Math.min(maxCols, count);
     const rows = Math.ceil(count / cols);
-  const spacingX = 1.0; // Horizontal spacing between icons (tighter)
-  const spacingY = 1.15; // Vertical spacing between rows (tighter)
+    
+    // Adjust spacing based on screen size
+    const spacingX = isMobile ? 0.8 : 1.0; // Tighter horizontal spacing on mobile
+    const spacingY = isMobile ? 0.9 : 1.15; // Tighter vertical spacing on mobile
+    
     for (let i = 0; i < count; i++) {
       const row = Math.floor(i / cols);
       const col = i % cols;
@@ -252,18 +282,21 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
   
   if (skills.length === 0) {
     return (
-      <div className="w-full h-[450px] flex items-center justify-center text-foreground/70">
+      <div className="w-full h-full flex items-center justify-center text-foreground/70">
         <p>No skills available to display</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-[450px] relative" style={{ zIndex: 1 }}>
+    <div className="w-full h-full relative" style={{ zIndex: 1 }}>
       <Canvas
-        camera={{ position: [0, 0, 10], fov: 50 }} // Moved closer from 12 to 10 for smaller sphere
+        camera={{ 
+          position: [0, 0, window.innerWidth < 768 ? 12 : 10], 
+          fov: window.innerWidth < 640 ? 60 : 50 
+        }} // Adjust camera for mobile
         style={{ background: 'transparent', zIndex: 1 }}
-        dpr={[1, 2]} // Responsive pixel ratio for performance
+        dpr={[1, 1.5]} // Reduced for better mobile performance
         performance={{ min: 0.5 }} // Performance monitoring
       >
         <SphereScene {...props} />

@@ -71,10 +71,19 @@ const SkillNode: React.FC<SkillNodeProps> = ({
     }
   });
   if (!isVisible) return null;
-  // Use much smaller size for separated (filtered) skills
+  // Use appropriate size based on device and position
   const isSeparated = position[2] === 6; // z=6 is the front grid
-  const minSize = isSeparated ? 10 : 20;
-  const maxSize = isSeparated ? 16 : 32;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+  
+  // Keep sizes reasonable on mobile - not too small
+  const minSize = isSeparated 
+    ? (isMobile ? 12 : 10) 
+    : (isMobile ? 18 : 20);
+    
+  const maxSize = isSeparated 
+    ? (isMobile ? 18 : 16) 
+    : (isMobile ? 26 : 32);
+    
   const normalized = Math.max(0, Math.min(1, skill.proficiency / 100));
   const iconSize = minSize + (maxSize - minSize) * normalized;
   return (
@@ -134,7 +143,9 @@ const SphereScene: React.FC<SkillsSphereProps> = ({
   // Generate positions on a sphere using Fibonacci spiral
   const skillPositions = useMemo(() => {
     const positions: Array<{ skill: Skill; position: [number, number, number] }> = [];
-    const radius = 3.5; // Further reduced from 4.5 to 3.5
+    // Use a responsive radius that works well on all screen sizes
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+    const radius = isMobile ? 3.2 : 3.5; // Slightly smaller on mobile, but not too small
     const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // Golden angle in radians
     
     skills.forEach((skill, index) => {
@@ -259,11 +270,11 @@ const SkillsSphere: React.FC<SkillsSphereProps> = (props) => {
   }
 
   return (
-    <div className="w-full h-[450px] relative" style={{ zIndex: 1 }}>
+    <div className="w-full h-[350px] sm:h-[400px] md:h-[450px] relative" style={{ zIndex: 1 }}>
       <Canvas
-        camera={{ position: [0, 0, 10], fov: 50 }} // Moved closer from 12 to 10 for smaller sphere
+        camera={{ position: [0, 0, 10], fov: window.innerWidth < 640 ? 60 : 50 }} // Wider field of view on mobile
         style={{ background: 'transparent', zIndex: 1 }}
-        dpr={[1, 2]} // Responsive pixel ratio for performance
+        dpr={window.innerWidth < 640 ? [1, 1.5] : [1, 2]} // Adjusted resolution for mobile
         performance={{ min: 0.5 }} // Performance monitoring
       >
         <SphereScene {...props} />

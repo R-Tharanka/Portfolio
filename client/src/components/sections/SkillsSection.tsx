@@ -86,8 +86,8 @@ const SkillsSection: React.FC = () => {
             <>
               {/* Main Content Container */}
               <div className="relative min-h-[450px] bg-card rounded-xl shadow-lg p-4 md:p-6 overflow-hidden flex flex-col lg:flex-row" style={{ zIndex: 1 }}>
-                {/* 3D Skills Sphere - Reduced width */}
-                <div className="flex-1 lg:flex-none lg:w-2/3 relative m-auto" style={{ zIndex: 1 }}>
+                {/* 3D Skills Sphere - With mobile-friendly constraints */}
+                <div className="flex-1 lg:flex-none lg:w-2/3 relative m-auto min-h-[350px]" style={{ zIndex: 1 }}>
                   <div className={activeCategory ? "transition-all duration-500 opacity-80" : "transition-all duration-500"}>
                     <Suspense fallback={
                       <div className="flex justify-center items-center h-full">
@@ -103,8 +103,8 @@ const SkillsSection: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Semicircular Category Filters - Increased width */}
-                <div className="w-full lg:w-1/3 flex items-center justify-center lg:justify-start lg:pl-4 py-4 lg:py-0">
+                {/* Semicircular Category Filters - With improved mobile layout */}
+                <div className="w-full lg:w-1/3 flex items-center justify-center lg:justify-start lg:pl-4 py-4 lg:py-0 mt-2 lg:mt-0">
                   <SemicircularFilters
                     categories={categories}
                     activeCategory={activeCategory}

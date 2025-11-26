@@ -217,18 +217,15 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   if (!isOpen || viewerMediaItems.length === 0) return null;
 
   const currentItem = viewerMediaItems[currentIndex];
-  const currentFit = mediaFitForItem(currentItem);
+  // Always show the full image in the popup viewer to avoid cropping
+  const currentFit = currentItem?.type === 'image'
+    ? 'contain'
+    : mediaFitForItem(currentItem);
   const containSizeClass = isFullscreen
     ? 'max-w-[98vw] max-h-[98vh] w-auto h-auto'
     : 'max-w-full max-h-[70vh] w-auto h-auto';
-  const coverSizeClass = isFullscreen
-    ? 'w-[98vw] h-[98vh]'
-    : 'w-full h-[70vh]';
   const baseFitClass = mediaFitClass(currentFit, { includeDimensions: false });
-  const resolvedImageClass = `rounded-lg shadow-lg ${currentFit === 'cover'
-    ? `${coverSizeClass} ${baseFitClass}`
-    : `${containSizeClass} ${baseFitClass}`
-  }`;
+  const resolvedImageClass = `rounded-lg shadow-lg ${containSizeClass} ${baseFitClass}`;
   const resolvedVideoClass = `rounded-lg shadow-lg ${containSizeClass} ${mediaFitClass('contain', { includeDimensions: false })}`;
 
   const handleVideoLoadedData = () => {

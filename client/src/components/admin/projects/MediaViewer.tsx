@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProjectMedia } from '../../../types';
+import { mediaFitClass } from '../../../utils/mediaClasses';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
 interface MediaViewerProps {
@@ -92,14 +93,14 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   };
 
   return (
-    <div className="relative w-full overflow-hidden group">
+    <div className="relative w-full overflow-hidden group bg-background">
       {/* Current media item */}
-      <div className="w-full relative">
+      <div className="w-full relative h-48">
         {currentItem?.type === 'image' ? (
           <img 
             src={currentItem.url} 
             alt="Project media" 
-            className="w-full h-48 object-cover"
+            className={mediaFitClass('contain')}
           />
         ) : currentItem?.type === 'video' ? (
           <video 
@@ -109,7 +110,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
             loop
             muted
             playsInline
-            className="w-full h-48 object-cover"
+            className={mediaFitClass('contain')}
           />
         ) : null}
       </div>

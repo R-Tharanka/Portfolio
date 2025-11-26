@@ -4,6 +4,7 @@ import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye, 
 import { ProjectMedia } from '../../../types';
 import { uploadProjectMedia, deleteProjectMedia } from '../../../services/mediaService';
 import { getTransformedImageUrl, getVideoThumbnail, isCloudinaryUrl } from '../../../utils/cloudinary';
+import { mediaFitClass } from '../../../utils/mediaClasses';
 import toast from 'react-hot-toast';
 
 interface MediaUploaderProps {
@@ -296,14 +297,14 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
           >
             {/* Media preview with instant preview on hover - optimized for Cloudinary */}
             {item.type === 'image' ? (
-              <div className="relative w-full h-full">
+              <div className="relative w-full h-full bg-background flex items-center justify-center">
                 <img 
                   src={isCloudinaryUrl(item.url) 
                     ? getTransformedImageUrl(item.url, { width: 150, height: 150, quality: 'auto' }) 
                     : item.url
                   } 
                   alt={`Project media ${index + 1}`}
-                  className="w-full h-full object-cover"
+                  className={mediaFitClass('contain')}
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
@@ -317,7 +318,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="relative w-full h-full">
+              <div className="relative w-full h-full bg-background flex items-center justify-center">
                 <div 
                   className="w-full h-full flex items-center justify-center bg-black/10"
                   onClick={(e) => {
@@ -335,11 +336,11 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                       <img 
                         src={getVideoThumbnail(item.url)}
                         alt={`Video thumbnail ${index + 1}`}
-                        className="absolute inset-0 w-full h-full object-cover group-hover:opacity-0 transition-opacity"
+                        className={`absolute inset-0 ${mediaFitClass('contain')} group-hover:opacity-0 transition-opacity`}
                       />
                       <video 
                         src={item.url}
-                        className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
+                        className={`absolute inset-0 ${mediaFitClass('contain')} opacity-0 group-hover:opacity-100 transition-opacity`}
                         muted
                         loop
                         playsInline
@@ -348,7 +349,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                   ) : (
                     <video 
                       src={item.url}
-                      className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity"
+                      className={`absolute inset-0 ${mediaFitClass('contain')} opacity-0 group-hover:opacity-100 transition-opacity`}
                       muted
                       loop
                       playsInline

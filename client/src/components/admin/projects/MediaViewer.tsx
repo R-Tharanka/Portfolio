@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProjectMedia } from '../../../types';
-import { mediaFitClass } from '../../../utils/mediaClasses';
+import { mediaFitClass, mediaFitForItem } from '../../../utils/mediaClasses';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 
 interface MediaViewerProps {
@@ -100,7 +100,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
           <img 
             src={currentItem.url} 
             alt="Project media" 
-            className={mediaFitClass('contain')}
+            className={mediaFitClass(mediaFitForItem(currentItem))}
           />
         ) : currentItem?.type === 'video' ? (
           <video 
@@ -110,7 +110,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
             loop
             muted
             playsInline
-            className={mediaFitClass('contain')}
+            className={mediaFitClass(mediaFitForItem(currentItem))}
           />
         ) : null}
       </div>

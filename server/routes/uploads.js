@@ -64,7 +64,8 @@ router.post('/projects/:projectId', protect, upload.fields([
           isExternal: false,
           order: index,
           displayFirst: index === 0 && !files.video, // First image is display first only if no videos
-          showInViewer: true // Default to showing in viewer, admin can change this
+          showInViewer: true, // Default to showing in viewer, admin can change this
+          displayVariant: 'mobile'
         };
       });
       
@@ -84,7 +85,7 @@ router.post('/projects/:projectId', protect, upload.fields([
           isExternal: false,
           order: files.image ? files.image.length + index : index,
           displayFirst: index === 0, // First video is display first by default
-          showInViewer: true // Default to showing in viewer, admin can change this
+          showInViewer: true
         };
       });
       

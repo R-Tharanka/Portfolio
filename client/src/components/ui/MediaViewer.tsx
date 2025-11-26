@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { ProjectMedia } from '../../types';
 import { getTransformedImageUrl, isCloudinaryUrl } from '../../utils/cloudinary';
+import { mediaFitClass, mediaFitForItem } from '../../utils/mediaClasses';
 import KeyboardShortcutsHelp from './KeyboardShortcutsHelp';
 
 interface MediaViewerProps {
@@ -216,6 +217,19 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   if (!isOpen || viewerMediaItems.length === 0) return null;
 
   const currentItem = viewerMediaItems[currentIndex];
+  const currentFit = mediaFitForItem(currentItem);
+  const containSizeClass = isFullscreen
+    ? 'max-w-[98vw] max-h-[98vh] w-auto h-auto'
+    : 'max-w-full max-h-[70vh] w-auto h-auto';
+  const coverSizeClass = isFullscreen
+    ? 'w-[98vw] h-[98vh]'
+    : 'w-full h-[70vh]';
+  const baseFitClass = mediaFitClass(currentFit, { includeDimensions: false });
+  const resolvedImageClass = `rounded-lg shadow-lg ${currentFit === 'cover'
+    ? `${coverSizeClass} ${baseFitClass}`
+    : `${containSizeClass} ${baseFitClass}`
+  }`;
+  const resolvedVideoClass = `rounded-lg shadow-lg ${containSizeClass} ${mediaFitClass('contain', { includeDimensions: false })}`;
 
   const handleVideoLoadedData = () => {
     if (videoRef.current) {
@@ -279,7 +293,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                     : currentItem.url
                   }
                   alt={`${projectTitle} media ${currentIndex + 1}`}
-                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
+                  className={resolvedImageClass}
                   onContextMenu={(e) => e.preventDefault()} // Disable right-click download
                   draggable={false} // Disable drag download
                 />
@@ -287,7 +301,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                 <video
                   ref={videoRef}
                   src={currentItem.url}
-                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
+                  className={resolvedVideoClass}
                   onLoadedData={handleVideoLoadedData}
                   onPlay={() => setIsPlaying(true)}
                   onPause={() => setIsPlaying(false)}

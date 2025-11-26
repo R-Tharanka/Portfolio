@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProjectMedia } from '../../types';
-import { mediaFitClass } from '../../utils/mediaClasses';
+import { mediaFitClass, mediaFitForItem } from '../../utils/mediaClasses';
 import { ChevronLeft, ChevronRight, Play, Pause, Maximize2 } from 'lucide-react';
 
 interface MediaCarouselProps {
@@ -33,7 +33,7 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
   const allMediaItems = mediaItems.length > 0 
     ? mediaItems 
     : fallbackImageUrl
-      ? [{ type: 'image', url: fallbackImageUrl, isExternal: true, order: 0, displayFirst: true }]
+      ? [{ type: 'image' as const, url: fallbackImageUrl, isExternal: true, order: 0, displayFirst: true, showInViewer: true, displayVariant: 'desktop' } as ProjectMedia]
       : [];
 
   // Find the displayFirst item and use its index
@@ -117,7 +117,7 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
           <img 
             src={currentItem.url} 
             alt="Project media" 
-            className={mediaFitClass('contain')} 
+            className={mediaFitClass(mediaFitForItem(currentItem))} 
             draggable={false}
           />
         ) : currentItem?.type === 'video' ? (
@@ -127,7 +127,7 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
             controls={false}
             muted
             playsInline
-            className={mediaFitClass('contain')}
+            className={mediaFitClass(mediaFitForItem(currentItem))}
             onEnded={() => {
               // Move to next item when video ends if autoplay is enabled
               if (isPlaying && allMediaItems.length > 1) {

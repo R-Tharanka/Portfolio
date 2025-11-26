@@ -30,6 +30,11 @@ const mediaSchema = new mongoose.Schema({
   showInViewer: {
     type: Boolean,
     default: true
+  },
+  displayVariant: {
+    type: String,
+    enum: ['mobile', 'desktop'],
+    default: 'mobile'
   }
 });
 

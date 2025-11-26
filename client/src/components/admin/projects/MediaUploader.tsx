@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Image, Video, X, UploadCloud, AlertCircle, ArrowLeft, ArrowRight, Eye, EyeOff, Monitor, Smartphone } from 'lucide-react';
 import { ProjectMedia } from '../../../types';
 import { uploadProjectMedia, deleteProjectMedia } from '../../../services/mediaService';
 import { getTransformedImageUrl, getVideoThumbnail, isCloudinaryUrl } from '../../../utils/cloudinary';
-import { mediaFitClass } from '../../../utils/mediaClasses';
+import { mediaFitClass, mediaFitForItem, normalizeMediaItems } from '../../../utils/mediaClasses';
 import toast from 'react-hot-toast';
 
 interface MediaUploaderProps {
@@ -20,7 +20,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   initialMedia,
   onMediaChange
 }) => {
-  const [mediaItems, setMediaItems] = useState<ProjectMedia[]>(initialMedia || []);
+  const [mediaItems, setMediaItems] = useState<ProjectMedia[]>(normalizeMediaItems(initialMedia));
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -34,7 +34,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
   // Update local state when initialMedia changes
   useEffect(() => {
-    setMediaItems(initialMedia || []);
+    setMediaItems(normalizeMediaItems(initialMedia));
   }, [initialMedia]);
 
   // These handlers are no longer needed since we're using labels
@@ -83,15 +83,14 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       if (result.success && result.mediaItems.length > 0) {
         // Add new media items to the list
         setMediaItems(prevItems => {
-          const newItems = [...prevItems, ...result.mediaItems];
-          
-          // Ensure only one item has displayFirst=true
-          const hasDisplayFirst = newItems.some(item => item.displayFirst);
-          if (!hasDisplayFirst && newItems.length > 0) {
-            newItems[0].displayFirst = true;
-          }
-          
-          return newItems;
+          const normalizedNewItems = normalizeMediaItems(result.mediaItems);
+          const mergedItems = [...prevItems, ...normalizedNewItems].map((item, index) => ({
+            ...item,
+            order: index,
+            displayFirst: index === 0
+          }));
+
+          return mergedItems;
         });
         
         // Update toast to success
@@ -156,6 +155,20 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       });
       return newItems;
     });
+  };
+
+  const updateDisplayVariant = (index: number, variant: 'mobile' | 'desktop') => {
+    setMediaItems(prevItems => prevItems.map((item, i) => {
+      if (i !== index || item.type !== 'image') {
+        return item;
+      }
+
+      if (item.displayVariant === variant) {
+        return item;
+      }
+
+      return { ...item, displayVariant: variant };
+    }));
   };
 
   // Remove a media item
@@ -244,6 +257,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
   // Preview a media item
   const [previewItem, setPreviewItem] = useState<ProjectMedia | null>(null);
+  const previewFit = previewItem ? mediaFitForItem(previewItem) : 'contain';
   
   const openPreview = (item: ProjectMedia) => {
     // Use a timeout to prevent event bubbling issues
@@ -288,188 +302,235 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       
       {/* Media items display */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-        {mediaItems.map((item, index) => (
-          <div 
-            key={item._id || `media-${index}`}
-            className={`relative border ${index === 0
-              ? 'border-primary border-2' 
-              : 'border-border'} rounded-md overflow-hidden group h-24`}
-          >
-            {/* Media preview with instant preview on hover - optimized for Cloudinary */}
-            {item.type === 'image' ? (
-              <div className="relative w-full h-full bg-background flex items-center justify-center">
-                <img 
-                  src={isCloudinaryUrl(item.url) 
-                    ? getTransformedImageUrl(item.url, { width: 150, height: 150, quality: 'auto' }) 
-                    : item.url
-                  } 
-                  alt={`Project media ${index + 1}`}
-                  className={mediaFitClass('contain')}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openPreview(item);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                />
-                {/* Subtle indicator for preview action */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Eye size={24} className="text-white" />
+        {mediaItems.map((item, index) => {
+          const itemFit = mediaFitForItem(item);
+          const variant = item.type === 'image' ? (item.displayVariant ?? 'mobile') : undefined;
+          const isMobileVariant = variant === 'mobile';
+          const isDesktopVariant = variant === 'desktop';
+
+          return (
+            <div 
+              key={item._id || `media-${index}`}
+              className={`relative border ${index === 0
+                ? 'border-primary border-2' 
+                : 'border-border'} rounded-md overflow-hidden group h-24`}
+            >
+              {/* Media preview with instant preview on hover - optimized for Cloudinary */}
+              {item.type === 'image' ? (
+                <div className="relative w-full h-full bg-background flex items-center justify-center">
+                  <img 
+                    src={isCloudinaryUrl(item.url) 
+                      ? getTransformedImageUrl(item.url, { width: 150, height: 150, quality: 'auto' }) 
+                      : item.url
+                    } 
+                    alt={`Project media ${index + 1}`}
+                    className={mediaFitClass(itemFit)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openPreview(item);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  {/* Subtle indicator for preview action */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye size={24} className="text-white" />
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="relative w-full h-full bg-background flex items-center justify-center">
-                <div 
-                  className="w-full h-full flex items-center justify-center bg-black/10"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    openPreview(item);
-                  }}
-                  style={{ cursor: 'pointer' }}
-                >
-                  <Video size={24} className="text-foreground/60" />
-                  
-                  {/* Show video preview - either thumbnail or actual video */}
-                  {isCloudinaryUrl(item.url) ? (
-                    <>
-                      <img 
-                        src={getVideoThumbnail(item.url)}
-                        alt={`Video thumbnail ${index + 1}`}
-                        className={`absolute inset-0 ${mediaFitClass('contain')} group-hover:opacity-0 transition-opacity`}
-                      />
+              ) : (
+                <div className="relative w-full h-full bg-background flex items-center justify-center">
+                  <div 
+                    className="w-full h-full flex items-center justify-center bg-black/10"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openPreview(item);
+                    }}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <Video size={24} className="text-foreground/60" />
+                    
+                    {/* Show video preview - either thumbnail or actual video */}
+                    {isCloudinaryUrl(item.url) ? (
+                      <>
+                        <img 
+                          src={getVideoThumbnail(item.url)}
+                          alt={`Video thumbnail ${index + 1}`}
+                          className={`absolute inset-0 ${mediaFitClass('contain')} group-hover:opacity-0 transition-opacity`}
+                        />
+                        <video 
+                          src={item.url}
+                          className={`absolute inset-0 ${mediaFitClass('contain')} opacity-0 group-hover:opacity-100 transition-opacity`}
+                          muted
+                          loop
+                          playsInline
+                        />
+                      </>
+                    ) : (
                       <video 
                         src={item.url}
                         className={`absolute inset-0 ${mediaFitClass('contain')} opacity-0 group-hover:opacity-100 transition-opacity`}
                         muted
                         loop
                         playsInline
+                        onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+                        onMouseLeave={(e) => e.currentTarget.pause()}
                       />
-                    </>
-                  ) : (
-                    <video 
-                      src={item.url}
-                      className={`absolute inset-0 ${mediaFitClass('contain')} opacity-0 group-hover:opacity-100 transition-opacity`}
-                      muted
-                      loop
-                      playsInline
-                      onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
-                      onMouseLeave={(e) => e.currentTarget.pause()}
-                    />
-                  )}
+                    )}
+                  </div>
+                  {/* Subtle indicator for preview action */}
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye size={24} className="text-white" />
+                  </div>
                 </div>
-                {/* Subtle indicator for preview action */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Eye size={24} className="text-white" />
+              )}
+
+              {/* Variant selector for images */}
+              {item.type === 'image' && (
+                <div className="absolute bottom-1 left-1/2 -translate-x-1/2 flex gap-1 z-30">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      updateDisplayVariant(index, 'mobile');
+                    }}
+                    className={`p-1.5 rounded-full border border-white/10 transition-colors backdrop-blur ${
+                      isMobileVariant
+                        ? 'bg-primary text-white shadow-lg'
+                        : 'bg-black/60 text-white/70 hover:bg-black/70 hover:text-white'
+                    }`}
+                    aria-pressed={isMobileVariant}
+                    aria-label="Use mobile (contain) fit"
+                  >
+                    <Smartphone size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      updateDisplayVariant(index, 'desktop');
+                    }}
+                    className={`p-1.5 rounded-full border border-white/10 transition-colors backdrop-blur ${
+                      isDesktopVariant
+                        ? 'bg-primary text-white shadow-lg'
+                        : 'bg-black/60 text-white/70 hover:bg-black/70 hover:text-white'
+                    }`}
+                    aria-pressed={isDesktopVariant}
+                    aria-label="Use desktop (cover) fit"
+                  >
+                    <Monitor size={14} />
+                  </button>
                 </div>
+              )}
+              
+              {/* Main display indicator for first item */}
+              {index === 0 && (
+                <div className="absolute top-1 left-1 bg-primary text-white px-1.5 py-0.5 text-xs rounded-md z-30">
+                  Main
+                </div>
+              )}
+              
+              {/* Order indicator */}
+              <div className="absolute top-1 right-1 bg-black/70 text-white px-1.5 py-0.5 text-xs rounded-md z-30">
+                {index + 1}/{mediaItems.length}
               </div>
-            )}
-            
-            {/* Main display indicator for first item */}
-            {index === 0 && (
-              <div className="absolute top-1 left-1 bg-primary text-white px-1.5 py-0.5 text-xs rounded-md z-20">
-                Main
-              </div>
-            )}
-            
-            {/* Order indicator */}
-            <div className="absolute top-1 right-1 bg-black/70 text-white px-1.5 py-0.5 text-xs rounded-md z-20">
-              {index + 1}/{mediaItems.length}
-            </div>
-            
-            {/* Show in viewer indicator */}
-            <div className="absolute bottom-1 left-1 z-20">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  toggleShowInViewer(index);
-                }}
-                className={`p-1 rounded text-xs transition-colors ${
-                  item.showInViewer !== false 
-                    ? 'bg-green-500 text-white hover:bg-green-600' 
-                    : 'bg-red-500 text-white hover:bg-red-600'
-                }`}
-                title={`${item.showInViewer !== false ? 'Hide from' : 'Show in'} popup viewer`}
-              >
-                {item.showInViewer !== false ? <Eye size={12} /> : <EyeOff size={12} />}
-              </button>
-            </div>
-            
-            {/* Actions overlay */}
-            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-              <div className="flex items-center justify-center gap-2">
-                {/* Preview media */}
+              
+              {/* Show in viewer indicator */}
+              <div className="absolute bottom-1 left-1 z-30">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    openPreview(item);
+                    toggleShowInViewer(index);
                   }}
-                  className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                  title="Preview media"
+                  className={`p-1 rounded text-xs transition-colors ${
+                    item.showInViewer !== false 
+                      ? 'bg-green-500 text-white hover:bg-green-600' 
+                      : 'bg-red-500 text-white hover:bg-red-600'
+                  }`}
+                  title={`${item.showInViewer !== false ? 'Hide from' : 'Show in'} popup viewer`}
                 >
-                  <Eye size={14} />
-                </button>
-                
-                {/* Remove media */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    removeMediaItem(index);
-                  }}
-                  className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                  title="Remove media"
-                >
-                  <X size={14} />
+                  {item.showInViewer !== false ? <Eye size={12} /> : <EyeOff size={12} />}
                 </button>
               </div>
               
-              {/* Reordering controls */}
-              <div className="flex items-center justify-center gap-2 mt-1">
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    moveItemLeft(index);
-                  }}
-                  className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Move left"
-                  disabled={index === 0}
-                >
-                  <ArrowLeft size={14} />
-                </button>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    moveItemRight(index);
-                  }}
-                  className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Move right"
-                  disabled={index === mediaItems.length - 1}
-                >
-                  <ArrowRight size={14} />
-                </button>
+              {/* Actions overlay */}
+              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 z-10">
+                <div className="flex items-center justify-center gap-2">
+                  {/* Preview media */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      openPreview(item);
+                    }}
+                    className="p-1.5 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                    title="Preview media"
+                  >
+                    <Eye size={14} />
+                  </button>
+                  
+                  {/* Remove media */}
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      removeMediaItem(index);
+                    }}
+                    className="p-1.5 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    title="Remove media"
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
+                
+                {/* Reordering controls */}
+                <div className="flex items-center justify-center gap-2 mt-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      moveItemLeft(index);
+                    }}
+                    className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Move left"
+                    disabled={index === 0}
+                  >
+                    <ArrowLeft size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      moveItemRight(index);
+                    }}
+                    className="p-1.5 bg-gray-700 text-white rounded-full hover:bg-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Move right"
+                    disabled={index === mediaItems.length - 1}
+                  >
+                    <ArrowRight size={14} />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Media type indicator */}
+              <div className="absolute bottom-1 right-1 bg-black/60 text-white rounded-full p-1 z-30">
+                {item.type === 'image' ? (
+                  <Image size={12} />
+                ) : (
+                  <Video size={12} />
+                )}
               </div>
             </div>
-            
-            {/* Media type indicator */}
-            <div className="absolute bottom-1 right-1 bg-black/60 text-white rounded-full p-1">
-              {item.type === 'image' ? (
-                <Image size={12} />
-              ) : (
-                <Video size={12} />
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
         
         {/* Add image button using label instead of nested button */}
         <div className={`border-2 border-dashed border-border rounded-md p-2 h-24 transition-colors ${
@@ -580,7 +641,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                     : previewItem.url
                   } 
                   alt="Media preview" 
-                  className="max-w-full h-auto object-contain max-h-[70vh]"
+                  className={`rounded-md shadow-lg ${previewFit === 'cover'
+                    ? 'w-full h-[70vh] object-cover object-center'
+                    : 'max-w-full h-auto max-h-[70vh] object-contain object-center'
+                  }`}
                 />
               ) : previewItem.type === 'video' ? (
                 <video 

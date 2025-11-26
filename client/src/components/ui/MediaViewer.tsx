@@ -282,10 +282,9 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               {currentItem?.type === 'image' ? (
                 <img
                   src={isCloudinaryUrl(currentItem.url) 
-                    ? getTransformedImageUrl(currentItem.url, { 
-                        width: isFullscreen ? 1920 : 1000, 
-                        height: isFullscreen ? 1080 : 700, 
-                        quality: 'auto' 
+                    ? getTransformedImageUrl(currentItem.url, {
+                        crop: 'fit',
+                        quality: 'auto'
                       })
                     : currentItem.url
                   }

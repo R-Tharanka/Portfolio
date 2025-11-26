@@ -111,12 +111,13 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
   return (
     <div className={`relative w-full overflow-hidden group ${className}`}>
       {/* Current media item */}
-      <div className={`w-full relative ${height}`}>
+      <div className={`w-full relative ${height} bg-background`}> 
         {currentItem?.type === 'image' ? (
           <img 
             src={currentItem.url} 
             alt="Project media" 
-            className={`w-full ${height} object-cover`}
+            className={`w-full h-full object-contain object-center`} 
+            draggable={false}
           />
         ) : currentItem?.type === 'video' ? (
           <video 
@@ -125,7 +126,7 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
             controls={false}
             muted
             playsInline
-            className={`w-full ${height} object-cover`}
+            className={`w-full h-full object-contain object-center`}
             onEnded={() => {
               // Move to next item when video ends if autoplay is enabled
               if (isPlaying && allMediaItems.length > 1) {

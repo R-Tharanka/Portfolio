@@ -30,6 +30,7 @@ export interface ProjectMedia {
   order: number;
   displayFirst: boolean;
   showInViewer?: boolean; // Controls whether this media appears in client-side popup viewer
+  displayVariant?: 'mobile' | 'desktop'; // Controls how the media should be fitted in containers
   _id?: string; // MongoDB will generate this
 }
 

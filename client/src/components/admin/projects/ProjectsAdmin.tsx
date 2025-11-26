@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Project, ProjectMedia } from '../../../types';
 import { getProjects, createProject, updateProject, deleteProject } from '../../../services/api';
 import { deleteProjectFixed } from '../../../services/projectsService';
+import { normalizeMediaItems } from '../../../utils/mediaClasses';
 import MediaUploader from './MediaUploader';
 import MediaViewer from './MediaViewer';
 import {
@@ -210,18 +211,20 @@ function ProjectsAdmin({ token }: ProjectsAdminProps): JSX.Element {
     
     // Initialize media items state
     if (project.media && project.media.length > 0) {
-      setMediaItems(project.media);
+      setMediaItems(normalizeMediaItems(project.media));
     } else if (project.imageUrl) {
       // If no media items but imageUrl exists, create one from it
-      setMediaItems([
+      setMediaItems(normalizeMediaItems([
         {
           type: 'image',
           url: project.imageUrl,
           isExternal: true,
           order: 0,
-          displayFirst: true
+          displayFirst: true,
+          showInViewer: true,
+          displayVariant: 'desktop'
         }
-      ]);
+      ]));
     } else {
       setMediaItems([]);
     }

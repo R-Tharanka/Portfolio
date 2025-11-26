@@ -12,6 +12,7 @@ import {
   Images
 } from 'lucide-react';
 import { getTransformedImageUrl, isCloudinaryUrl } from '../../utils/cloudinary';
+import { mediaFitClass, mediaFitForItem } from '../../utils/mediaClasses';
 import KeyboardShortcutsHelp from './KeyboardShortcutsHelp';
 
 interface MediaViewerPopupProps {
@@ -229,6 +230,19 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
   }
 
   const currentItem = popupMediaItems[currentIndex];
+  const currentFit = mediaFitForItem(currentItem);
+  const containSizeClass = isFullscreen
+    ? 'max-w-[98vw] max-h-[98vh] w-auto h-auto'
+    : 'max-w-full max-h-[70vh] w-auto h-auto';
+  const coverSizeClass = isFullscreen
+    ? 'w-[98vw] h-[98vh]'
+    : 'w-full h-[70vh]';
+  const baseFitClass = mediaFitClass(currentFit, { includeDimensions: false });
+  const resolvedImageClass = `rounded-lg shadow-lg ${currentFit === 'cover'
+    ? `${coverSizeClass} ${baseFitClass}`
+    : `${containSizeClass} ${baseFitClass}`
+  }`;
+  const resolvedVideoClass = `rounded-lg shadow-lg ${containSizeClass} ${mediaFitClass('contain', { includeDimensions: false })}`;
 
   // Prevent download by disabling right-click and drag
   const preventDownload = (e: React.MouseEvent | React.DragEvent) => {
@@ -307,7 +321,7 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
                     : currentItem.url
                   }
                   alt={`${projectTitle} - Media ${currentIndex + 1}`}
-                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
+                  className={resolvedImageClass}
                   onContextMenu={preventDownload}
                   onDragStart={preventDownload}
                   style={{ userSelect: 'none' }}
@@ -320,7 +334,7 @@ const MediaViewerPopup: React.FC<MediaViewerPopupProps> = ({
                   controlsList="nodownload"
                   disablePictureInPicture
                   onContextMenu={preventDownload}
-                  className={`rounded-lg shadow-lg ${isFullscreen ? 'max-w-[98vw] max-h-[98vh]' : 'max-w-full max-h-[70vh]'} object-contain`}
+                  className={resolvedVideoClass}
                   style={{ userSelect: 'none' }}
                 />
               ) : null}

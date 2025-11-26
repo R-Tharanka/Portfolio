@@ -70,7 +70,8 @@ router.post('/', [
     // Validate media array if provided
     check('media').optional().isArray(),
     check('media.*.type').optional().isIn(['image', 'video']),
-    check('media.*.url').optional().isURL().withMessage('Valid URL required for media')
+    check('media.*.url').optional().isURL().withMessage('Valid URL required for media'),
+    check('media.*.displayVariant').optional().isIn(['mobile', 'desktop'])
   ]
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -104,6 +105,10 @@ router.post('/', [
       media.forEach((item, index) => {
         if (item.order === undefined) {
           item.order = index;
+        }
+
+        if (item.type === 'image' && !item.displayVariant) {
+          item.displayVariant = 'mobile';
         }
       });
     }
@@ -143,7 +148,8 @@ router.put('/:id', [
     check('tags', 'Tags should be an array').optional().isArray(),
     check('media').optional().isArray(),
     check('media.*.type').optional().isIn(['image', 'video']),
-    check('media.*.url').optional().isURL().withMessage('Valid URL required for media')
+    check('media.*.url').optional().isURL().withMessage('Valid URL required for media'),
+    check('media.*.displayVariant').optional().isIn(['mobile', 'desktop'])
   ]
 ], async (req, res) => {
   const errors = validationResult(req);
@@ -172,6 +178,10 @@ router.put('/:id', [
       req.body.media.forEach((item, index) => {
         if (item.order === undefined) {
           item.order = index;
+        }
+
+        if (item.type === 'image' && !item.displayVariant) {
+          item.displayVariant = 'mobile';
         }
       });
       

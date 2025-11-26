@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ProjectMedia } from '../../types';
+import { mediaFitClass } from '../../utils/mediaClasses';
 import { ChevronLeft, ChevronRight, Play, Pause, Maximize2 } from 'lucide-react';
 
 interface MediaCarouselProps {
@@ -111,12 +112,12 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
   return (
     <div className={`relative w-full overflow-hidden group ${className}`}>
       {/* Current media item */}
-      <div className={`w-full relative ${height} bg-background`}> 
+      <div className={`w-full relative ${height} bg-background`}>
         {currentItem?.type === 'image' ? (
           <img 
             src={currentItem.url} 
             alt="Project media" 
-            className={`w-full h-full object-contain object-center`} 
+            className={mediaFitClass('contain')} 
             draggable={false}
           />
         ) : currentItem?.type === 'video' ? (
@@ -126,7 +127,7 @@ const MediaCarousel: React.FC<MediaCarouselProps> = ({
             controls={false}
             muted
             playsInline
-            className={`w-full h-full object-contain object-center`}
+            className={mediaFitClass('contain')}
             onEnded={() => {
               // Move to next item when video ends if autoplay is enabled
               if (isPlaying && allMediaItems.length > 1) {

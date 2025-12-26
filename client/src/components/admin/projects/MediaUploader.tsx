@@ -21,16 +21,21 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   onMediaChange
 }) => {
   const [mediaItems, setMediaItems] = useState<ProjectMedia[]>(normalizeMediaItems(initialMedia));
+  const updateMediaState = React.useCallback(
+    (updater: (previous: ProjectMedia[]) => ProjectMedia[]) => {
+      setMediaItems(prevItems => {
+        const nextItems = updater(prevItems);
+        onMediaChange(nextItems);
+        return nextItems;
+      });
+    },
+    [onMediaChange]
+  );
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
-
-  // Update parent component when media items change
-  useEffect(() => {
-    onMediaChange(mediaItems);
-  }, [mediaItems, onMediaChange]);
 
   // Update local state when initialMedia changes
   useEffect(() => {
@@ -82,7 +87,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       
       if (result.success && result.mediaItems.length > 0) {
         // Add new media items to the list
-        setMediaItems(prevItems => {
+        updateMediaState(prevItems => {
           const normalizedNewItems = normalizeMediaItems(result.mediaItems);
           const mergedItems = [...prevItems, ...normalizedNewItems].map((item, index) => ({
             ...item,
@@ -121,7 +126,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const moveItemLeft = (index: number) => {
     if (index <= 0) return; // Can't move first item left
     
-    setMediaItems(prevItems => {
+    updateMediaState(prevItems => {
       const newItems = [...prevItems];
       // Swap with previous item
       [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
@@ -141,7 +146,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   const moveItemRight = (index: number) => {
     if (index >= mediaItems.length - 1) return; // Can't move last item right
     
-    setMediaItems(prevItems => {
+    updateMediaState(prevItems => {
       const newItems = [...prevItems];
       // Swap with next item
       [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
@@ -158,7 +163,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   };
 
   const updateDisplayVariant = (index: number, variant: 'mobile' | 'desktop') => {
-    setMediaItems(prevItems => prevItems.map((item, i) => {
+    updateMediaState(prevItems => prevItems.map((item, i) => {
       if (i !== index || item.type !== 'image') {
         return item;
       }
@@ -176,7 +181,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     const itemToRemove = mediaItems[index];
     
     // First, immediately remove from the UI state for better user experience
-    setMediaItems(prevItems => {
+    updateMediaState(prevItems => {
       const newItems = prevItems.filter((_, i) => i !== index);
       
       // Ensure at least one item has displayFirst=true if we have items
@@ -211,7 +216,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       }
     } else {
       // If we don't have a token or projectId, just remove from state
-      setMediaItems(prevItems => {
+      updateMediaState(prevItems => {
         const newItems = prevItems.filter((_, i) => i !== index);
         
         // Ensure at least one item has displayFirst=true if we have items
@@ -228,7 +233,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
 
   // Toggle showInViewer property for a media item
   const toggleShowInViewer = (index: number) => {
-    setMediaItems(prevItems => {
+    updateMediaState(prevItems => {
       const newItems = [...prevItems];
       
       // Check current value

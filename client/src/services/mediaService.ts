@@ -42,7 +42,7 @@ export const uploadProjectMedia = async (
         'Authorization': `Bearer ${token}`
       },
       // Slow connections need a higher timeout than the default 10s on the shared axios instance
-      timeout: 20000,
+      timeout: 30000,
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
       onUploadProgress: (progressEvent: any) => {

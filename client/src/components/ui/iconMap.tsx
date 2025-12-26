@@ -4,7 +4,8 @@ import {
     SiMongodb, SiMysql, SiCanva, SiFigma, SiAdobeillustrator, SiAdobephotoshop,
     SiVercel, SiRailway, SiTailwindcss, SiJavascript, SiChartdotjs,
     SiC, SiCplusplus, SiSharp, SiKotlin,
-    SiPostman, SiWordpress, SiTwilio, SiNetlify
+    SiPostman, SiWordpress, SiTwilio, SiNetlify,
+    SiFirebase, SiJira, SiReact
 } from 'react-icons/si';
 
 import {
@@ -30,6 +31,8 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     vercel: SiVercel,
     railway: SiRailway,
     netlify: SiNetlify,
+    firebase: SiFirebase,
+    jira: SiJira,
     docker: FaDocker,
     html: FaHtml5,
     css: SiCss3,
@@ -62,6 +65,10 @@ export const iconMap: Record<string, React.ComponentType<{ className?: string }>
     'js': SiJavascript,
     'cplusplus': SiCplusplus,
     'csharp': SiSharp,
+    'react-native': SiReact,
+    'react native': SiReact,
+    'reactnative': SiReact,
+    'jira software': SiJira,
 
     // Add a default icon
     default: FaCode

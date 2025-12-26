@@ -41,12 +41,22 @@ export const uploadProjectMedia = async (
         'Content-Type': 'multipart/form-data',
         'Authorization': `Bearer ${token}`
       },
+      // Slow connections need a higher timeout than the default 10s on the shared axios instance
+      timeout: 20000,
+      maxBodyLength: Infinity,
+      maxContentLength: Infinity,
       onUploadProgress: (progressEvent: any) => {
-        if (onProgress && progressEvent.total) {
-          // Calculate the upload progress percentage
-          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          onProgress(percentCompleted);
+        if (!onProgress) {
+          return;
         }
+
+        const total = progressEvent?.total;
+        if (!total) {
+          return;
+        }
+
+        const progress = Math.round((progressEvent.loaded * 100) / total);
+        onProgress(progress);
       }
     };
     

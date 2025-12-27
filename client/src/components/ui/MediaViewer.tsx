@@ -235,7 +235,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     ? 'fixed inset-0 rounded-none'
     : 'w-10/12 max-w-4xl max-h-[85vh] mx-auto rounded-lg shadow-2xl';
   const modalContainerClass = `relative bg-black flex flex-col overflow-hidden ${modalBaseClasses}`;
-  const contentPaddingClass = isFullscreen ? 'p-0' : 'p-8 pt-16 pb-16';
+  const contentPaddingClass = isFullscreen ? 'p-0' : 'p-8 pt-16 pb-4';
   const portraitScrollMaxHeight = isFullscreen ? 'calc(100vh - 7rem)' : 'calc(85vh - 7rem)';
   const scrollContainerClasses = isPortraitImage
     ? 'items-start overflow-y-auto overflow-x-hidden py-8 pb-24 min-h-0'
@@ -296,7 +296,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         className={modalContainerClass}
       >
         {/* Header */}
-        <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent p-4">
+        <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent pl-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Images size={20} className="text-white/80" />

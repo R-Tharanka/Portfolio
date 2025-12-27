@@ -38,8 +38,10 @@ jobs:
         if: steps.diff.outputs.has_changes != 'true'
         run: echo "No differences to merge."
 
+      # FIXED: This step now exposes pr.outputs.number
       - name: Create or reuse pull request
         if: steps.diff.outputs.has_changes == 'true'
+        id: pr
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -56,16 +58,25 @@ jobs:
               --base "$BASE_BRANCH" \
               --title "UI/UX/SEO updates" \
               --fill
+
+            pr_number=$(gh pr list \
+              --head "$HEAD_BRANCH" \
+              --base "$BASE_BRANCH" \
+              --state open \
+              --json number \
+              --jq '.[0].number')
           else
             echo "PR already exists: #$pr_number"
           fi
 
-      - name: Merge pull request
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+
+      # Best-practice auto-merge
+      - name: Enable auto-merge (squash)
         if: steps.diff.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr merge \
+          gh pr merge ${{ steps.pr.outputs.number }} \
             --squash \
-            --delete-branch false \
-            --yes
+            --auto

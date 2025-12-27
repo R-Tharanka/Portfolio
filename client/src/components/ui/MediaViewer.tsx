@@ -238,7 +238,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const contentPaddingClass = isFullscreen ? 'p-0' : 'p-8 pt-16 pb-4';
   const portraitScrollMaxHeight = isFullscreen ? 'calc(100vh - 7rem)' : 'calc(85vh - 7rem)';
   const scrollContainerClasses = isPortraitImage
-    ? 'items-start overflow-y-auto overflow-x-hidden py-8 pb-24 min-h-0'
+    ? 'items-start overflow-y-auto overflow-x-hidden py-8 pb-8 min-h-0'
     : 'items-center h-full min-h-0';
   const mediaWrapperClasses = isPortraitImage
     ? 'w-full flex items-start justify-center transition-opacity duration-300'

@@ -37,6 +37,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const [isMuted, setIsMuted] = useState(true);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [imageOrientations, setImageOrientations] = useState<Record<string, 'portrait' | 'landscape'>>({});
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -217,6 +218,19 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   if (!isOpen || viewerMediaItems.length === 0) return null;
 
   const currentItem = viewerMediaItems[currentIndex];
+  const resolvedImageSrc = currentItem?.type === 'image'
+    ? (isCloudinaryUrl(currentItem.url)
+      ? getTransformedImageUrl(currentItem.url, {
+          crop: 'fit',
+          quality: 'auto'
+        })
+      : currentItem.url)
+    : undefined;
+  const imageOrientationKey = resolvedImageSrc ?? currentItem?.url ?? '';
+  const currentOrientation = currentItem?.type === 'image'
+    ? imageOrientations[imageOrientationKey] ?? (currentItem.displayVariant === 'mobile' ? 'portrait' : undefined)
+    : undefined;
+  const isPortraitImage = currentItem?.type === 'image' && currentOrientation === 'portrait';
   // Always show the full image in the popup viewer to avoid cropping
   const currentFit = currentItem?.type === 'image'
     ? 'contain'
@@ -225,8 +239,27 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     ? 'max-w-[98vw] max-h-[98vh] w-auto h-auto'
     : 'max-w-full max-h-[70vh] w-auto h-auto';
   const baseFitClass = mediaFitClass(currentFit, { includeDimensions: false });
-  const resolvedImageClass = `rounded-lg shadow-lg ${containSizeClass} ${baseFitClass}`;
+  const resolvedImageClass = isPortraitImage
+    ? `rounded-lg shadow-lg w-full h-auto max-h-none ${baseFitClass}`
+    : `rounded-lg shadow-lg ${containSizeClass} ${baseFitClass}`;
   const resolvedVideoClass = `rounded-lg shadow-lg ${containSizeClass} ${mediaFitClass('contain', { includeDimensions: false })}`;
+
+  const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
+    const { naturalWidth, naturalHeight } = event.currentTarget;
+    const orientation = naturalHeight > naturalWidth ? 'portrait' : 'landscape';
+    const url = event.currentTarget.dataset.mediaKey || event.currentTarget.currentSrc;
+
+    if (!url) {
+      return;
+    }
+
+    setImageOrientations(prev => {
+      if (prev[url] === orientation) {
+        return prev;
+      }
+      return { ...prev, [url]: orientation };
+    });
+  };
 
   const handleVideoLoadedData = () => {
     if (videoRef.current) {
@@ -273,25 +306,23 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         {/* Main Content */}
         <div className={`relative w-full h-full flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-8 pt-16 pb-16'}`}>
           {/* Current Media */}
-          <div className={`relative flex items-center justify-center ${isFullscreen ? 'w-full h-full' : 'w-full h-full'}`}>
+          <div
+            className={`relative flex ${isPortraitImage ? 'items-start overflow-y-auto overflow-x-hidden pt-8 pb-24' : 'items-center'} justify-center ${isFullscreen ? 'w-full h-full' : 'w-full h-full'}`}
+          >
             {/* Use a key based on currentIndex to force unmount/remount when media changes */}
             <div 
               key={`viewer-media-${currentIndex}`}
-              className="w-full h-full flex items-center justify-center transition-opacity duration-300"
+              className={`w-full h-full flex ${isPortraitImage ? 'items-start justify-center' : 'items-center justify-center'} transition-opacity duration-300`}
             >
               {currentItem?.type === 'image' ? (
                 <img
-                  src={isCloudinaryUrl(currentItem.url) 
-                    ? getTransformedImageUrl(currentItem.url, {
-                        crop: 'fit',
-                        quality: 'auto'
-                      })
-                    : currentItem.url
-                  }
+                  src={resolvedImageSrc}
                   alt={`${projectTitle} media ${currentIndex + 1}`}
                   className={resolvedImageClass}
                   onContextMenu={(e) => e.preventDefault()} // Disable right-click download
                   draggable={false} // Disable drag download
+                  onLoad={handleImageLoad}
+                  data-media-key={imageOrientationKey}
                 />
               ) : (
                 <video

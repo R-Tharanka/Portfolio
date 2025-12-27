@@ -231,6 +231,21 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     ? imageOrientations[imageOrientationKey] ?? (currentItem.displayVariant === 'mobile' ? 'portrait' : undefined)
     : undefined;
   const isPortraitImage = currentItem?.type === 'image' && currentOrientation === 'portrait';
+  const modalBaseClasses = isFullscreen
+    ? 'fixed inset-0 rounded-none'
+    : 'w-10/12 max-w-4xl max-h-[85vh] mx-auto rounded-lg shadow-2xl';
+  const modalContainerClass = `relative bg-black flex flex-col overflow-hidden ${modalBaseClasses}`;
+  const contentPaddingClass = isFullscreen ? 'p-0' : 'p-8 pt-16 pb-16';
+  const portraitScrollMaxHeight = isFullscreen ? 'calc(100vh - 7rem)' : 'calc(85vh - 7rem)';
+  const scrollContainerClasses = isPortraitImage
+    ? 'items-start overflow-y-auto overflow-x-hidden py-8 pb-24 min-h-0'
+    : 'items-center h-full min-h-0';
+  const mediaWrapperClasses = isPortraitImage
+    ? 'w-full flex items-start justify-center transition-opacity duration-300'
+    : 'w-full h-full flex items-center justify-center transition-opacity duration-300';
+  const scrollContainerStyle: React.CSSProperties | undefined = isPortraitImage
+    ? { maxHeight: portraitScrollMaxHeight }
+    : undefined;
   // Always show the full image in the popup viewer to avoid cropping
   const currentFit = currentItem?.type === 'image'
     ? 'contain'
@@ -278,11 +293,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     >
       <div 
         ref={containerRef}
-        className={`relative bg-black ${
-          isFullscreen 
-            ? 'fixed inset-0 rounded-none' 
-            : 'w-10/12 max-w-4xl h-auto max-h-[85vh] mx-auto rounded-lg shadow-2xl'
-        }`}
+        className={modalContainerClass}
       >
         {/* Header */}
         <div className="absolute top-0 left-0 right-0 z-50 bg-gradient-to-b from-black/80 to-transparent p-4">
@@ -304,15 +315,16 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         </div>
 
         {/* Main Content */}
-        <div className={`relative w-full h-full flex items-center justify-center ${isFullscreen ? 'p-0' : 'p-8 pt-16 pb-16'}`}>
+        <div className={`relative flex-1 min-h-0 flex items-center justify-center ${contentPaddingClass}`}>
           {/* Current Media */}
           <div
-            className={`relative flex ${isPortraitImage ? 'items-start overflow-y-auto overflow-x-hidden pt-8 pb-24' : 'items-center'} justify-center ${isFullscreen ? 'w-full h-full' : 'w-full h-full'}`}
+            className={`relative flex ${scrollContainerClasses} justify-center w-full`}
+            style={scrollContainerStyle}
           >
             {/* Use a key based on currentIndex to force unmount/remount when media changes */}
             <div 
               key={`viewer-media-${currentIndex}`}
-              className={`w-full h-full flex ${isPortraitImage ? 'items-start justify-center' : 'items-center justify-center'} transition-opacity duration-300`}
+              className={mediaWrapperClasses}
             >
               {currentItem?.type === 'image' ? (
                 <img

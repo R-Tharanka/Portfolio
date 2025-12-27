@@ -1,0 +1,107 @@
+name: Auto PR for UI/UX/SEO
+
+on:
+  push:
+    branches:
+      - ui-ux-seo
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+env:
+  BASE_BRANCH: main
+  HEAD_BRANCH: ui-ux-seo
+
+jobs:
+  create-update-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changes versus main
+        id: diff
+        run: |
+          git fetch origin "$BASE_BRANCH"
+          if git diff --quiet "origin/$BASE_BRANCH"...HEAD; then
+            echo "has_changes=false" >>"$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >>"$GITHUB_OUTPUT"
+          fi
+
+      - name: Exit when no changes are present
+        if: steps.diff.outputs.has_changes != 'true'
+        run: echo "No differences to merge."
+
+      - name: Create or reuse pull request
+        if: steps.diff.outputs.has_changes == 'true'
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          pr_number=$(gh pr list \\ 
+            --head "$HEAD_BRANCH" \\ 
+            --base "$BASE_BRANCH" \\ 
+            --state open \\ 
+            --json number \\ 
+            --jq '.[0].number')
+
+          if [ -z "$pr_number" ]; then
+            gh pr create \\ 
+              --head "$HEAD_BRANCH" \\ 
+              --base "$BASE_BRANCH" \\ 
+              --title "UI/UX/SEO updates" \\ 
+              --body "Placeholder pending Copilot summary."
+            pr_number=$(gh pr list \\ 
+              --head "$HEAD_BRANCH" \\ 
+              --base "$BASE_BRANCH" \\ 
+              --state open \\ 
+              --json number \\ 
+              --jq '.[0].number')
+          else
+            echo "Found existing pull request #$pr_number"
+          fi
+
+          if [ -z "$pr_number" ]; then
+            echo "Unable to determine pull request number" >&2
+            exit 1
+          fi
+
+          echo "number=$pr_number" >>"$GITHUB_OUTPUT"
+
+      - name: Generate Copilot summary for PR body
+        if: steps.diff.outputs.has_changes == 'true'
+        id: copilot_summary
+        uses: github/copilot-actions/run@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          instructions: |
+            Write a polished pull request description in Markdown for https://github.com/${{ github.repository }}/pull/${{ steps.pr.outputs.number }}.
+            Summarize the key UI, UX, and SEO updates with sections: ## Overview, ## Key Changes, ## Testing.
+            Keep the tone concise and actionable.
+
+      - name: Update pull request description
+        if: steps.diff.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BODY_MARKDOWN: ${{ steps.copilot_summary.outputs.result }}
+        run: |
+          printf '%s' "$BODY_MARKDOWN" > body.md
+          gh pr edit ${{ steps.pr.outputs.number }} --body-file body.md
+
+      - name: Merge pull request
+        if: steps.diff.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge ${{ steps.pr.outputs.number }} \
+            --squash \
+            --delete-branch false \
+            --body "Automated merge from ui-ux-seo" \
+            --subject "Merge UI/UX/SEO updates" \
+            --yes

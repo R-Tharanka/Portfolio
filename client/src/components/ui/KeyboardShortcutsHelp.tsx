@@ -1,9 +1,11 @@
 import React from 'react';
+import { X } from 'lucide-react';
 
 interface KeyboardShortcutsHelpProps {
   isVisible: boolean;
   isVideoActive?: boolean;
   canUseFitMode?: boolean;
+  onClose?: () => void;
 }
 
 interface ShortcutRow {
@@ -14,7 +16,8 @@ interface ShortcutRow {
 const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
   isVisible,
   isVideoActive = false,
-  canUseFitMode = false
+  canUseFitMode = false,
+  onClose
 }) => {
   if (!isVisible) return null;
 
@@ -53,7 +56,18 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
 
   return (
     <div className="absolute left-1/2 transform -translate-x-1/2 bottom-16 text-white/80 text-xs z-50">
-      <div className="bg-black/80 border border-white/10 rounded-lg p-4 backdrop-blur-sm shadow-2xl flex gap-6">
+      <div className="relative bg-black/80 border border-white/10 rounded-lg p-4 backdrop-blur-sm shadow-2xl flex gap-6">
+        <button
+          type="button"
+          onClick={(event) => {
+            event.stopPropagation();
+            onClose?.();
+          }}
+          className="absolute top-2 right-2 p-1 rounded-full text-white/60 hover:text-red-400 transition-colors"
+          aria-label="Close keyboard shortcuts"
+        >
+          <X size={14} />
+        </button>
         {sections.map(section => (
           <div key={section.title}>
             <div className="font-semibold mb-2 text-sm text-white">{section.title}</div>

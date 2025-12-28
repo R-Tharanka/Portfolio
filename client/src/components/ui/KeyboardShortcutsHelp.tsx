@@ -66,7 +66,7 @@ const KeyboardShortcutsHelp: React.FC<KeyboardShortcutsHelpProps> = ({
           className="absolute top-2 right-2 p-1 rounded-full text-white/60 hover:text-red-400 transition-colors z-60"
           aria-label="Close keyboard shortcuts"
         >
-          <X size={14} />
+          <X width={15} height={15} strokeWidth={3} />
         </button>
         {sections.map(section => (
           <div key={section.title}>

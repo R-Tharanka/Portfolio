@@ -10,7 +10,10 @@ import {
   Minimize2,
   Volume2,
   VolumeX,
-  Images
+  Images,
+  ZoomIn,
+  ZoomOut,
+  RefreshCw
 } from 'lucide-react';
 import { ProjectMedia } from '../../types';
 import { getTransformedImageUrl, isCloudinaryUrl } from '../../utils/cloudinary';
@@ -25,6 +28,10 @@ interface MediaViewerProps {
   initialIndex?: number;
 }
 
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
+const ZOOM_STEP = 0.25;
+
 const MediaViewer: React.FC<MediaViewerProps> = ({
   isOpen,
   onClose,
@@ -38,8 +45,19 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
   const [imageOrientations, setImageOrientations] = useState<Record<string, 'portrait' | 'landscape'>>({});
+  const [viewMode, setViewMode] = useState<'default' | 'fit'>('default');
+  const [zoomLevel, setZoomLevel] = useState<number>(MIN_ZOOM);
+  const [panOffset, setPanOffset] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const panStateRef = useRef({
+    isDragging: false,
+    pointerId: null as number | null,
+    originX: 0,
+    originY: 0,
+    startOffset: { x: 0, y: 0 }
+  });
 
   // Filter media items to only show those marked for viewer
   console.log('MediaViewer received items:', mediaItems);
@@ -75,6 +93,20 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   
   // Keep track of previous media items length to detect real changes
   const prevMediaItemsLength = useRef(viewerMediaItems.length);
+
+  const resetZoom = React.useCallback(() => {
+    setPanOffset({ x: 0, y: 0 });
+    setZoomLevel(MIN_ZOOM);
+    setIsPanning(false);
+    panStateRef.current = {
+      ...panStateRef.current,
+      isDragging: false,
+      pointerId: null,
+      originX: 0,
+      originY: 0,
+      startOffset: { x: 0, y: 0 }
+    };
+  }, []);
 
   // Define navigation functions as useCallback hooks to ensure stability between renders
   const navigatePrev = React.useCallback((e?: React.MouseEvent) => {
@@ -140,58 +172,6 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
     }
   }, []);
 
-  // Handle keyboard navigation
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't handle keyboard events when input elements are focused
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-
-      switch (e.key) {
-        case 'Escape':
-          e.preventDefault();
-          if (isFullscreen) {
-            toggleFullscreen();
-          } else {
-            onClose();
-          }
-          break;
-        case 'ArrowLeft':
-          e.preventDefault();
-          navigatePrev();
-          break;
-        case 'ArrowRight':
-          e.preventDefault();
-          navigateNext();
-          break;
-        case ' ':
-          e.preventDefault();
-          if (currentItem?.type === 'video') {
-            togglePlayPause();
-          }
-          break;
-        case 'f':
-        case 'F':
-          e.preventDefault();
-          toggleFullscreen();
-          break;
-        case 'm':
-        case 'M':
-          e.preventDefault();
-          if (currentItem?.type === 'video') {
-            toggleMute();
-          }
-          break;
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, currentIndex, isFullscreen, navigatePrev, navigateNext, togglePlayPause, toggleMute, toggleFullscreen, onClose, viewerMediaItems]);
-
   // Handle fullscreen events
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -218,7 +198,10 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   if (!isOpen || viewerMediaItems.length === 0) return null;
 
   const currentItem = viewerMediaItems[currentIndex];
-  const resolvedImageSrc = currentItem?.type === 'image'
+  const isImageMedia = currentItem?.type === 'image';
+  const isVideoMedia = currentItem?.type === 'video';
+
+  const resolvedImageSrc = isImageMedia
     ? (isCloudinaryUrl(currentItem.url)
       ? getTransformedImageUrl(currentItem.url, {
           crop: 'fit',
@@ -227,37 +210,284 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
       : currentItem.url)
     : undefined;
   const imageOrientationKey = resolvedImageSrc ?? currentItem?.url ?? '';
-  const currentOrientation = currentItem?.type === 'image'
+  const currentOrientation = isImageMedia
     ? imageOrientations[imageOrientationKey] ?? (currentItem.displayVariant === 'mobile' ? 'portrait' : undefined)
     : undefined;
-  const isPortraitImage = currentItem?.type === 'image' && currentOrientation === 'portrait';
+  const supportsFitMode = isImageMedia;
+  const isFitModeActive = supportsFitMode && viewMode === 'fit';
+  const isPortraitImage = isImageMedia && !isFitModeActive && currentOrientation === 'portrait';
+  const canShowZoomControls = isFitModeActive;
+  const canZoomIn = canShowZoomControls && zoomLevel < MAX_ZOOM;
+  const canZoomOut = canShowZoomControls && zoomLevel > MIN_ZOOM;
+  const zoomDisplay = `${Math.round(zoomLevel * 100)}%`;
+
   const modalBaseClasses = isFullscreen
     ? 'fixed inset-0 rounded-none'
     : 'w-10/12 max-w-4xl max-h-[85vh] mx-auto rounded-lg shadow-2xl';
   const modalContainerClass = `relative bg-black flex flex-col overflow-hidden ${modalBaseClasses}`;
   const contentPaddingClass = isFullscreen ? 'p-0' : 'p-8 pt-16 pb-4';
   const portraitScrollMaxHeight = isFullscreen ? 'calc(100vh - 7rem)' : 'calc(85vh - 7rem)';
-  const scrollContainerClasses = isPortraitImage
-    ? 'items-start overflow-y-auto overflow-x-hidden py-8 pb-8 min-h-0'
-    : 'items-center h-full min-h-0';
-  const mediaWrapperClasses = isPortraitImage
+  const scrollContainerClasses = isFitModeActive
+    ? `items-center h-full min-h-0 ${zoomLevel > MIN_ZOOM ? 'overflow-auto' : 'overflow-hidden'}`
+    : isPortraitImage
+      ? 'items-start overflow-y-auto overflow-x-hidden py-8 pb-8 min-h-0'
+      : 'items-center h-full min-h-0';
+  const defaultWrapperClasses = isPortraitImage
     ? 'w-full flex items-start justify-center transition-opacity duration-300'
     : 'w-full h-full flex items-center justify-center transition-opacity duration-300';
+  const fitWrapperCursor = zoomLevel > MIN_ZOOM ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-default';
+  const mediaWrapperClasses = isFitModeActive
+    ? `relative w-full h-full flex items-center justify-center transition-opacity duration-300 ${fitWrapperCursor}`
+    : defaultWrapperClasses;
   const scrollContainerStyle: React.CSSProperties | undefined = isPortraitImage
     ? { maxHeight: portraitScrollMaxHeight }
     : undefined;
   // Always show the full image in the popup viewer to avoid cropping
-  const currentFit = currentItem?.type === 'image'
+  const currentFit = isImageMedia
     ? 'contain'
     : mediaFitForItem(currentItem);
   const containSizeClass = isFullscreen
     ? 'max-w-[98vw] max-h-[98vh] w-auto h-auto'
-    : 'max-w-full max-h-[70vh] w-auto h-auto';
+    : isFitModeActive
+      ? 'max-w-full max-h-full w-auto h-auto'
+      : 'max-w-full max-h-[70vh] w-auto h-auto';
   const baseFitClass = mediaFitClass(currentFit, { includeDimensions: false });
-  const resolvedImageClass = isPortraitImage
+  const defaultImageClass = isPortraitImage
     ? `rounded-lg shadow-lg w-full h-auto max-h-none ${baseFitClass}`
     : `rounded-lg shadow-lg ${containSizeClass} ${baseFitClass}`;
+  const fitImageClass = `rounded-lg shadow-lg ${containSizeClass} ${baseFitClass}`;
+  const resolvedImageClass = isFitModeActive ? fitImageClass : defaultImageClass;
+  const imageInlineStyles: React.CSSProperties | undefined = isFitModeActive
+    ? {
+        transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+        transformOrigin: 'center center',
+        transition: isPanning ? 'none' : 'transform 150ms ease-out'
+      }
+    : undefined;
   const resolvedVideoClass = `rounded-lg shadow-lg ${containSizeClass} ${mediaFitClass('contain', { includeDimensions: false })}`;
+
+  const activateDefaultMode = React.useCallback(() => {
+    setViewMode(prev => {
+      if (prev === 'default') {
+        return prev;
+      }
+      resetZoom();
+      return 'default';
+    });
+  }, [resetZoom]);
+
+  const activateFitMode = React.useCallback(() => {
+    if (!supportsFitMode) {
+      return;
+    }
+    setViewMode(prev => {
+      if (prev === 'fit') {
+        return prev;
+      }
+      resetZoom();
+      return 'fit';
+    });
+  }, [resetZoom, supportsFitMode]);
+
+  const handleZoomIn = React.useCallback(() => {
+    if (!isFitModeActive) {
+      return;
+    }
+    setZoomLevel(prev => Number(Math.min(prev + ZOOM_STEP, MAX_ZOOM).toFixed(2)));
+  }, [isFitModeActive]);
+
+  const handleZoomOut = React.useCallback(() => {
+    if (!isFitModeActive) {
+      return;
+    }
+    setZoomLevel(prev => {
+      const next = Number(Math.max(prev - ZOOM_STEP, MIN_ZOOM).toFixed(2));
+      if (next === MIN_ZOOM) {
+        setPanOffset({ x: 0, y: 0 });
+        setIsPanning(false);
+        panStateRef.current.isDragging = false;
+        panStateRef.current.pointerId = null;
+        panStateRef.current.originX = 0;
+        panStateRef.current.originY = 0;
+        panStateRef.current.startOffset = { x: 0, y: 0 };
+      }
+      return next;
+    });
+  }, [isFitModeActive]);
+
+  const handleZoomReset = React.useCallback(() => {
+    if (!isFitModeActive) {
+      return;
+    }
+    resetZoom();
+  }, [isFitModeActive, resetZoom]);
+
+  useEffect(() => {
+    if (!supportsFitMode && viewMode === 'fit') {
+      setViewMode('default');
+      resetZoom();
+    }
+  }, [supportsFitMode, viewMode, resetZoom]);
+
+  useEffect(() => {
+    resetZoom();
+  }, [currentIndex, resetZoom]);
+
+  const handlePointerDown = React.useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!isFitModeActive || zoomLevel <= MIN_ZOOM) {
+      return;
+    }
+    event.preventDefault();
+    const target = event.currentTarget;
+    target.setPointerCapture(event.pointerId);
+    panStateRef.current.isDragging = true;
+    panStateRef.current.pointerId = event.pointerId;
+    panStateRef.current.originX = event.clientX;
+    panStateRef.current.originY = event.clientY;
+    panStateRef.current.startOffset = { ...panOffset };
+    setIsPanning(true);
+  }, [isFitModeActive, panOffset, zoomLevel]);
+
+  const handlePointerMove = React.useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!panStateRef.current.isDragging) {
+      return;
+    }
+    event.preventDefault();
+    const dx = event.clientX - panStateRef.current.originX;
+    const dy = event.clientY - panStateRef.current.originY;
+    const nextOffset = {
+      x: panStateRef.current.startOffset.x + dx,
+      y: panStateRef.current.startOffset.y + dy
+    };
+    setPanOffset(nextOffset);
+  }, []);
+
+  const handlePointerEnd = React.useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+    if (!panStateRef.current.isDragging) {
+      return;
+    }
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    panStateRef.current.isDragging = false;
+    panStateRef.current.pointerId = null;
+    panStateRef.current.originX = 0;
+    panStateRef.current.originY = 0;
+    panStateRef.current.startOffset = { ...panOffset };
+    setIsPanning(false);
+  }, [panOffset]);
+
+  const pointerHandlers = isFitModeActive
+    ? {
+        onPointerDown: handlePointerDown,
+        onPointerMove: handlePointerMove,
+        onPointerUp: handlePointerEnd,
+        onPointerLeave: handlePointerEnd,
+        onPointerCancel: handlePointerEnd
+      }
+    : undefined;
+
+  const isZoomResetDisabled = zoomLevel === MIN_ZOOM && panOffset.x === 0 && panOffset.y === 0;
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key) {
+        case 'Escape':
+          e.preventDefault();
+          if (isFullscreen) {
+            toggleFullscreen();
+          } else {
+            onClose();
+          }
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          navigatePrev();
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          navigateNext();
+          break;
+        case ' ':
+          if (isVideoMedia) {
+            e.preventDefault();
+            togglePlayPause();
+          }
+          break;
+        case 'f':
+        case 'F':
+          e.preventDefault();
+          toggleFullscreen();
+          break;
+        case 'm':
+        case 'M':
+          if (isVideoMedia) {
+            e.preventDefault();
+            toggleMute();
+          }
+          break;
+        case '1':
+          if (supportsFitMode) {
+            e.preventDefault();
+            activateDefaultMode();
+          }
+          break;
+        case '2':
+          if (supportsFitMode) {
+            e.preventDefault();
+            activateFitMode();
+          }
+          break;
+        case '+':
+        case '=':
+          if (isFitModeActive) {
+            e.preventDefault();
+            handleZoomIn();
+          }
+          break;
+        case '-':
+        case '_':
+          if (isFitModeActive) {
+            e.preventDefault();
+            handleZoomOut();
+          }
+          break;
+        case '0':
+          if (isFitModeActive) {
+            e.preventDefault();
+            handleZoomReset();
+          }
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [
+    isOpen,
+    isFullscreen,
+    isVideoMedia,
+    isFitModeActive,
+    supportsFitMode,
+    navigatePrev,
+    navigateNext,
+    toggleFullscreen,
+    onClose,
+    togglePlayPause,
+    toggleMute,
+    activateDefaultMode,
+    activateFitMode,
+    handleZoomIn,
+    handleZoomOut,
+    handleZoomReset
+  ]);
 
   const handleImageLoad = (event: React.SyntheticEvent<HTMLImageElement>) => {
     const { naturalWidth, naturalHeight } = event.currentTarget;
@@ -325,16 +555,18 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
             <div 
               key={`viewer-media-${currentIndex}`}
               className={mediaWrapperClasses}
+              {...(pointerHandlers ?? {})}
             >
-              {currentItem?.type === 'image' ? (
+              {isImageMedia ? (
                 <img
                   src={resolvedImageSrc}
                   alt={`${projectTitle} media ${currentIndex + 1}`}
-                  className={resolvedImageClass}
+                  className={`${resolvedImageClass} select-none`}
                   onContextMenu={(e) => e.preventDefault()} // Disable right-click download
                   draggable={false} // Disable drag download
                   onLoad={handleImageLoad}
                   data-media-key={imageOrientationKey}
+                  style={imageInlineStyles}
                 />
               ) : (
                 <video
@@ -417,7 +649,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-wrap justify-end">
               {/* Fullscreen Toggle */}
               <button
                 onClick={toggleFullscreen}
@@ -426,9 +658,68 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               >
                 {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
               </button>
+
+              {supportsFitMode && (
+                <div className="flex items-center gap-1 bg-white/10 rounded-full px-1 py-1">
+                  <button
+                    onClick={activateDefaultMode}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${viewMode === 'default'
+                      ? 'bg-white/30 text-white'
+                      : 'bg-transparent text-white/70 hover:text-white/90'
+                    }`}
+                    aria-pressed={viewMode === 'default'}
+                    aria-label="Original layout (Mode 1)"
+                    title="Original layout (Mode 1)"
+                  >
+                    Mode 1
+                  </button>
+                  <button
+                    onClick={activateFitMode}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${viewMode === 'fit'
+                      ? 'bg-white/30 text-white'
+                      : 'bg-transparent text-white/70 hover:text-white/90'
+                    }`}
+                    aria-pressed={viewMode === 'fit'}
+                    aria-label="Fit to viewer (Mode 2)"
+                    title="Fit to viewer (Mode 2)"
+                  >
+                    Mode 2
+                  </button>
+                </div>
+              )}
+
+              {canShowZoomControls && (
+                <div className="flex items-center gap-2 bg-white/10 rounded-full px-2 py-1">
+                  <button
+                    onClick={handleZoomOut}
+                    className={`p-2 rounded-full transition-colors ${canZoomOut ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-white/10 text-white/40 cursor-not-allowed'}`}
+                    aria-label="Zoom out"
+                    disabled={!canZoomOut}
+                  >
+                    <ZoomOut size={18} />
+                  </button>
+                  <span className="text-xs font-medium text-white/80 w-12 text-center">{zoomDisplay}</span>
+                  <button
+                    onClick={handleZoomIn}
+                    className={`p-2 rounded-full transition-colors ${canZoomIn ? 'bg-white/20 text-white hover:bg-white/30' : 'bg-white/10 text-white/40 cursor-not-allowed'}`}
+                    aria-label="Zoom in"
+                    disabled={!canZoomIn}
+                  >
+                    <ZoomIn size={18} />
+                  </button>
+                  <button
+                    onClick={handleZoomReset}
+                    className={`p-2 rounded-full transition-colors ${isZoomResetDisabled ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-white/20 text-white hover:bg-white/30'}`}
+                    aria-label="Reset zoom"
+                    disabled={isZoomResetDisabled}
+                  >
+                    <RefreshCw size={16} />
+                  </button>
+                </div>
+              )}
               
               {/* Video-specific controls */}
-              {currentItem?.type === 'video' && !videoRef.current?.controls && (
+              {isVideoMedia && !videoRef.current?.controls && (
                 <>
                   <button
                     onClick={(e) => {
@@ -481,7 +772,11 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         </div>
 
         {/* Keyboard shortcuts help - shown conditionally */}
-        <KeyboardShortcutsHelp isVisible={showKeyboardShortcuts} />
+        <KeyboardShortcutsHelp
+          isVisible={showKeyboardShortcuts}
+          isVideoActive={isVideoMedia}
+          canUseFitMode={supportsFitMode}
+        />
       </div>
     </div>,
     document.body

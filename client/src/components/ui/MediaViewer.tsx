@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { 
-  X, 
-  ChevronLeft, 
-  ChevronRight, 
-  Play, 
-  Pause, 
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Play,
+  Pause,
   Maximize2,
   Minimize2,
   Volume2,
@@ -29,7 +29,7 @@ interface MediaViewerProps {
 }
 
 const MIN_ZOOM = 1;
-const MAX_ZOOM = 4;
+const MAX_ZOOM = 3;
 const ZOOM_STEP = 0.25;
 
 const MediaViewer: React.FC<MediaViewerProps> = ({
@@ -61,11 +61,11 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
   // Filter media items to only show those marked for viewer
   console.log('MediaViewer received items:', mediaItems);
-  console.log('MediaItems showInViewer values:', mediaItems.map(item => ({ 
-    url: item.url.substring(0, 30) + '...', 
-    showInViewer: item.showInViewer 
+  console.log('MediaItems showInViewer values:', mediaItems.map(item => ({
+    url: item.url.substring(0, 30) + '...',
+    showInViewer: item.showInViewer
   })));
-  
+
   const viewerMediaItems = mediaItems.filter(item => {
     const shouldShow = item.showInViewer !== false;
     console.log(`Item ${item.url.substring(0, 30)}... showInViewer=${item.showInViewer}, shouldShow=${shouldShow}`);
@@ -85,12 +85,12 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
       setCurrentIndex(Math.min(initialIndex, viewerMediaItems.length - 1));
       isInitialRender.current = false;
     }
-    
+
     // Update our reference of the previous length
     prevMediaItemsLength.current = viewerMediaItems.length;
-  // eslint-disable-next-line react-hooks/exhaustive-deps  
+    // eslint-disable-next-line react-hooks/exhaustive-deps  
   }, [viewerMediaItems, initialIndex]);
-  
+
   // Keep track of previous media items length to detect real changes
   const prevMediaItemsLength = useRef(viewerMediaItems.length);
 
@@ -128,7 +128,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
       return newIndex;
     });
   }, [viewerMediaItems.length]);
-  
+
   const goToIndex = React.useCallback((index: number, e?: React.MouseEvent) => {
     if (e) e.stopPropagation(); // Prevent event bubbling
     console.log(`MediaViewer: Going directly to index: ${index}`);
@@ -137,7 +137,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
   const togglePlayPause = React.useCallback(() => {
     if (!videoRef.current) return;
-    
+
     if (isPlaying) {
       videoRef.current.pause();
     } else {
@@ -150,7 +150,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
   const toggleMute = React.useCallback(() => {
     if (!videoRef.current) return;
-    
+
     videoRef.current.muted = !videoRef.current.muted;
     setIsMuted(videoRef.current.muted);
   }, []);
@@ -204,9 +204,9 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const resolvedImageSrc = isImageMedia
     ? (isCloudinaryUrl(currentItem.url)
       ? getTransformedImageUrl(currentItem.url, {
-          crop: 'fit',
-          quality: 'auto'
-        })
+        crop: 'fit',
+        quality: 'auto'
+      })
       : currentItem.url)
     : undefined;
   const imageOrientationKey = resolvedImageSrc ?? currentItem?.url ?? '';
@@ -230,7 +230,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const scrollContainerClasses = isFitModeActive
     ? `items-center h-full min-h-0 ${zoomLevel > MIN_ZOOM ? 'overflow-auto' : 'overflow-hidden'}`
     : isPortraitImage
-      ? 'items-start overflow-y-auto overflow-x-hidden py-8 pb-8 min-h-0'
+      ? 'items-start h-full min-h-0 overflow-y-auto overflow-x-hidden py-8 pb-8'
       : 'items-center h-full min-h-0';
   const defaultWrapperClasses = isPortraitImage
     ? 'w-full flex items-start justify-center transition-opacity duration-300'
@@ -246,25 +246,23 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   const currentFit = isImageMedia
     ? 'contain'
     : mediaFitForItem(currentItem);
-  const containSizeClass = isFullscreen
-    ? 'max-w-[98vw] max-h-[98vh] w-auto h-auto'
-    : isFitModeActive
-      ? 'max-w-full max-h-full w-auto h-auto'
-      : 'max-w-full max-h-[70vh] w-auto h-auto';
+  const baseMaxHeightClass = isFullscreen ? 'max-h-[98vh]' : 'max-h-[70vh]';
+  const defaultContainSizeClass = `${baseMaxHeightClass} max-w-full w-auto h-auto`;
+  const fitContainSizeClass = `${baseMaxHeightClass} max-w-full h-full w-auto`;
   const baseFitClass = mediaFitClass(currentFit, { includeDimensions: false });
   const defaultImageClass = isPortraitImage
     ? `rounded-lg shadow-lg w-full h-auto max-h-none ${baseFitClass}`
-    : `rounded-lg shadow-lg ${containSizeClass} ${baseFitClass}`;
-  const fitImageClass = `rounded-lg shadow-lg ${containSizeClass} ${baseFitClass}`;
+    : `rounded-lg shadow-lg ${defaultContainSizeClass} ${baseFitClass}`;
+  const fitImageClass = `rounded-lg shadow-lg ${fitContainSizeClass} ${baseFitClass}`;
   const resolvedImageClass = isFitModeActive ? fitImageClass : defaultImageClass;
   const imageInlineStyles: React.CSSProperties | undefined = isFitModeActive
     ? {
-        transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
-        transformOrigin: 'center center',
-        transition: isPanning ? 'none' : 'transform 150ms ease-out'
-      }
+      transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${zoomLevel})`,
+      transformOrigin: 'center center',
+      transition: isPanning ? 'none' : 'transform 150ms ease-out'
+    }
     : undefined;
-  const resolvedVideoClass = `rounded-lg shadow-lg ${containSizeClass} ${mediaFitClass('contain', { includeDimensions: false })}`;
+  const resolvedVideoClass = `rounded-lg shadow-lg ${defaultContainSizeClass} ${mediaFitClass('contain', { includeDimensions: false })}`;
 
   const activateDefaultMode = React.useCallback(() => {
     setViewMode(prev => {
@@ -379,12 +377,12 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
 
   const pointerHandlers = isFitModeActive
     ? {
-        onPointerDown: handlePointerDown,
-        onPointerMove: handlePointerMove,
-        onPointerUp: handlePointerEnd,
-        onPointerLeave: handlePointerEnd,
-        onPointerCancel: handlePointerEnd
-      }
+      onPointerDown: handlePointerDown,
+      onPointerMove: handlePointerMove,
+      onPointerUp: handlePointerEnd,
+      onPointerLeave: handlePointerEnd,
+      onPointerCancel: handlePointerEnd
+    }
     : undefined;
 
   const isZoomResetDisabled = zoomLevel === MIN_ZOOM && panOffset.x === 0 && panOffset.y === 0;
@@ -513,7 +511,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
   };
 
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
@@ -521,7 +519,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
         }
       }}
     >
-      <div 
+      <div
         ref={containerRef}
         className={modalContainerClass}
       >
@@ -552,7 +550,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
             style={scrollContainerStyle}
           >
             {/* Use a key based on currentIndex to force unmount/remount when media changes */}
-            <div 
+            <div
               key={`viewer-media-${currentIndex}`}
               className={mediaWrapperClasses}
               {...(pointerHandlers ?? {})}
@@ -600,7 +598,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
               >
                 <ChevronLeft size={24} />
               </button>
-              
+
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -623,7 +621,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
             {/* Media Counter */}
             <div className="text-white text-sm flex items-center gap-2">
               <span>{currentIndex + 1} of {viewerMediaItems.length}</span>
-              
+
               {/* Keyboard shortcuts help button */}
               <button
                 onClick={(e) => {
@@ -666,7 +664,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${viewMode === 'default'
                       ? 'bg-white/30 text-white'
                       : 'bg-transparent text-white/70 hover:text-white/90'
-                    }`}
+                      }`}
                     aria-pressed={viewMode === 'default'}
                     aria-label="Original layout (Mode 1)"
                     title="Original layout (Mode 1)"
@@ -678,7 +676,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                     className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${viewMode === 'fit'
                       ? 'bg-white/30 text-white'
                       : 'bg-transparent text-white/70 hover:text-white/90'
-                    }`}
+                      }`}
                     aria-pressed={viewMode === 'fit'}
                     aria-label="Fit to viewer (Mode 2)"
                     title="Fit to viewer (Mode 2)"
@@ -717,7 +715,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                   </button>
                 </div>
               )}
-              
+
               {/* Video-specific controls */}
               {isVideoMedia && !videoRef.current?.controls && (
                 <>
@@ -731,7 +729,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                   >
                     {isPlaying ? <Pause size={20} /> : <Play size={20} />}
                   </button>
-                  
+
                   <button
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent modal close
@@ -758,11 +756,10 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                       console.log('Indicator dot clicked, navigating to index:', index);
                       goToIndex(index, e);
                     }}
-                    className={`w-3 h-3 rounded-full transition-all cursor-pointer ${
-                      index === currentIndex 
-                        ? 'bg-white' 
+                    className={`w-3 h-3 rounded-full transition-all cursor-pointer ${index === currentIndex
+                        ? 'bg-white'
                         : 'bg-white/40 hover:bg-white/60'
-                    }`}
+                      }`}
                     aria-label={`Go to media ${index + 1}`}
                   />
                 ))}

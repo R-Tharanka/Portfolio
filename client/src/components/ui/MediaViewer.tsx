@@ -757,8 +757,8 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
                       goToIndex(index, e);
                     }}
                     className={`w-3 h-3 rounded-full transition-all cursor-pointer ${index === currentIndex
-                        ? 'bg-white'
-                        : 'bg-white/40 hover:bg-white/60'
+                      ? 'bg-white'
+                      : 'bg-white/40 hover:bg-white/60'
                       }`}
                     aria-label={`Go to media ${index + 1}`}
                   />
@@ -773,6 +773,7 @@ const MediaViewer: React.FC<MediaViewerProps> = ({
           isVisible={showKeyboardShortcuts}
           isVideoActive={isVideoMedia}
           canUseFitMode={supportsFitMode}
+          onClose={() => setShowKeyboardShortcuts(false)}
         />
       </div>
     </div>,

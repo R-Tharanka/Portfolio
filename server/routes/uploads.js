@@ -25,10 +25,11 @@ const fileFilter = (req, file, cb) => {
 };
 
 // Size limits
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
 const limits = {
-  fileSize: (req, file) => {
-    return file.fieldname === 'image' ? 5 * 1024 * 1024 : 50 * 1024 * 1024; // 5MB for images, 50MB for videos
-  }
+  fileSize: MAX_VIDEO_SIZE // Multer enforces the highest limit; we validate image-specific limits manually
 };
 
 // Upload middleware
@@ -48,6 +49,29 @@ router.post('/projects/:projectId', protect, upload.fields([
   try {
     const projectId = req.params.projectId;
     const files = req.files;
+
+    // Enforce per-file size limits now that multer v2 expects numeric limits
+    if (files.image) {
+      for (const file of files.image) {
+        if (file.size > MAX_IMAGE_SIZE) {
+          return res.status(400).json({
+            error: 'Validation Error',
+            message: 'Images must be 5MB or smaller.'
+          });
+        }
+      }
+    }
+
+    if (files.video) {
+      for (const file of files.video) {
+        if (file.size > MAX_VIDEO_SIZE) {
+          return res.status(400).json({
+            error: 'Validation Error',
+            message: 'Videos must be 50MB or smaller.'
+          });
+        }
+      }
+    }
     
     // Format response with file info
     const mediaItems = [];

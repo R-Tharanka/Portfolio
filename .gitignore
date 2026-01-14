@@ -62,5 +62,6 @@ docker-compose.yml
 # Automatic deploy files (these should be generated, not tracked)
 stats.html
 
+# temporary test files
 test
 test/*

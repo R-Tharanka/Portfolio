@@ -54,6 +54,7 @@
     "vite-plugin-pwa": "^1.2.0"
   },
   "overrides": {
-    "esbuild": "0.25.0"
+    "esbuild": "0.25.0",
+    "lodash": "4.17.23"
   }
 }

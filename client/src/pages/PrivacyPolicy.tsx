@@ -20,7 +20,6 @@ const PrivacyPolicy = () => {
                     <h2 className="text-xl font-semibold text-foreground">Data You Provide</h2>
                     <ul className="list-disc space-y-2 pl-5">
                         <li>Contact form: name, email address, subject, and message.</li>
-                        <li>Admin authentication: credentials used only by authorised administrators.</li>
                     </ul>
                 </section>
 
@@ -49,7 +48,7 @@ const PrivacyPolicy = () => {
                     <h2 className="text-xl font-semibold text-foreground">Data Processors</h2>
                     <ul className="list-disc space-y-2 pl-5">
                         <li>Google reCAPTCHA (security) and Google Analytics (usage insights) operate under Google Cloud’s Data Processing Addendum.</li>
-                        <li>Cloudinary hosts media uploaded through the admin area.</li>
+                        <li>Cloudinary hosts portfolio media assets.</li>
                         <li>Transactional email replies are sent from <a href="mailto:ruchiratharanka1@gmail.com" className="text-primary hover:underline">ruchiratharanka1@gmail.com</a>.</li>
                     </ul>
                 </section>

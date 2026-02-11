@@ -38,7 +38,7 @@ const PrivacyPolicy = () => {
                     <h2 className="text-xl font-semibold text-foreground">How The Data Is Used</h2>
                     <ul className="list-disc space-y-2 pl-5">
                         <li>Replying to enquiries and ongoing project discussions.</li>
-                        <li>Protecting the contact form and admin dashboard from spam or abuse.</li>
+                        <li>Keeping the contact form secure and preventing spam.</li>
                         <li>Understanding site performance and prioritising improvements.</li>
                         <li>Delivering portfolio media quickly and reliably.</li>
                     </ul>

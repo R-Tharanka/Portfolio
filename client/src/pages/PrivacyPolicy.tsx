@@ -4,119 +4,78 @@ const PrivacyPolicy = () => {
     return (
         <LegalLayout
             title="Privacy Policy"
-            description="How I collect, use, and safeguard information shared through this portfolio."
+            description="What personal information this portfolio collects, why it is used, and who helps process it."
         >
             <article className="space-y-8 text-sm leading-relaxed text-foreground/85">
                 <section className="space-y-2">
                     <p>Effective date: 11 February 2026</p>
                     <p>
-                        This portfolio is operated by Ruchira Tharanka. I use the information you share
-                        to respond to enquiries, keep the site secure, and continually improve the
-                        experience. I do not sell personal information or use it for advertising.
+                        This site is operated by Ruchira Tharanka. I collect only the information needed to reply to
+                        enquiries, keep the platform secure, and understand which content is helpful. Personal data is
+                        never sold or used for advertising.
                     </p>
                 </section>
 
                 <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Information I Collect</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Data You Provide</h2>
                     <ul className="list-disc space-y-2 pl-5">
-                        <li>
-                            <strong>Contact form:</strong> name, email address, the subject you provide, and the
-                            message body. This data is required to reply to your request.
-                        </li>
-                        <li>
-                            <strong>reCAPTCHA v2:</strong> Google reCAPTCHA processes device/browser metadata to
-                            help prevent automated abuse. Beginning 2 April 2026, Google will act solely as a data
-                            processor for this service. The data is used only to validate that a real person
-                            submitted the form.
-                        </li>
-                        <li>
-                            <strong>Site analytics:</strong> Google Analytics records anonymous usage information
-                            such as page views, approximate location, device type, and referrers. These reports
-                            help me understand which content is most helpful.
-                        </li>
-                        <li>
-                            <strong>Media hosting:</strong> Portfolio screenshots and demo assets are delivered via
-                            Cloudinary. When media loads, Cloudinary may collect standard web server logs (IP
-                            address, browser details) to operate the CDN.
-                        </li>
-                        <li>
-                            <strong>System logs:</strong> The hosting platform may automatically log requests for
-                            security and debugging. These logs are retained for a short period.
-                        </li>
+                        <li>Contact form: name, email address, subject, and message.</li>
+                        <li>Admin authentication: credentials used only by authorised administrators.</li>
                     </ul>
                 </section>
 
                 <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">How I Use the Information</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Data Collected Automatically</h2>
                     <ul className="list-disc space-y-2 pl-5">
-                        <li>Responding to enquiries you submit through the contact form.</li>
-                        <li>Protecting the site against spam and abuse, including automated submissions.</li>
-                        <li>Monitoring performance and improving content using aggregated analytics.</li>
-                        <li>Maintaining media assets and ensuring they load quickly for visitors.</li>
+                        <li>Google reCAPTCHA v2 evaluates browser/device signals to block automated abuse. As of 2 April 2026 Google processes this data solely on my behalf.</li>
+                        <li>Google Analytics records anonymised usage metrics (page views, approximate region, device type) to improve the portfolio.</li>
+                        <li>Hosting infrastructure may capture basic request logs for security and reliability monitoring.</li>
+                        <li>Cloudinary serves media assets and receives standard CDN request metadata when images or videos load.</li>
+                    </ul>
+                    <p className="text-foreground/70">See the Cookie Policy for details about cookies and local storage.</p>
+                </section>
+
+                <section className="space-y-3">
+                    <h2 className="text-xl font-semibold text-foreground">How The Data Is Used</h2>
+                    <ul className="list-disc space-y-2 pl-5">
+                        <li>Replying to enquiries and ongoing project discussions.</li>
+                        <li>Protecting the contact form and admin dashboard from spam or abuse.</li>
+                        <li>Understanding site performance and prioritising improvements.</li>
+                        <li>Delivering portfolio media quickly and reliably.</li>
                     </ul>
                 </section>
 
                 <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Data Sharing</h2>
-                    <p>
-                        I limit third-party sharing to the services required to operate the portfolio:
-                    </p>
+                    <h2 className="text-xl font-semibold text-foreground">Data Processors</h2>
                     <ul className="list-disc space-y-2 pl-5">
-                        <li>
-                            Google Analytics and Google reCAPTCHA process data on my behalf. They do not use it for
-                            their own advertising when interacting with this site.
-                        </li>
-                        <li>
-                            Cloudinary delivers static media files. Only media request metadata is shared.
-                        </li>
-                        <li>
-                            Email responses are sent through my personal inbox at{' '}
-                            <a
-                                href="mailto:ruchiratharanka1@gmail.com"
-                                className="text-primary hover:underline"
-                            >
-                                ruchiratharanka1@gmail.com
-                            </a>
-                            .
-                        </li>
+                        <li>Google reCAPTCHA (security) and Google Analytics (usage insights) operate under Google Cloud’s Data Processing Addendum.</li>
+                        <li>Cloudinary hosts media uploaded through the admin area.</li>
+                        <li>Transactional email replies are sent from <a href="mailto:ruchiratharanka1@gmail.com" className="text-primary hover:underline">ruchiratharanka1@gmail.com</a>.</li>
                     </ul>
                 </section>
 
                 <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Cookies & Storage</h2>
-                    <p>
-                        This site uses minimal cookies. Google Analytics sets cookies to understand visit
-                        patterns. The application may also store settings (such as theme preference or service
-                        worker status) in your browser&apos;s local storage to enhance the experience.
-                    </p>
-                </section>
-
-                <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Data Retention</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Retention</h2>
                     <ul className="list-disc space-y-2 pl-5">
-                        <li>Contact form submissions are stored securely and deleted once no longer needed.</li>
-                        <li>Analytics data is retained within Google Analytics according to its default schedule.</li>
-                        <li>Server logs are periodically purged as part of routine maintenance.</li>
+                        <li>Contact form submissions are kept only while the enquiry remains active.</li>
+                        <li>Analytics data follows Google Analytics default retention periods.</li>
+                        <li>Security and infrastructure logs are rotated on a routine schedule.</li>
                     </ul>
                 </section>
 
                 <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Your Rights</h2>
-                    <p>
-                        You may request access to, correction of, or deletion of the personal data collected
-                        through this site. Contact me by email to submit a request. For reCAPTCHA or Analytics
-                        data, I will work with Google as the processor to address your request.
-                    </p>
+                    <h2 className="text-xl font-semibold text-foreground">Your Choices</h2>
+                    <ul className="list-disc space-y-2 pl-5">
+                        <li>You can request access to, correction of, or deletion of data collected through the contact form.</li>
+                        <li>Opt-out tools for Google Analytics and cookie preferences are described in the Cookie Policy.</li>
+                    </ul>
                 </section>
 
                 <section className="space-y-3">
                     <h2 className="text-xl font-semibold text-foreground">Contact</h2>
                     <p>
-                        For privacy enquiries, please email{' '}
-                        <a
-                            href="mailto:ruchiratharanka1@gmail.com"
-                            className="text-primary hover:underline"
-                        >
+                        Reach out with privacy questions at{' '}
+                        <a href="mailto:ruchiratharanka1@gmail.com" className="text-primary hover:underline">
                             ruchiratharanka1@gmail.com
                         </a>
                         .

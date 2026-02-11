@@ -4,84 +4,66 @@ const TermsOfService = () => {
     return (
         <LegalLayout
             title="Terms of Service"
-            description="The rules for using this portfolio site and administrative area."
+            description="Guidelines for using this portfolio site and the private admin dashboard."
         >
             <article className="space-y-8 text-sm leading-relaxed text-foreground/85">
                 <section className="space-y-2">
                     <p>Effective date: 11 February 2026</p>
                     <p>
-                        By visiting this site you agree to follow these Terms of Service. The site showcases my
-                        professional work and provides a contact form for project enquiries. If you disagree with
-                        the terms, please refrain from using the site.
+                        By using this site you agree to the simple rules below. If anything here is unclear, please
+                        reach out before continuing.
                     </p>
                 </section>
 
                 <section className="space-y-3">
                     <h2 className="text-xl font-semibold text-foreground">Acceptable Use</h2>
                     <ul className="list-disc space-y-2 pl-5">
-                        <li>Use the contact form only for genuine collaboration or enquiry requests.</li>
-                        <li>Do not upload or inject malicious code, attempt to overwhelm the service, or scrape content.</li>
-                        <li>Respect intellectual property rights. All portfolio content remains owned by Ruchira Tharanka.</li>
-                        <li>Do not impersonate others or submit content that is unlawful, abusive, or misleading.</li>
+                        <li>Use the contact form for genuine project or collaboration enquiries.</li>
+                        <li>Avoid activities that disrupt the service, including automated scraping or security testing without consent.</li>
+                        <li>Do not submit unlawful, abusive, or misleading content.</li>
                     </ul>
                 </section>
 
                 <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Account & Admin Area</h2>
+                    <h2 className="text-xl font-semibold text-foreground">Admin Area</h2>
                     <p>
-                        An authenticated admin interface exists to maintain projects, skills, and media. Access is
-                        restricted to authorised administrators. Cloudinary integrations, media uploads, and API
-                        management occur only within this secure admin area. Visitors to the public site do not
-                        upload files or interact directly with Cloudinary.
+                        The admin dashboard is reserved for authorised administrators who maintain projects, skills, and media. Cloudinary uploads happen only inside this secure area. Visitors to the public site cannot upload content.
                     </p>
-                </section>
-
-                <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Third-Party Services</h2>
-                    <ul className="list-disc space-y-2 pl-5">
-                        <li>
-                            Google reCAPTCHA protects forms from automated abuse. From 2 April 2026 Google provides
-                            this strictly as a data processor.
-                        </li>
-                        <li>Google Analytics helps understand aggregated site usage.</li>
-                        <li>Cloudinary delivers media assets and stores files added through the admin area.</li>
-                    </ul>
                 </section>
 
                 <section className="space-y-3">
                     <h2 className="text-xl font-semibold text-foreground">Intellectual Property</h2>
                     <p>
-                        Unless otherwise noted, all code samples, graphics, and written content on this site are
-                        owned by Ruchira Tharanka. You may review and link to public content but may not copy or
-                        repurpose it without permission.
+                        All portfolio content remains owned by Ruchira Tharanka unless otherwise noted. You are welcome to view and share links, but please do not reuse assets without permission.
+                    </p>
+                </section>
+
+                <section className="space-y-3">
+                    <h2 className="text-xl font-semibold text-foreground">Third-Party Services</h2>
+                    <p>
+                        Google reCAPTCHA protects the contact form, Google Analytics provides usage insights, and Cloudinary serves media assets. These processors operate under the Privacy Policy.
                     </p>
                 </section>
 
                 <section className="space-y-3">
                     <h2 className="text-xl font-semibold text-foreground">Disclaimer</h2>
                     <p>
-                        The portfolio is provided "as is" without warranties of any kind. I strive to keep the
-                        content accurate and the site available, but I cannot guarantee uninterrupted operation or
-                        error-free information. I am not liable for losses arising from your use of the site.
+                        The site is provided “as is.” While I aim for accuracy and uptime, I cannot guarantee uninterrupted service or error-free content.
                     </p>
                 </section>
 
                 <section className="space-y-3">
                     <h2 className="text-xl font-semibold text-foreground">Changes</h2>
                     <p>
-                        These terms may be updated occasionally to reflect new features or legal requirements. The
-                        latest version will always be published on this page with an updated effective date.
+                        Terms may change when new features launch or legal guidance shifts. The latest version and effective date will always be posted here.
                     </p>
                 </section>
 
                 <section className="space-y-3">
                     <h2 className="text-xl font-semibold text-foreground">Contact</h2>
                     <p>
-                        Questions about these terms may be sent to{' '}
-                        <a
-                            href="mailto:ruchiratharanka1@gmail.com"
-                            className="text-primary hover:underline"
-                        >
+                        Questions about these terms? Email{' '}
+                        <a href="mailto:ruchiratharanka1@gmail.com" className="text-primary hover:underline">
                             ruchiratharanka1@gmail.com
                         </a>
                         .

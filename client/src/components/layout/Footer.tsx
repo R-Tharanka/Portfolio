@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-scroll';
+import { Link as ScrollLink } from 'react-scroll';
 import { ArrowUp, Code, Shield, Settings, RefreshCw, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import '../../utils/serviceWorkerCleanup'; // Import the file that declares the global function
 import { useServiceWorker } from '../../context/ServiceWorkerContext';
 import Toast from '../ui/Toast';
+import { Link as RouterLink } from 'react-router-dom';
 
 // Define our toast config interface
 interface ToastConfig {
@@ -284,15 +285,15 @@ const Footer: React.FC = () => {
                 <h3 className="text-lg font-bold">Legal</h3>
               </div>
               <div className="flex flex-col space-y-2">
-                <a href="/privacy" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
+                <RouterLink to="/privacy" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
                   Privacy Policy
-                </a>
-                <a href="/terms" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
+                </RouterLink>
+                <RouterLink to="/terms" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
                   Terms of Service
-                </a>
-                <a href="/cookies" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
+                </RouterLink>
+                <RouterLink to="/cookies" className="text-foreground/70 hover:text-primary transition-colors text-sm hover:underline">
                   Cookie Policy
-                </a>
+                </RouterLink>
               </div>
             </div>
           </div>
@@ -308,7 +309,7 @@ const Footer: React.FC = () => {
             </p>
 
             <div className="mt-4 md:mt-0">
-              <Link
+              <ScrollLink
                 to="hero"
                 spy={true}
                 smooth={true}
@@ -323,7 +324,7 @@ const Footer: React.FC = () => {
                 >
                   <ArrowUp size={12} />
                 </motion.div>
-              </Link>
+              </ScrollLink>
             </div>
           </motion.div>
         </div>

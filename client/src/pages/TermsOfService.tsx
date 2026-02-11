@@ -25,13 +25,6 @@ const TermsOfService = () => {
                 </section>
 
                 <section className="space-y-3">
-                    <h2 className="text-xl font-semibold text-foreground">Admin Area</h2>
-                    <p>
-                        The admin dashboard is reserved for authorised administrators who maintain projects, skills, and media. Cloudinary uploads happen only inside this secure area. Visitors to the public site cannot upload content.
-                    </p>
-                </section>
-
-                <section className="space-y-3">
                     <h2 className="text-xl font-semibold text-foreground">Intellectual Property</h2>
                     <p>
                         All portfolio content remains owned by Ruchira Tharanka unless otherwise noted. You are welcome to view and share links, but please do not reuse assets without permission.

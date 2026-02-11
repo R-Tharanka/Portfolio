@@ -4,7 +4,7 @@ const TermsOfService = () => {
     return (
         <LegalLayout
             title="Terms of Service"
-            description="Guidelines for using this portfolio site and the private admin dashboard."
+            description="Guidelines for using this portfolio site."
         >
             <article className="space-y-8 text-sm leading-relaxed text-foreground/85">
                 <section className="space-y-2">

@@ -16,7 +16,7 @@
     "@react-three/fiber": "^8.16.8",
     "@types/react-google-recaptcha": "^2.1.9",
     "@types/three": "^0.179.0",
-    "axios": "^1.13.2",
+    "axios": "^1.13.5",
     "cors": "^2.8.5",
     "framer-motion": "^11.1.12",
     "lucide-react": "^0.344.0",

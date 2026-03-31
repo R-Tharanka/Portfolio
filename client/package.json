@@ -56,7 +56,8 @@
   "overrides": {
     "esbuild": "0.25.0",
     "lodash": "4.17.23",
-    "serialize-javascript": "7.0.3",
-    "flatted": "3.4.2"
+    "serialize-javascript": "7.0.5",
+    "flatted": "3.4.2",
+    "picomatch": "4.0.4"
   }
 }

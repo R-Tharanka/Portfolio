@@ -12,6 +12,6 @@
   "description": "",
   "dependencies": {
     "dotenv": "^16.6.1",
-    "sharp": "^0.34.5"
+    "sharp": "^0.35.0"
   }
 }

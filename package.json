@@ -1,9 +1,10 @@
 {
   "devDependencies": {
     "glob": "^11.1.0",
-    "sharp": "^0.34.5"
+    "sharp": "^0.35.0"
   },
   "overrides": {
+    "brace-expansion": "5.0.7",
     "cross-spawn": "7.0.5",
     "validator": "13.15.20",
     "esbuild": "0.25.0"
